@@ -1,12 +1,14 @@
 import axios from 'axios';
 
 const axiosClient = axios.create({
-    baseURL: 'http://localhost:8080/api/admin/', // Đường dẫn gốc tới API của bạn
+    // 👇 SỬA DÒNG NÀY:
+    // 1. Đổi http -> https (Railway bắt buộc bảo mật)
+    // 2. Thay localhost:8080 -> thanhtungf.up.railway.app
+    baseURL: 'https://thanhtungf.up.railway.app/api/admin/', 
+    
     headers: {
         'Content-Type': 'application/json',
     },
-    // Nếu bạn chưa tắt Security bên Java, hãy dùng Basic Auth tạm thời:
-   
 });
 
 export default axiosClient;
