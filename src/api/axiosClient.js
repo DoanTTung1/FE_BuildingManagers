@@ -1,12 +1,14 @@
 import axios from 'axios';
 
 const axiosClient = axios.create({
-
-    baseURL: 'https://thanhtung-building.up.railway.app/api/admin',
-
+   
+    baseURL: 'https://thanhtung-building.up.railway.app', 
     headers: {
         'Content-Type': 'application/json',
     },
 });
 
-export default axiosClient;  
+// Interceptor giữ nguyên...
+axiosClient.interceptors.response.use((res) => res.data || res, (err) => { throw err; });
+
+export default axiosClient;

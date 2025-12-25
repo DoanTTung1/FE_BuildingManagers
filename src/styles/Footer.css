@@ -1,0 +1,110 @@
+/* --- FOOTER STYLES --- */
+.footer-wrapper {
+    background-color: var(--primary-color); /* Màu xanh Navy đậm #0f2557 */
+    color: #ecf0f1; /* Màu trắng xám nhẹ */
+    padding-top: 60px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin-top: auto; /* Đẩy footer xuống đáy nếu nội dung ngắn */
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px 50px 20px;
+    display: grid;
+    /* Chia 4 cột đều nhau. Nếu màn hình nhỏ thì tự xuống dòng */
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 40px;
+}
+
+/* --- TIÊU ĐỀ CỘT --- */
+.footer-title {
+    font-size: 1.2rem;
+    font-weight: 800;
+    margin-bottom: 25px;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+/* Gạch chân nhỏ dưới tiêu đề */
+.footer-title::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 40px;
+    height: 3px;
+    background-color: var(--accent-color); /* Màu cam đỏ #ff6b6b */
+}
+
+.footer-desc {
+    line-height: 1.6;
+    color: #bdc3c7;
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+}
+
+/* --- SOCIAL ICONS --- */
+.social-links {
+    display: flex;
+    gap: 15px;
+}
+.social-icon {
+    width: 40px; height: 40px;
+    background: rgba(255,255,255,0.1);
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    color: white;
+    transition: all 0.3s;
+    font-size: 1.1rem;
+}
+.social-icon:hover {
+    background: var(--accent-color);
+    transform: translateY(-3px);
+}
+
+/* --- LINKS LIST --- */
+.footer-links {
+    list-style: none;
+    padding: 0; margin: 0;
+}
+.footer-links li {
+    margin-bottom: 12px;
+}
+.footer-links a {
+    text-decoration: none;
+    color: #bdc3c7;
+    transition: all 0.3s;
+    display: inline-block;
+}
+.footer-links a:hover {
+    color: var(--accent-color);
+    padding-left: 5px; /* Hiệu ứng đẩy chữ sang phải */
+}
+
+/* --- CONTACT INFO --- */
+.contact-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    color: #bdc3c7;
+    font-size: 0.95rem;
+}
+.c-icon {
+    margin-right: 15px;
+    color: var(--accent-color);
+    margin-top: 4px; /* Căn chỉnh icon với dòng chữ đầu tiên */
+}
+
+/* --- FOOTER BOTTOM (COPYRIGHT) --- */
+.footer-bottom {
+    background-color: #0a1a3f; /* Màu đậm hơn nền chính một chút */
+    padding: 20px;
+    text-align: center;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    font-size: 0.9rem;
+    color: #7f8c8d;
+}

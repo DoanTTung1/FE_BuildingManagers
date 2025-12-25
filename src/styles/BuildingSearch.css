@@ -1,0 +1,450 @@
+:root {
+    --primary-color: #0f2557;
+    /* Xanh navy đậm */
+    --accent-color: #ff6b6b;
+    /* Màu cam san hô tạo điểm nhấn */
+    --secondary-accent: #4facfe;
+    /* Xanh dương sáng */
+    --bg-light: #f8fafd;
+    --text-dark: #2d3436;
+    --text-light: #636e72;
+    --shadow-soft: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
+    --shadow-hover: 0 20px 40px -10px rgba(0, 0, 0, 0.2);
+    --radius-xl: 24px;
+    --radius-md: 16px;
+    --font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background-color: var(--bg-light);
+    font-family: var(--font-family);
+}
+
+.search-page-wrapper {
+    padding: 40px 20px;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    /* Nền gradient nhẹ */
+}
+
+.search-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* --- PANEL TÌM KIẾM --- */
+.search-panel {
+    background: rgba(255, 255, 255, 0.95);
+    /* Hiệu ứng kính nhẹ */
+    backdrop-filter: blur(10px);
+    padding: 35px;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-soft);
+    margin-bottom: 40px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.panel-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.title {
+    color: var(--primary-color);
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+    color: var(--text-light);
+    font-size: 1rem;
+}
+
+.search-inputs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    align-items: center;
+}
+
+/* Floating Label Inputs (Nhãn trôi nổi) */
+.input-group {
+    position: relative;
+}
+
+.input-group input,
+.custom-select {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid #e0e6ed;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.input-group input:focus,
+.custom-select:focus {
+    border-color: var(--secondary-accent);
+    box-shadow: 0 0 0 4px rgba(79, 172, 254, 0.1);
+    outline: none;
+}
+
+.input-group label {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+    pointer-events: none;
+    transition: 0.3s ease all;
+    background: white;
+    padding: 0 5px;
+}
+
+.input-group input:focus~label,
+.input-group input:not(:placeholder-shown)~label {
+    top: 0;
+    font-size: 0.8rem;
+    color: var(--secondary-accent);
+    font-weight: 600;
+}
+
+.price-range-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    grid-column: span 2;
+    /* Chiếm 2 cột trên màn hình lớn */
+}
+
+@media (max-width: 768px) {
+    .price-range-group {
+        grid-column: span 1;
+    }
+}
+
+.separator {
+    font-weight: bold;
+    color: #ccc;
+}
+
+.btn-container {
+    margin-top: 35px;
+    text-align: center;
+}
+
+.btn-search {
+    background: linear-gradient(to right, var(--secondary-accent), var(--primary-color));
+    color: white;
+    border: none;
+    padding: 16px 50px;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 20px -10px rgba(79, 172, 254, 0.5);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-search:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 25px -10px rgba(79, 172, 254, 0.7);
+}
+
+/* Hiệu ứng phát sáng khi hover */
+.glow-on-hover::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: all 0.6s;
+}
+
+.glow-on-hover:hover::before {
+    left: 100%;
+}
+
+
+/* --- DANH SÁCH KẾT QUẢ (Phần lung linh nhất) --- */
+.result-title {
+    color: var(--text-dark);
+    margin-bottom: 25px;
+    font-weight: 600;
+}
+
+.building-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 30px;
+}
+
+.building-card {
+    background: white;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-soft);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    /* Hiệu ứng nảy */
+    border: 1px solid #f0f0f0;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.building-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: var(--shadow-hover);
+}
+
+/* HÌNH ẢNH LUNG LINH */
+.card-img-wrapper {
+    position: relative;
+    height: 240px;
+    /* Chiều cao cố định cho ảnh đẹp */
+    overflow: hidden;
+}
+
+.card-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Đảm bảo ảnh không bị méo */
+    transition: transform 0.5s ease;
+}
+
+.building-card:hover .card-img-wrapper img {
+    transform: scale(1.1);
+    /* Zoom ảnh khi hover */
+}
+
+.img-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(15, 37, 87, 0.85);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    backdrop-filter: blur(4px);
+}
+
+/* Card Body */
+.card-body {
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+}
+
+.b-name {
+    margin: 0;
+    color: var(--text-dark);
+    font-size: 1.3rem;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 65%;
+}
+
+.price-tag {
+    background: linear-gradient(45deg, var(--accent-color), #ff8e53);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    box-shadow: 0 5px 10px rgba(255, 107, 107, 0.3);
+}
+
+.price-tag small {
+    font-size: 0.8rem;
+    font-weight: 400;
+    opacity: 0.9;
+}
+
+.b-addr {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.b-specs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 25px;
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 12px;
+}
+
+.spec-item {
+    display: flex;
+    align-items: center;
+    color: var(--text-dark);
+    font-size: 0.95rem;
+}
+
+.spec-icon {
+    margin-right: 8px;
+    font-style: normal;
+}
+
+/* Footer & Button */
+.b-footer {
+    margin-top: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+}
+
+.manager-info {
+    display: flex;
+    align-items: center;
+}
+
+.manager-avatar {
+    width: 35px;
+    height: 35px;
+    background: #e9ecef;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+}
+
+.manager-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.m-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-dark);
+}
+
+.m-phone {
+    font-size: 0.8rem;
+    color: var(--text-light);
+}
+
+.btn-detail-outline {
+    background: transparent;
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+    padding: 8px 16px;
+    border-radius: 30px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-detail-outline:hover {
+    background: var(--primary-color);
+    color: white;
+    box-shadow: 0 5px 15px rgba(15, 37, 87, 0.2);
+}
+
+/* --- HIỆU ỨNG SKELETON LOADING (SHIMMER) --- */
+.skeleton .shimmer {
+    background: #f6f7f8;
+    background-image: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
+    background-repeat: no-repeat;
+    background-size: 800px 104px;
+    display: inline-block;
+    position: relative;
+    animation-duration: 1s;
+    animation-fill-mode: forwards;
+    animation-iteration-count: infinite;
+    animation-name: shimmerPlaceholder;
+    animation-timing-function: linear;
+}
+
+@keyframes shimmerPlaceholder {
+    0% {
+        background-position: -468px 0;
+    }
+
+    100% {
+        background-position: 468px 0;
+    }
+}
+
+.skeleton-text {
+    height: 15px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+
+.skeleton-text.title {
+    height: 25px;
+    width: 70%;
+    margin-bottom: 15px;
+}
+
+.skeleton-text.addr {
+    width: 50%;
+    margin-bottom: 25px;
+}
+
+.skeleton-row {
+    display: flex;
+    gap: 15px;
+}
+
+.skeleton-text.half {
+    width: 50%;
+    height: 40px;
+    border-radius: 12px;
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.no-data-found {
+    text-align: center;
+    grid-column: 1/-1;
+    padding: 40px;
+    color: var(--text-light);
+}
