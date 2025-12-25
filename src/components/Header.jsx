@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import '../styles/Header.css';
-
-// Import ảnh logo (Lưu ý đường dẫn phải chính xác)
 import logoImg from '../assets/logo.png';
 
 const Header = () => {
@@ -9,7 +7,6 @@ const Header = () => {
 
     useEffect(() => {
         const handleScroll = () => {
-            // Khi cuộn quá 50px thì đổi trạng thái
             setScrolled(window.scrollY > 50);
         };
         window.addEventListener('scroll', handleScroll);
@@ -42,16 +39,20 @@ const Header = () => {
 
                 {/* --- ACTIONS --- */}
                 <div className="header-actions">
+                    {/* Nút Đăng Tin */}
+                    <button className="btn-post">
+                        <i className="fas fa-plus-circle"></i> Đăng tin
+                    </button>
+
                     <div className="hotline-box">
                         <span className="hotline-label">Hotline 24/7</span>
                         <span className="hotline-number">0345.096.281</span>
                     </div>
-                    
-                    {/* Nút Đăng Nhập (Style nhẹ - Viền) */}
-                    <button className="btn-login">Đăng Nhập</button>
-                    
-                    {/* Nút Đăng Ký (Style nổi bật - Nền màu) */}
-                    <button className="btn-signup">Đăng Ký</button>
+
+                    {/* Nút Đăng Nhập mới - Đã thêm icon và bỏ nút Đăng ký */}
+                    <button className="btn-login">
+                        <i className="fas fa-user"></i> Đăng Nhập
+                    </button>
                 </div>
             </div>
         </header>

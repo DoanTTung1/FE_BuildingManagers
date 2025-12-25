@@ -4,7 +4,6 @@
     --accent-color: #ff6b6b;
     --text-dark: #2d3436;
     --header-height: 90px;
-    /* Tăng nhẹ chiều cao để thoáng hơn */
 }
 
 /* --- HEADER CONTAINER --- */
@@ -26,12 +25,10 @@
     backdrop-filter: blur(10px);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     height: 75px;
-    /* Khi cuộn thì nhỏ lại */
 }
 
 .header-container {
     max-width: 1280px;
-    /* Mở rộng chiều ngang một chút cho thoáng */
     width: 95%;
     margin: 0 auto;
     display: flex;
@@ -45,22 +42,18 @@
     align-items: center;
     cursor: pointer;
     flex-shrink: 0;
-    /* Đảm bảo logo không bị bóp méo khi màn hình nhỏ */
 }
 
 .logo-img {
     height: 120px;
-    /* Kích thước logo to, rõ ràng */
     width: auto;
     object-fit: contain;
     transition: all 0.3s ease;
-    /* Loại bỏ margin-right vì bạn đã xóa chữ bên cạnh */
     padding-top: 10px;
 }
 
 .main-header.scrolled .logo-img {
     height: 55px;
-    /* Thu nhỏ logo khi cuộn */
 }
 
 /* --- NAVBAR --- */
@@ -76,32 +69,22 @@
     text-decoration: none;
     color: var(--text-dark);
     font-weight: 800;
-    /* In đậm như bạn yêu cầu */
     font-size: 1.15rem;
-    /* Chữ to */
     position: relative;
-
-    /* 👇 Tăng khoảng cách đệm bên dưới để chứa gạch chân */
     padding: 10px 0 12px 0;
-
     transition: color 0.3s;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
-/* Hiệu ứng gạch chân */
 .nav-link::after {
     content: '';
     position: absolute;
     width: 0;
     height: 3px;
-
-    /* 👇 QUAN TRỌNG: Đổi từ 5px xuống 0px (hoặc -2px) để gạch chân tụt xuống thấp hơn, xa chữ hơn */
     bottom: 0px;
-
     left: 0;
     background-color: var(--primary-color);
-    /* Màu xanh đồng bộ */
     transition: width 0.3s ease;
 }
 
@@ -119,7 +102,6 @@
     display: flex;
     align-items: center;
     gap: 20px;
-    /* Khoảng cách giữa Hotline và các nút */
 }
 
 .hotline-box {
@@ -127,7 +109,6 @@
     flex-direction: column;
     align-items: flex-end;
     margin-right: 10px;
-    /* Tách biệt hotline ra khỏi nút một chút */
     font-size: 0.9rem;
 }
 
@@ -144,40 +125,85 @@
     font-size: 1.1rem;
 }
 
-/* --- BUTTON STYLES (ĐIỂM NHẤN MỚI) --- */
+/* --- BUTTON STYLES (HIỆU ỨNG ĐỒNG BỘ) --- */
 
-/* Nút Đăng Nhập (Dạng Outline/Viền) - Nhẹ nhàng hơn */
+/* Nút Đăng Nhập (Màu Primary - Có Icon) */
 .btn-login {
-    background: transparent;
-    border: 2px solid var(--primary-color);
-    color: var(--primary-color);
+    background: var(--primary-color);
+    border: none;
+    color: white;
     padding: 8px 20px;
     border-radius: 30px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(15, 37, 87, 0.2);
 }
 
 .btn-login:hover {
-    background-color: rgba(15, 37, 87, 0.05);
-}
-
-/* Nút Đăng Ký (Dạng Filled/Đặc) - Nổi bật hành động chính */
-.btn-signup {
-    background: linear-gradient(135deg, var(--primary-color), #2a4d8f);
-    color: white;
-    border: none;
-    padding: 10px 25px;
-    /* To hơn nút đăng nhập 1 chút */
-    border-radius: 30px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-    box-shadow: 0 4px 15px rgba(15, 37, 87, 0.3);
-}
-
-.btn-signup:hover {
+    background-color: #1a3a7a;
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(15, 37, 87, 0.4);
-    background: linear-gradient(135deg, #2a4d8f, var(--primary-color));
+    box-shadow: 0 6px 20px rgba(15, 37, 87, 0.3);
+}
+
+/* Nút Đăng Tin (Màu Accent - To vừa ý) */
+.btn-post {
+    background-color: transparent;
+    color: #ef5459;
+    border: 1.5px solid #ff5a5f;
+    padding: 5px 12px;
+    border-radius: 30px;
+    font-size: large; 
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    height: fit-content;
+    white-space: nowrap;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-post:hover {
+    background-color: #ff5a5f;
+    color: white;
+    box-shadow: 0 0 15px rgba(255, 90, 95, 0.5);
+    transform: translateY(-2px);
+}
+
+/* Hiệu ứng nảy khi click cho cả 2 nút */
+.btn-login:active, 
+.btn-post:active {
+    transform: translateY(0) scale(0.95);
+}
+
+/* Hiệu ứng vệt sáng chạy ngang (Shine) */
+.btn-login::before,
+.btn-post::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+        to right,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+    );
+    transform: skewX(-25deg);
+    transition: 0.5s;
+}
+
+.btn-login:hover::before,
+.btn-post:hover::before {
+    left: 150%;
 }

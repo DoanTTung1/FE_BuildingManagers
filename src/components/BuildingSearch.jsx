@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axiosClient from '../api/axiosClient';
 import '../styles/BuildingSearch.css';
 
-// --- Component Skeleton (Hiển thị khi đang tải) ---
+// --- Component Skeleton ---
 const SkeletonCard = () => (
     <div className="building-card skeleton">
         <div className="card-img-wrapper shimmer"></div>
@@ -16,14 +16,13 @@ const SkeletonCard = () => (
         </div>
     </div>
 );
-// --------------------------------------------------
 
 const BuildingSearch = () => {
     const [formData, setFormData] = useState({
         name: '', floorArea: '', district: '', rentPriceFrom: '', rentPriceTo: ''
     });
     const [buildings, setBuildings] = useState([]);
-    const [isLoading, setIsLoading] = useState(true); // Mặc định là true để hiện skeleton ngay
+    const [isLoading, setIsLoading] = useState(true);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -33,12 +32,10 @@ const BuildingSearch = () => {
         setIsLoading(true);
         try {
             const res = await axiosClient.get('/api/building', { params: formData });
-            // Thêm delay nhẹ 0.5s để người dùng kịp nhìn thấy hiệu ứng skeleton đẹp mắt
             setTimeout(() => {
                 setBuildings(res);
                 setIsLoading(false);
             }, 500);
-            
         } catch (error) {
             console.error("Lỗi:", error);
             setIsLoading(false);
@@ -48,6 +45,11 @@ const BuildingSearch = () => {
     useEffect(() => {
         handleSearch();
     }, []);
+
+    const handleViewDetail = (id) => {
+        console.log("Điều hướng tới chi tiết tòa nhà ID:", id);
+        // window.location.href = `/building/${id}`; 
+    };
 
     return (
         <div className="search-page-wrapper">
@@ -60,7 +62,6 @@ const BuildingSearch = () => {
                     </div>
                     
                     <div className="search-inputs-grid">
-                        {/* Các ô input giữ nguyên logic, chỉ thay đổi class để style */}
                         <div className="input-group floating-label">
                             <input type="text" id="name" name="name" placeholder=" " value={formData.name} onChange={handleChange} />
                             <label htmlFor="name">Tên tòa nhà</label>
@@ -106,18 +107,23 @@ const BuildingSearch = () => {
                     
                     <div className="building-grid">
                         {isLoading ? (
-                            // Hiển thị 6 cái skeleton khi đang tải
                             [...Array(6)].map((_, index) => <SkeletonCard key={index} />)
                         ) : buildings.length > 0 ? (
                             buildings.map((item) => (
-                                <div key={item.id} className="building-card fade-in">
-                                    {/* Wrapper cho hình ảnh để làm hiệu ứng zoom */}
+                                <div 
+                                    key={item.id} 
+                                    className="building-card fade-in clickable-card"
+                                    onClick={() => handleViewDetail(item.id)}
+                                >
                                     <div className="card-img-wrapper">
-                                        <img 
-                                            src={item.image ? `data:image/jpeg;base64,${item.image}` : "https://source.unsplash.com/random/400x300/?office,building"} 
-                                            alt={item.name} 
-                                        />
-                                        {/* Badge trạng thái (ví dụ) */}
+                                        {/* Chỉ hiển thị ảnh nếu item.image có dữ liệu, không dùng ảnh mặc định */}
+                                        {item.image ? (
+                                            <img src={`data:image/jpeg;base64,${item.image}`} alt={item.name} />
+                                        ) : (
+                                            <div className="no-image-placeholder">
+                                                <span>Hình ảnh tòa nhà</span>
+                                            </div>
+                                        )}
                                         <div className="img-badge">Cho thuê</div>
                                     </div>
                                     
@@ -139,24 +145,12 @@ const BuildingSearch = () => {
                                                 <span>Trống: <b>{item.emptyArea || "LH"}</b></span>
                                             </div>
                                         </div>
-
-                                        <div className="b-footer">
-                                            <div className="manager-info">
-                                                <div className="manager-avatar">👤</div>
-                                                <div className="manager-details">
-                                                    <span className="m-name">{item.managerName || "Tư vấn viên"}</span>
-                                                    <span className="m-phone">{item.managerPhone || "Liên hệ ngay"}</span>
-                                                </div>
-                                            </div>
-                                            <button className="btn-detail-outline">Xem Chi Tiết →</button>
-                                        </div>
                                     </div>
                                 </div>
                             ))
                         ) : (
                             <div className="no-data-found">
-                                <img src="https://cdn-icons-png.flaticon.com/512/7486/7486754.png" alt="Not found" width="100" />
-                                <p>Không tìm thấy tòa nhà nào phù hợp tiêu chí!</p>
+                                <p>Không tìm thấy tòa nhà nào!</p>
                             </div>
                         )}
                     </div>
