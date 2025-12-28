@@ -1,7 +1,7 @@
+// src/components/Footer.jsx
 import React from 'react';
-import '../styles/Footer.css';
-// Import các icon cần thiết
-import { FaMapMarkerAlt, FaPhoneAlt, FaEnvelope, FaFacebookF, FaYoutube, FaLinkedinIn } from "react-icons/fa";
+import { FaFacebookF, FaYoutube, FaLinkedinIn, FaMapMarkerAlt, FaPhoneAlt, FaEnvelope } from 'react-icons/fa';
+import '../styles/HeaderFooter.css'; // Dùng chung file CSS với Header
 
 const Footer = () => {
     return (
@@ -10,9 +10,10 @@ const Footer = () => {
                 
                 {/* CỘT 1: THÔNG TIN CÔNG TY */}
                 <div className="footer-col">
-                    <h3 className="footer-title">THANH TÙNG ELITE HOMES</h3>
+                    <h3 className="footer-title">Thanh Tùng Elite Homes</h3>
                     <p className="footer-desc">
-                        Đối tác tin cậy hàng đầu trong lĩnh vực cho thuê văn phòng và bất động sản cao cấp. Chúng tôi kiến tạo không gian làm việc lý tưởng cho doanh nghiệp của bạn.
+                        Đối tác tin cậy hàng đầu trong lĩnh vực cho thuê văn phòng và bất động sản cao cấp. 
+                        Chúng tôi kiến tạo không gian làm việc lý tưởng cho doanh nghiệp của bạn.
                     </p>
                     <div className="social-links">
                         <a href="#" className="social-icon"><FaFacebookF /></a>
@@ -23,19 +24,19 @@ const Footer = () => {
 
                 {/* CỘT 2: LIÊN KẾT NHANH */}
                 <div className="footer-col">
-                    <h3 className="footer-title">LIÊN KẾT NHANH</h3>
+                    <h3 className="footer-title">Liên Kết Nhanh</h3>
                     <ul className="footer-links">
-                        <li><a href="#">Trang Chủ</a></li>
-                        <li><a href="#">Văn Phòng Cho Thuê</a></li>
-                        <li><a href="#">Ký Gửi Bất Động Sản</a></li>
-                        <li><a href="#">Tin Tức Thị Trường</a></li>
-                        <li><a href="#">Tuyển Dụng</a></li>
+                        <li><a href="/">Trang Chủ</a></li>
+                        <li><a href="/search">Văn Phòng Cho Thuê</a></li>
+                        <li><a href="/consign">Ký Gửi Bất Động Sản</a></li>
+                        <li><a href="/news">Tin Tức Thị Trường</a></li>
+                        <li><a href="/contact">Tuyển Dụng</a></li>
                     </ul>
                 </div>
 
-                {/* CỘT 3: HỖ TRỢ KHÁCH HÀNG */}
+                {/* CỘT 3: CHÍNH SÁCH */}
                 <div className="footer-col">
-                    <h3 className="footer-title">CHÍNH SÁCH</h3>
+                    <h3 className="footer-title">Chính Sách</h3>
                     <ul className="footer-links">
                         <li><a href="#">Chính Sách Bảo Mật</a></li>
                         <li><a href="#">Điều Khoản Sử Dụng</a></li>
@@ -47,7 +48,7 @@ const Footer = () => {
 
                 {/* CỘT 4: LIÊN HỆ */}
                 <div className="footer-col">
-                    <h3 className="footer-title">LIÊN HỆ</h3>
+                    <h3 className="footer-title">Liên Hệ</h3>
                     <div className="contact-info">
                         <div className="contact-item">
                             <FaMapMarkerAlt className="c-icon" />
@@ -63,10 +64,9 @@ const Footer = () => {
                         </div>
                     </div>
                 </div>
-
             </div>
 
-            {/* PHẦN BẢN QUYỀN CUỐI CÙNG */}
+            {/* COPYRIGHT */}
             <div className="footer-bottom">
                 <p>&copy; 2025 Thanh Tùng Elite Homes. All rights reserved.</p>
             </div>

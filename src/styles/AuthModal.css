@@ -1,0 +1,251 @@
+/* --- OVERLAY & CONTAINER --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.7);
+    /* Màu nền tối hiện đại */
+    backdrop-filter: blur(8px);
+    /* Làm mờ nền phía sau */
+    z-index: 2000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.4s ease;
+}
+
+.modal-container {
+    background: #ffffff;
+    width: 420px;
+    border-radius: 24px;
+    padding: 30px 40px;
+    position: relative;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+    /* Quan trọng để bo góc đẹp */
+}
+
+/* Nút đóng X */
+.close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: color 0.3s;
+    z-index: 10;
+}
+
+.close-btn:hover {
+    color: #ef4444;
+}
+
+/* --- HEADER TABS & SLIDING BAR --- */
+.auth-header-wrapper {
+    position: relative;
+    margin-bottom: 30px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f1f5f9;
+    /* Đường kẻ mờ làm nền */
+}
+
+.auth-header-tabs {
+    display: flex;
+    justify-content: space-between;
+}
+
+.tab-item {
+    width: 50%;
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 10px 0;
+    transition: color 0.3s;
+    user-select: none;
+    /* Không cho bôi đen text */
+}
+
+.tab-item.active {
+    color: #0f2557;
+    /* Màu chữ khi được chọn */
+}
+
+/* THANH TRƯỢT THẦN THÁNH */
+.slider-bar {
+    position: absolute;
+    bottom: -2px;
+    /* Đè lên đường border bottom của wrapper */
+    left: 0;
+    width: 50%;
+    /* Chiếm 1 nửa chiều rộng */
+    height: 4px;
+    background: linear-gradient(90deg, #0f2557, #2563eb);
+    /* Gradient xanh */
+    border-radius: 4px;
+    /* Animation cubic-bezier tạo hiệu ứng nảy nhẹ */
+    transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Class này được JS thêm vào khi chuyển sang tab Đăng Ký */
+.slider-bar.slide-right {
+    transform: translateX(100%);
+}
+
+/* --- INPUT FIELDS --- */
+.input-group-auth {
+    position: relative;
+    margin-bottom: 15px;
+}
+
+.input-group-auth .icon {
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    z-index: 1;
+    transition: color 0.3s;
+}
+
+/* Khi input được focus thì icon đổi màu */
+.input-group-auth input:focus+.icon,
+.input-group-auth:focus-within .icon {
+    color: #0f2557;
+}
+
+.input-group-auth input {
+    width: 100%;
+    padding: 14px 15px 14px 45px;
+    /* Padding trái lớn để né icon */
+    border: 2px solid #f1f5f9;
+    border-radius: 12px;
+    outline: none;
+    font-size: 0.95rem;
+    transition: all 0.3s;
+    background: #f8fafc;
+    color: #334155;
+}
+
+.input-group-auth input:focus {
+    border-color: #0f2557;
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(15, 37, 87, 0.1);
+}
+
+/* --- HIỆU ỨNG MỞ RỘNG FORM ĐĂNG KÝ (ACCORDION) --- */
+.register-expand {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Khi class này được thêm vào, form sẽ trượt xuống */
+.register-expand.open {
+    max-height: 300px;
+    /* Đủ lớn để chứa nội dung */
+    opacity: 1;
+    transform: translateY(0);
+    margin-top: 15px;
+}
+
+/* --- NÚT SUBMIT --- */
+.btn-auth-submit {
+    width: 100%;
+    padding: 15px;
+    background: #0f2557;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: all 0.3s;
+    box-shadow: 0 4px 6px -1px rgba(15, 37, 87, 0.2);
+}
+
+.btn-auth-submit:hover {
+    background: #1e3a8a;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(15, 37, 87, 0.3);
+}
+
+.btn-auth-submit:disabled {
+    background: #cbd5e1;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* --- FOOTER & ALERTS --- */
+.forgot-pass {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.9rem;
+    color: #64748b;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.forgot-pass:hover {
+    color: #ef4444;
+    text-decoration: underline;
+}
+
+.alert-box {
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+    text-align: center;
+    font-weight: 500;
+}
+
+.alert-box.error {
+    background: #fee2e2;
+    color: #ef4444;
+    border: 1px solid #fecaca;
+}
+
+.alert-box.success {
+    background: #dcfce7;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
+}
+
+/* --- KEYFRAME ANIMATIONS --- */
+.fade-in {
+    animation: fadeIn 0.3s forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px) scale(0.95);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}

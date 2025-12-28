@@ -1,0 +1,194 @@
+/* src/styles/BuildingDetail.css */
+
+:root {
+    --primary: #0f2557;
+    --accent: #ff6b6b;
+    --text-dark: #1e293b;
+    --text-gray: #64748b;
+    --bg-light: #f8fafd;
+}
+
+.detail-page-wrapper {
+    padding-top: 100px;
+    /* Tránh Header che */
+    padding-bottom: 60px;
+    background-color: var(--bg-light);
+    min-height: 100vh;
+}
+
+.detail-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    /* Chia cột: Ảnh lớn hơn thông tin một chút */
+    gap: 40px;
+}
+
+/* --- BUTTON BACK --- */
+.btn-back {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    color: var(--primary);
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 20px;
+    transition: transform 0.2s;
+}
+
+.btn-back:hover {
+    transform: translateX(-5px);
+    color: var(--accent);
+}
+
+/* --- LEFT COLUMN: IMAGE --- */
+.detail-image-wrapper {
+    width: 100%;
+    height: 500px;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    background-color: #eee;
+}
+
+.detail-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s;
+}
+
+.detail-image-wrapper:hover .detail-img {
+    transform: scale(1.05);
+}
+
+.no-image-box {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    font-size: 1.2rem;
+    background: #f1f5f9;
+}
+
+/* --- RIGHT COLUMN: INFO --- */
+.detail-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.building-title {
+    font-size: 2.2rem;
+    color: var(--primary);
+    margin: 0 0 10px;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.building-address {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-gray);
+    font-size: 1rem;
+    margin-bottom: 30px;
+}
+
+/* Info Grid Box */
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    background: #f8fafc;
+    padding: 25px;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 30px;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.label {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.highlight {
+    color: var(--accent);
+    font-size: 1.4rem;
+}
+
+/* Description */
+.description-section h3 {
+    font-size: 1.2rem;
+    color: var(--primary);
+    margin-bottom: 10px;
+    border-bottom: 2px solid #f1f5f9;
+    padding-bottom: 10px;
+    display: inline-block;
+}
+
+.description-text {
+    color: #475569;
+    line-height: 1.7;
+    font-size: 1rem;
+    text-align: justify;
+}
+
+/* Action Button */
+.btn-contact-now {
+    margin-top: auto;
+    background: linear-gradient(135deg, var(--primary), #1e3a8a);
+    color: white;
+    border: none;
+    padding: 18px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 10px 20px rgba(15, 37, 87, 0.2);
+    transition: all 0.3s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-contact-now:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 25px rgba(15, 37, 87, 0.3);
+    background: linear-gradient(135deg, #1e3a8a, var(--primary));
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .detail-container {
+        grid-template-columns: 1fr;
+        padding: 20px;
+    }
+
+    .detail-image-wrapper {
+        height: 350px;
+    }
+}
