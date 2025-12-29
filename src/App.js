@@ -1,22 +1,8 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext'; // Import Provider
-import AuthModal from './components/AuthModal';       // Import Modal
-
-import Header from './components/Header';
-import Footer from './components/Footer';
-import HomePage from './components/HomePage';
-import BuildingSearch from './components/BuildingSearch';
-import BuildingDetail from './components/BuildingDetail';
-import CreateBuilding from './components/CreateBuilding';
-import './styles/App.css';
-import AdminLayout from './layouts/AdminLayout';
-import BuildingManager from './pages/admin/BuildingManager';
-import UserManager from './pages/admin/UserManager';
 function App() {
   return (
-    <AuthProvider> {/* Bọc toàn bộ App */}
-      <Router>
+    // ĐƯA ROUTER RA NGOÀI CÙNG
+    <Router>
+      <AuthProvider> {/* Bọc AuthProvider bên trong Router */}
         <div className="App" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
           <Header />
 
@@ -27,9 +13,8 @@ function App() {
               <Route path="/building/:id" element={<BuildingDetail />} />
               <Route path="/post-building" element={<CreateBuilding />} />
 
-              {/* --- ROUTE CHO ADMIN (Cần xử lý PrivateRoute nếu kỹ hơn) --- */}
+              {/* --- ROUTE CHO ADMIN --- */}
               <Route path="/admin" element={<AdminLayout />}>
-                {/* Mặc định vào trang tòa nhà */}
                 <Route index element={<BuildingManager />} />
                 <Route path="buildings" element={<BuildingManager />} />
                 <Route path="users" element={<UserManager />} />
@@ -39,12 +24,10 @@ function App() {
 
           <Footer />
 
-          {/* Modal nằm ngoài Routes để hiển thị đè lên mọi trang */}
+          {/* Modal nằm ở đây đã có thể sử dụng navigate() từ AuthContext */}
           <AuthModal />
         </div>
-      </Router>
-    </AuthProvider>
+      </AuthProvider>
+    </Router>
   );
 }
-
-export default App;
