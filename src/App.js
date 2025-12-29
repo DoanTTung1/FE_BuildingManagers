@@ -1,6 +1,5 @@
 import React from 'react';
-// Lưu ý: Đổi tên từ 'Router' thành 'BrowserRouter' để chuẩn hóa
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import AuthModal from './components/AuthModal';
 
@@ -16,39 +15,47 @@ import UserManager from './pages/admin/UserManager';
 
 import './styles/App.css';
 
+// 1. Tạo một Layout dành riêng cho các trang của User (Có Header/Footer)
+const UserLayout = () => {
+  return (
+    <div className="user-layout" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <Header />
+      <main style={{ paddingTop: '100px', flex: 1, backgroundColor: '#f8fafd' }}>
+        <Outlet /> {/* Nơi hiển thị các trang con của User */}
+      </main>
+      <Footer />
+    </div>
+  );
+};
+
 function App() {
-    return (
-        // 1. BrowserRouter phải là bọc ngoài cùng nhất
-        <BrowserRouter>
-            {/* 2. AuthProvider nằm trong Router để sử dụng được useNavigate() */}
-            <AuthProvider>
-                <div className="App" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-                    <Header />
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <div className="App">
+          <Routes>
+            {/* --- NHÓM ROUTE NGƯỜI DÙNG (CÓ HEADER/FOOTER) --- */}
+            <Route element={<UserLayout />}>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/search" element={<BuildingSearch />} />
+              <Route path="/building/:id" element={<BuildingDetail />} />
+              <Route path="/post-building" element={<CreateBuilding />} />
+            </Route>
 
-                    <main style={{ paddingTop: '100px', flex: 1, backgroundColor: '#f8fafd' }}>
-                        <Routes>
-                            {/* Public Routes */}
-                            <Route path="/" element={<HomePage />} />
-                            <Route path="/search" element={<BuildingSearch />} />
-                            <Route path="/building/:id" element={<BuildingDetail />} />
-                            <Route path="/post-building" element={<CreateBuilding />} />
+            {/* --- NHÓM ROUTE ADMIN (KHÔNG CÓ HEADER/FOOTER USER) --- */}
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<BuildingManager />} />
+              <Route path="buildings" element={<BuildingManager />} />
+              <Route path="users" element={<UserManager />} />
+            </Route>
+          </Routes>
 
-                            {/* Admin Routes */}
-                            <Route path="/admin" element={<AdminLayout />}>
-                                <Route index element={<BuildingManager />} />
-                                <Route path="buildings" element={<BuildingManager />} />
-                                <Route path="users" element={<UserManager />} />
-                            </Route>
-                        </Routes>
-                    </main>
-
-                    <Footer />
-
-                    {/* Modal hiển thị toàn cục */}
-                    <AuthModal />
-                </div>
-            </AuthProvider>
-        </BrowserRouter>
-    );
+          {/* Modal vẫn để ngoài để bật lên được ở mọi nơi */}
+          <AuthModal />
+        </div>
+      </AuthProvider>
+    </BrowserRouter>
+  );
 }
+
 export default App;
