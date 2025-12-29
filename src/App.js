@@ -8,7 +8,7 @@ import Footer from './components/Footer';
 import HomePage from './components/HomePage';
 import BuildingSearch from './components/BuildingSearch';
 import BuildingDetail from './components/BuildingDetail';
-
+import CreateBuilding from './components/CreateBuilding';
 import './styles/App.css';  
 
 function App() {
@@ -23,6 +23,7 @@ function App() {
                     <Route path="/" element={<HomePage />} />
                     <Route path="/search" element={<BuildingSearch />} />
                     <Route path="/building/:id" element={<BuildingDetail />} />
+                    <Route path="/post-building" element={<CreateBuilding />} />
                 </Routes>
             </main>
 

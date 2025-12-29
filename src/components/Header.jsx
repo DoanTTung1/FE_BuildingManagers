@@ -81,9 +81,9 @@ const Header = () => {
                 <div className="header-actions">
 
                     {/* Nút Đăng Tin */}
-                    <Link to="/consign" className="btn-post-link">
+                    <Link to="/post-building" style={{ textDecoration: 'none' }}>
                         <button className="btn-post">
-                            <FaPlusCircle /> <span>Đăng tin</span>
+                            <FaPlusCircle /> Đăng tin
                         </button>
                     </Link>
 

@@ -19,7 +19,6 @@ const SkeletonCard = () => (
     </div>
 );
 
-// Loại tòa nhà
 const BUILDING_TYPES = [
     { code: 'NOI_THAT', name: 'Nội thất' },
     { code: 'TANG_TRET', name: 'Tầng trệt' },
@@ -31,12 +30,7 @@ const BuildingSearch = () => {
     const location = useLocation();
 
     const [formData, setFormData] = useState({
-        name: '',
-        floorArea: '',
-        district: '',
-        rentPriceFrom: '',
-        rentPriceTo: '',
-        typeCode: []
+        name: '', floorArea: '', district: '', rentPriceFrom: '', rentPriceTo: '', typeCode: []
     });
 
     const [buildings, setBuildings] = useState([]);
@@ -45,10 +39,7 @@ const BuildingSearch = () => {
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         const districtUrl = params.get('district');
-        const initialSearch = {
-            ...formData,
-            district: districtUrl || formData.district
-        };
+        const initialSearch = { ...formData, district: districtUrl || formData.district };
         if (districtUrl) setFormData(prev => ({ ...prev, district: districtUrl }));
         fetchBuildings(initialSearch);
     }, [location.search]);
@@ -72,39 +63,33 @@ const BuildingSearch = () => {
         }
     };
 
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
+    const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
     const handleCheckboxChange = (code) => {
         let updatedTypes = [...formData.typeCode];
-        if (updatedTypes.includes(code)) {
-            updatedTypes = updatedTypes.filter(t => t !== code);
-        } else {
-            updatedTypes.push(code);
-        }
+        if (updatedTypes.includes(code)) updatedTypes = updatedTypes.filter(t => t !== code);
+        else updatedTypes.push(code);
         setFormData({ ...formData, typeCode: updatedTypes });
     };
 
-    const handleSearch = () => {
-        fetchBuildings(formData);
+    const handleSearch = () => fetchBuildings(formData);
+
+    // --- HÀM CHUYỂN HƯỚNG ---
+    const handleViewDetail = (id) => {
+        navigate(`/building/${id}`); // Chuyển sang URL: /building/123
     };
 
     return (
         <div className="search-page-wrapper">
             <div className="main-content-grid">
-                
-                {/* --- LEFT PANEL: BỘ LỌC NÂNG CAO --- */}
+
+                {/* LEFT PANEL: BỘ LỌC (Giữ nguyên) */}
                 <div className="filter-sidebar glass-panel">
-                    <div className="sidebar-header">
-                        <h3><FaFilter /> Bộ Lọc Tìm Kiếm</h3>
-                    </div>
-                    
+                    <div className="sidebar-header"><h3><FaFilter /> Bộ Lọc Tìm Kiếm</h3></div>
+
                     <div className="filter-group">
                         <label className="f-label"><FaBuilding /> Tên tòa nhà</label>
-                        <div className="input-modern">
-                            <input type="text" name="name" placeholder="Nhập tên..." value={formData.name} onChange={handleChange} />
-                        </div>
+                        <div className="input-modern"><input type="text" name="name" placeholder="Nhập tên..." value={formData.name} onChange={handleChange} /></div>
                     </div>
 
                     <div className="filter-group">
@@ -124,9 +109,7 @@ const BuildingSearch = () => {
 
                     <div className="filter-group">
                         <label className="f-label"><FaRulerCombined /> Diện tích sàn (m²)</label>
-                        <div className="input-modern">
-                            <input type="number" name="floorArea" placeholder="Từ..." value={formData.floorArea} onChange={handleChange} />
-                        </div>
+                        <div className="input-modern"><input type="number" name="floorArea" placeholder="Từ..." value={formData.floorArea} onChange={handleChange} /></div>
                     </div>
 
                     <div className="filter-group">
@@ -142,23 +125,17 @@ const BuildingSearch = () => {
                         <label className="f-label">Loại văn phòng</label>
                         <div className="tags-container">
                             {BUILDING_TYPES.map(type => (
-                                <div 
-                                    key={type.code} 
-                                    className={`tag-item ${formData.typeCode.includes(type.code) ? 'active' : ''}`}
-                                    onClick={() => handleCheckboxChange(type.code)}
-                                >
+                                <div key={type.code} className={`tag-item ${formData.typeCode.includes(type.code) ? 'active' : ''}`} onClick={() => handleCheckboxChange(type.code)}>
                                     {type.name}
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    <button className="btn-search-full" onClick={handleSearch} disabled={isLoading}>
-                        {isLoading ? 'Đang xử lý...' : 'Áp Dụng Bộ Lọc'}
-                    </button>
+                    <button className="btn-search-full" onClick={handleSearch} disabled={isLoading}>{isLoading ? 'Đang xử lý...' : 'Áp Dụng Bộ Lọc'}</button>
                 </div>
 
-                {/* --- RIGHT PANEL: KẾT QUẢ --- */}
+                {/* RIGHT PANEL: KẾT QUẢ */}
                 <div className="results-area">
                     <div className="results-header">
                         <h2>Văn Phòng Cho Thuê</h2>
@@ -170,7 +147,13 @@ const BuildingSearch = () => {
                             [...Array(6)].map((_, index) => <SkeletonCard key={index} />)
                         ) : buildings.length > 0 ? (
                             buildings.map((item) => (
-                                <div key={item.id} className="building-card">
+                                <div
+                                    key={item.id}
+                                    className="building-card"
+                                    // Thêm onClick vào thẻ cha để bấm đâu cũng vào chi tiết
+                                    onClick={() => handleViewDetail(item.id)}
+                                    style={{ cursor: 'pointer' }} // Thêm con trỏ tay
+                                >
                                     <div className="card-image">
                                         {item.image ? (
                                             <img src={`data:image/jpeg;base64,${item.image}`} alt={item.name} />
@@ -179,14 +162,20 @@ const BuildingSearch = () => {
                                         )}
                                         <span className="status-badge">Cho thuê</span>
                                         <div className="overlay-btn">
-                                            <button onClick={() => console.log("Detail", item.id)}>Xem Chi Tiết <FaArrowRight /></button>
+                                            {/* Nút bấm cũng gọi hàm chuyển trang */}
+                                            <button onClick={(e) => {
+                                                e.stopPropagation(); // Ngăn sự kiện nổi bọt
+                                                handleViewDetail(item.id);
+                                            }}>
+                                                Xem Chi Tiết <FaArrowRight />
+                                            </button>
                                         </div>
                                     </div>
 
                                     <div className="card-info">
                                         <h3 title={item.name}>{item.name}</h3>
                                         <p className="address"><FaMapMarkerAlt /> {item.address}</p>
-                                        
+
                                         <div className="card-meta">
                                             <div className="meta-item">
                                                 <span className="label">Giá thuê</span>
@@ -203,9 +192,9 @@ const BuildingSearch = () => {
                             ))
                         ) : (
                             <div className="no-results">
-                                <img src="https://cdn-icons-png.flaticon.com/512/7486/7486754.png" alt="Not found" width="100"/>
+                                <img src="https://cdn-icons-png.flaticon.com/512/7486/7486754.png" alt="Not found" width="100" />
                                 <p>Không tìm thấy văn phòng nào phù hợp với tiêu chí của bạn.</p>
-                                <button onClick={() => setFormData({name:'', floorArea:'', district:'', rentPriceFrom:'', rentPriceTo:'', typeCode:[]})}>
+                                <button onClick={() => setFormData({ name: '', floorArea: '', district: '', rentPriceFrom: '', rentPriceTo: '', typeCode: [] })}>
                                     Xóa bộ lọc
                                 </button>
                             </div>
