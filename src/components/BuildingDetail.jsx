@@ -56,9 +56,10 @@ const BuildingDetail = () => {
     if (isLoading) return <div style={{ padding: '100px', textAlign: 'center' }}>Đang tải dữ liệu...</div>;
     if (!building) return <div style={{ padding: '100px', textAlign: 'center' }}>Không tìm thấy tòa nhà!</div>;
 
-    // Nếu có link ảnh thì dùng luôn, nếu null thì dùng ảnh mẫu
-    const mainImage = building.image || "https://via.placeholder.com/800x600?text=No+Image";
-
+    // Xử lý ảnh: Nếu có ảnh từ DB thì dùng, nếu không có (null hoặc rỗng) thì dùng ảnh mẫu
+    const mainImage = (building.image && building.image.startsWith("http"))
+        ? building.image
+        : "https://placehold.co/600x400?text=No+Image";
     return (
         <div className="detail-page-wrapper">
             <div className="container">
