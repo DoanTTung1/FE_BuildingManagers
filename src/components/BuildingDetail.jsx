@@ -56,10 +56,16 @@ const BuildingDetail = () => {
     if (isLoading) return <div style={{ padding: '100px', textAlign: 'center' }}>Đang tải dữ liệu...</div>;
     if (!building) return <div style={{ padding: '100px', textAlign: 'center' }}>Không tìm thấy tòa nhà!</div>;
 
-    // Xử lý ảnh: Nếu có ảnh từ DB thì dùng, nếu không có (null hoặc rỗng) thì dùng ảnh mẫu
-    const mainImage = (building.image && building.image.startsWith("http"))
-        ? building.image
-        : "https://placehold.co/600x400?text=No+Image";
+    // --- SỬA QUAN TRỌNG: Logic hiển thị ảnh Cloudinary ---
+    // 1. Ưu tiên lấy 'avatar', nếu không có thì lấy 'image'
+    const imageUrl = building.avatar || building.image;
+
+    // 2. Kiểm tra nếu là link HTTP thì hiện, không thì dùng ảnh mẫu
+    const mainImage = (imageUrl && imageUrl.startsWith("http"))
+        ? imageUrl
+        : "https://placehold.co/800x500?text=No+Image";
+    // -----------------------------------------------------
+
     return (
         <div className="detail-page-wrapper">
             <div className="container">
@@ -84,9 +90,11 @@ const BuildingDetail = () => {
                             </div>
                         </div>
 
-                        {/* 2. IMAGE HERO */}
+                        {/* 2. IMAGE HERO (Đã sửa để hiện ảnh Cloudinary) */}
                         <div className="hero-image-box">
-                            <img src={mainImage} alt={building.name} className="hero-img" />
+                            <img src={mainImage} alt={building.name} className="hero-img"
+                                onError={(e) => { e.target.src = "https://placehold.co/800x500?text=Image+Error" }} // Xử lý nếu link ảnh lỗi
+                            />
                             <span className="status-label">Đang cho thuê</span>
                         </div>
 
@@ -112,7 +120,7 @@ const BuildingDetail = () => {
                                 </div>
                             </div>
 
-                            {/* Hiển thị Diện tích trống (rentAreaResult) */}
+                            {/* Hiển thị Diện tích trống */}
                             {building.rentAreaResult && (
                                 <div style={{ marginTop: '20px', background: '#ecfdf5', padding: '15px', borderRadius: '8px', border: '1px solid #a7f3d0' }}>
                                     <strong style={{ color: '#047857', display: 'block', marginBottom: '5px' }}>✨ Diện tích đang trống:</strong>
@@ -127,7 +135,7 @@ const BuildingDetail = () => {
                             </div>
                         </div>
 
-                        {/* 4. BẢNG PHÍ DỊCH VỤ (Mapping field String) */}
+                        {/* 4. BẢNG PHÍ DỊCH VỤ */}
                         <div className="section-box">
                             <h3 className="sec-title">Chi phí & Dịch vụ</h3>
                             <table className="rent-table">
@@ -164,7 +172,7 @@ const BuildingDetail = () => {
                             </table>
                         </div>
 
-                        {/* 5. ĐIỀU KIỆN THUÊ (NEW SECTION) */}
+                        {/* 5. ĐIỀU KIỆN THUÊ */}
                         <div className="section-box">
                             <h3 className="sec-title">Điều kiện thuê</h3>
                             <div className="specs-grid">
@@ -191,12 +199,11 @@ const BuildingDetail = () => {
                             </div>
                         </div>
 
-                        {/* 6. BẢN ĐỒ (Nếu có link map) */}
+                        {/* 6. BẢN ĐỒ */}
                         {building.map && (
                             <div className="section-box">
                                 <h3 className="sec-title">Vị trí trên bản đồ</h3>
                                 <div style={{ width: '100%', height: '300px', background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    {/* Trong thực tế bạn có thể Embed Google Map iframe tại đây */}
                                     <a href={building.linkOfBuilding} target="_blank" rel="noreferrer" style={{ color: '#0f2557', fontWeight: 'bold' }}>
                                         Xem vị trí thực tế trên Google Maps ↗
                                     </a>
@@ -217,7 +224,6 @@ const BuildingDetail = () => {
                                 <p className="note-text">{building.rentPriceDescription}</p>
                             </div>
 
-                            {/* Hiển thị thông tin quản lý động từ API */}
                             <div className="agent-box">
                                 <div className="agent-icon">
                                     <FaUserTie />
@@ -228,7 +234,6 @@ const BuildingDetail = () => {
                                 </div>
                             </div>
 
-                            {/* Gọi số điện thoại từ API (building.managerPhoneNumber) */}
                             <a href={`tel:${building.managerPhoneNumber}`} className="btn-call-action">
                                 <FaPhoneAlt /> {building.managerPhoneNumber || 'Liên hệ ngay'}
                             </a>

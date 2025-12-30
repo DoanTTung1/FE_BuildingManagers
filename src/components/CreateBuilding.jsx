@@ -39,7 +39,9 @@ const CreateBuilding = () => {
         note: '', linkOfBuilding: '', map: '',
         managerName: '', managerPhoneNumber: '',
         rentArea: '', typeCode: [],
-        image: '' // Lưu URL ảnh Cloudinary
+
+        // --- SỬA QUAN TRỌNG: Đổi 'image' thành 'avatar' ---
+        avatar: ''
     });
 
     const handleChange = (e) => {
@@ -58,57 +60,57 @@ const CreateBuilding = () => {
     };
 
     // ==========================================================
-    // XỬ LÝ UPLOAD ẢNH (ĐÃ SỬA LỖI 403)
+    // 1. XỬ LÝ UPLOAD ẢNH (FIX LỖI 403 + ĐÚNG TÊN AVATAR)
     // ==========================================================
     const handleImageChange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        // 1. Hiển thị preview tạm thời
         setPreviewImage(URL.createObjectURL(file));
 
-        // 2. Tạo FormData
         const uploadData = new FormData();
         uploadData.append('file', file);
 
-        // --- BẮT ĐẦU SỬA: Lấy Token gửi kèm ---
+        // Lấy Token
         const token = localStorage.getItem("token");
         if (!token) {
             alert("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại!");
             return;
         }
-        // --- KẾT THÚC SỬA ---
 
         setIsUploading(true);
         try {
-            // Gọi API upload với Header Authorization
+            // Gọi API upload kèm Token
             const response = await axiosClient.post('/api/upload/image', uploadData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
-                    'Authorization': `Bearer ${token}` // <--- QUAN TRỌNG: Dòng này giúp hết lỗi 403
+                    'Authorization': `Bearer ${token}`
                 }
             });
 
-            // Backend trả về URL chuỗi trực tiếp
-            const imageUrl = response;
+            const imageUrl = response; // Backend trả về link ảnh (String)
 
-            // Cập nhật URL vào formData
-            setFormData(prev => ({ ...prev, image: imageUrl }));
+            // --- SỬA QUAN TRỌNG: Lưu vào field 'avatar' ---
+            setFormData(prev => ({ ...prev, avatar: imageUrl }));
             console.log("Upload ảnh thành công:", imageUrl);
 
         } catch (error) {
             console.error("Lỗi upload ảnh:", error);
             if (error.response && error.response.status === 403) {
-                alert("Lỗi 403: Bạn không có quyền upload. Hãy thử đăng xuất và đăng nhập lại!");
+                alert("Lỗi 403 Upload: Bạn không có quyền upload!");
             } else {
                 alert("Không thể upload ảnh, vui lòng thử lại!");
             }
-            setFormData(prev => ({ ...prev, image: '' })); // Reset nếu lỗi
+            // Reset nếu lỗi
+            setFormData(prev => ({ ...prev, avatar: '' }));
         } finally {
             setIsUploading(false);
         }
     };
 
+    // ==========================================================
+    // 2. XỬ LÝ LƯU TÒA NHÀ (FIX LỖI 403)
+    // ==========================================================
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -118,25 +120,24 @@ const CreateBuilding = () => {
             return;
         }
 
-        // Chặn submit nếu đang upload ảnh
         if (isUploading) {
             alert("Vui lòng đợi ảnh tải lên hoàn tất!");
             return;
         }
 
-        // --- BƯỚC 1: Lấy Token (Giống hệt hàm upload ảnh) ---
+        // Lấy Token
         const token = localStorage.getItem("token");
         if (!token) {
-            alert("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại!");
+            alert("Bạn chưa đăng nhập!");
             return;
         }
 
         setIsLoading(true);
         try {
-            // --- BƯỚC 2: Thêm headers chứa Token vào đây ---
+            // Gọi API tạo tòa nhà kèm Token
             await axiosClient.post('/api/buildings', formData, {
                 headers: {
-                    'Authorization': `Bearer ${token}` // <--- QUAN TRỌNG: Thêm dòng này là hết lỗi 403
+                    'Authorization': `Bearer ${token}`
                 }
             });
 
@@ -145,7 +146,7 @@ const CreateBuilding = () => {
         } catch (error) {
             console.error("Lỗi đăng tin:", error);
             if (error.response && error.response.status === 403) {
-                alert("Lỗi 403: Bạn không có quyền đăng tin (Cần quyền ADMIN hoặc STAFF)!");
+                alert("Lỗi 403: Bạn không có quyền đăng tin (Cần quyền ADMIN/STAFF)!");
             } else {
                 alert("Có lỗi xảy ra khi lưu thông tin.");
             }
@@ -262,7 +263,6 @@ const CreateBuilding = () => {
                             <label>Chọn ảnh đại diện {isUploading && <span style={{ color: 'orange' }}>(Đang tải lên...)</span>}</label>
                             <input type="file" accept="image/*" onChange={handleImageChange} className="file-input" />
 
-                            {/* Hiển thị Loading hoặc Preview */}
                             <div className="image-preview-area" style={{ marginTop: '10px' }}>
                                 {isUploading ? (
                                     <div className="loading-upload" style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#666' }}>
