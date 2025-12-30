@@ -39,7 +39,7 @@ const CreateBuilding = () => {
         note: '', linkOfBuilding: '', map: '',
         managerName: '', managerPhoneNumber: '',
         rentArea: '', typeCode: [],
-        image: '' // Bây giờ sẽ lưu URL thay vì Base64
+        image: '' // Lưu URL ảnh Cloudinary
     });
 
     const handleChange = (e) => {
@@ -58,27 +58,38 @@ const CreateBuilding = () => {
     };
 
     // ==========================================================
-    // XỬ LÝ UPLOAD ẢNH QUA API /api/upload/image
+    // XỬ LÝ UPLOAD ẢNH (ĐÃ SỬA LỖI 403)
     // ==========================================================
     const handleImageChange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        // 1. Hiển thị preview tạm thời tại máy khách (UX)
+        // 1. Hiển thị preview tạm thời
         setPreviewImage(URL.createObjectURL(file));
 
-        // 2. Tạo FormData để gửi file
+        // 2. Tạo FormData
         const uploadData = new FormData();
-        uploadData.append('file', file); // Key 'file' phải khớp với @RequestParam("file") ở Backend
+        uploadData.append('file', file);
+
+        // --- BẮT ĐẦU SỬA: Lấy Token gửi kèm ---
+        const token = localStorage.getItem("token");
+        if (!token) {
+            alert("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại!");
+            return;
+        }
+        // --- KẾT THÚC SỬA ---
 
         setIsUploading(true);
         try {
-            // Gọi API upload
+            // Gọi API upload với Header Authorization
             const response = await axiosClient.post('/api/upload/image', uploadData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${token}` // <--- QUAN TRỌNG: Dòng này giúp hết lỗi 403
+                }
             });
 
-            // Backend trả về URL chuỗi trực tiếp (String)
+            // Backend trả về URL chuỗi trực tiếp
             const imageUrl = response;
 
             // Cập nhật URL vào formData
@@ -87,7 +98,11 @@ const CreateBuilding = () => {
 
         } catch (error) {
             console.error("Lỗi upload ảnh:", error);
-            alert("Không thể upload ảnh, vui lòng thử lại!");
+            if (error.response && error.response.status === 403) {
+                alert("Lỗi 403: Bạn không có quyền upload. Hãy thử đăng xuất và đăng nhập lại!");
+            } else {
+                alert("Không thể upload ảnh, vui lòng thử lại!");
+            }
             setFormData(prev => ({ ...prev, image: '' })); // Reset nếu lỗi
         } finally {
             setIsUploading(false);
@@ -111,10 +126,12 @@ const CreateBuilding = () => {
 
         setIsLoading(true);
         try {
-            // Gọi API tạo tòa nhà
+            // Lưu ý: Nếu axiosClient đã cấu hình interceptor tự gắn token thì dòng này ok.
+            // Nếu vẫn lỗi 403 khi bấm nút Lưu, bạn cần thêm headers giống hệt hàm handleImageChange ở trên.
             await axiosClient.post('/api/buildings', formData);
+
             alert("Đăng tin thành công!");
-            navigate('/admin/buildings'); // Chuyển về trang quản lý admin
+            navigate('/admin/buildings');
         } catch (error) {
             console.error("Lỗi đăng tin:", error);
             alert("Có lỗi xảy ra khi lưu thông tin.");
