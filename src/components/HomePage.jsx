@@ -11,7 +11,7 @@ const HERO_IMAGES = [
 
 // ID phải khớp với Enum/String District trong Database
 const POPULAR_DISTRICTS = [
-    { id: 'QUAN_1', name: 'Quận 1 - Trung Tâm', desc: 'Trái tim tài chính sầm uất', img: 'https://images.unsplash.com/photo-1555993539-1732b0258235?auto=format&fit=crop&w=800&q=80', count: 120, size: 'large' },
+    { id: 'QUAN_1', name: 'Quận 1 - Trung Tâm', desc: 'Trái tim tài chính sầm uất', img: 'https://canhonewcity.com/wp-content/uploads/2017/03/can-ho-chung-cu-new-city-quan-2.jpg', count: 120, size: 'large' },
     { id: 'QUAN_2', name: 'Thủ Thiêm (Q2)', desc: 'Khu đô thị mới hiện đại', img: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=600&q=80', count: 45, size: 'small' },
     { id: 'QUAN_3', name: 'Quận 3', desc: 'Không gian xanh, biệt thự cổ', img: 'https://khonggianxanh.com/wp-content/uploads/2023/04/kien-truc-biet-thu-xanh-2.jpg', count: 85, size: 'medium' },
     { id: 'QUAN_PHU_NHUAN', name: 'Phú Nhuận', desc: 'Cửa ngõ sân bay', img: 'https://datxanhkhudong.vn/wp-content/uploads/2021/06/can-ho-chung-cu-nhu-cau-tang-cao-2021.jpg', count: 32, size: 'small' },
