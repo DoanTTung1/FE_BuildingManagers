@@ -124,17 +124,31 @@ const CreateBuilding = () => {
             return;
         }
 
+        // --- BƯỚC 1: Lấy Token (Giống hệt hàm upload ảnh) ---
+        const token = localStorage.getItem("token");
+        if (!token) {
+            alert("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại!");
+            return;
+        }
+
         setIsLoading(true);
         try {
-            // Lưu ý: Nếu axiosClient đã cấu hình interceptor tự gắn token thì dòng này ok.
-            // Nếu vẫn lỗi 403 khi bấm nút Lưu, bạn cần thêm headers giống hệt hàm handleImageChange ở trên.
-            await axiosClient.post('/api/buildings', formData);
+            // --- BƯỚC 2: Thêm headers chứa Token vào đây ---
+            await axiosClient.post('/api/buildings', formData, {
+                headers: {
+                    'Authorization': `Bearer ${token}` // <--- QUAN TRỌNG: Thêm dòng này là hết lỗi 403
+                }
+            });
 
             alert("Đăng tin thành công!");
             navigate('/admin/buildings');
         } catch (error) {
             console.error("Lỗi đăng tin:", error);
-            alert("Có lỗi xảy ra khi lưu thông tin.");
+            if (error.response && error.response.status === 403) {
+                alert("Lỗi 403: Bạn không có quyền đăng tin (Cần quyền ADMIN hoặc STAFF)!");
+            } else {
+                alert("Có lỗi xảy ra khi lưu thông tin.");
+            }
         } finally {
             setIsLoading(false);
         }
