@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosClient from '../api/axiosClient';
-import { FaBuilding, FaMapMarkedAlt, FaDollarSign, FaImage, FaCheck, FaUserTie, FaListUl } from 'react-icons/fa';
+import { FaBuilding, FaDollarSign, FaImage, FaCheck, FaUserTie, FaListUl, FaSpinner } from 'react-icons/fa';
 import '../styles/CreateBuilding.css';
 
-// Danh sách Quận (Hardcode hoặc gọi API /api/districts)
+// Danh sách Quận
 const DISTRICTS = [
     { id: 1, name: 'Quận 1' },
     { id: 2, name: 'Quận 2' },
@@ -24,49 +24,29 @@ const BUILDING_TYPES = [
 const CreateBuilding = () => {
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
+    const [isUploading, setIsUploading] = useState(false); // Trạng thái đang upload ảnh
     const [previewImage, setPreviewImage] = useState(null);
 
-    // State form khớp với UpdateAndCreateBuildingDTO
+    // State form khớp với DTO
     const [formData, setFormData] = useState({
-        name: '',
-        street: '',
-        ward: '',
-        districtId: '',
-        structure: '',
-        numberOfBasement: 0,
-        floorArea: 0,
-        direction: '',
-        level: '',
-        rentPrice: 0,
-        rentPriceDescription: '',
-        serviceFee: '',
-        carFee: '',
-        motorbikeFee: '',
-        overtimeFee: '',
-        waterFee: '',
-        electricityFee: '',
-        deposit: '',
-        payment: '',
-        rentTime: '',
-        decorationTime: '',
-        brokerageFee: 0.0,
-        note: '',
-        linkOfBuilding: '',
-        map: '',
-        managerName: '',
-        managerPhoneNumber: '',
-        rentArea: '', // Input chuỗi "100, 200"
-        typeCode: [], // List Checkbox
-        image: ''     // Base64 String
+        name: '', street: '', ward: '', districtId: '',
+        structure: '', numberOfBasement: 0, floorArea: 0,
+        direction: '', level: '', rentPrice: 0,
+        rentPriceDescription: '', serviceFee: '', carFee: '',
+        motorbikeFee: '', overtimeFee: '', waterFee: '',
+        electricityFee: '', deposit: '', payment: '',
+        rentTime: '', decorationTime: '', brokerageFee: 0.0,
+        note: '', linkOfBuilding: '', map: '',
+        managerName: '', managerPhoneNumber: '',
+        rentArea: '', typeCode: [],
+        image: '' // Bây giờ sẽ lưu URL thay vì Base64
     });
 
-    // Xử lý Input thường
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
     };
 
-    // Xử lý Checkbox TypeCode
     const handleTypeChange = (code) => {
         let updatedTypes = [...formData.typeCode];
         if (updatedTypes.includes(code)) {
@@ -77,28 +57,43 @@ const CreateBuilding = () => {
         setFormData({ ...formData, typeCode: updatedTypes });
     };
 
-    // Xử lý Upload Ảnh (File -> Base64)
-    const handleImageChange = (e) => {
+    // ==========================================================
+    // XỬ LÝ UPLOAD ẢNH QUA API /api/upload/image
+    // ==========================================================
+    const handleImageChange = async (e) => {
         const file = e.target.files[0];
-        if (file) {
-            // Tạo preview
-            setPreviewImage(URL.createObjectURL(file));
+        if (!file) return;
 
-            // Convert to Base64
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onloadend = () => {
-                // Kết quả dạng "data:image/jpeg;base64,..."
-                // Cắt bỏ phần header nếu Backend chỉ cần chuỗi raw, 
-                // nhưng thường thì gửi cả chuỗi hoặc cắt sau dấu phẩy.
-                // Ở đây mình gửi phần sau dấu phẩy (Base64 raw)
-                const base64String = reader.result.split(',')[1];
-                setFormData(prev => ({ ...prev, image: base64String }));
-            };
+        // 1. Hiển thị preview tạm thời tại máy khách (UX)
+        setPreviewImage(URL.createObjectURL(file));
+
+        // 2. Tạo FormData để gửi file
+        const uploadData = new FormData();
+        uploadData.append('file', file); // Key 'file' phải khớp với @RequestParam("file") ở Backend
+
+        setIsUploading(true);
+        try {
+            // Gọi API upload
+            const response = await axiosClient.post('/api/upload/image', uploadData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            // Backend trả về URL chuỗi trực tiếp (String)
+            const imageUrl = response;
+
+            // Cập nhật URL vào formData
+            setFormData(prev => ({ ...prev, image: imageUrl }));
+            console.log("Upload ảnh thành công:", imageUrl);
+
+        } catch (error) {
+            console.error("Lỗi upload ảnh:", error);
+            alert("Không thể upload ảnh, vui lòng thử lại!");
+            setFormData(prev => ({ ...prev, image: '' })); // Reset nếu lỗi
+        } finally {
+            setIsUploading(false);
         }
     };
 
-    // Submit Form
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -108,15 +103,21 @@ const CreateBuilding = () => {
             return;
         }
 
+        // Chặn submit nếu đang upload ảnh
+        if (isUploading) {
+            alert("Vui lòng đợi ảnh tải lên hoàn tất!");
+            return;
+        }
+
         setIsLoading(true);
         try {
-            // Gọi API: POST /api/buildings
+            // Gọi API tạo tòa nhà
             await axiosClient.post('/api/buildings', formData);
             alert("Đăng tin thành công!");
-            navigate('/search'); // Chuyển về trang tìm kiếm
+            navigate('/admin/buildings'); // Chuyển về trang quản lý admin
         } catch (error) {
             console.error("Lỗi đăng tin:", error);
-            alert("Có lỗi xảy ra (Bạn đã đăng nhập chưa?)");
+            alert("Có lỗi xảy ra khi lưu thông tin.");
         } finally {
             setIsLoading(false);
         }
@@ -127,7 +128,7 @@ const CreateBuilding = () => {
             <div className="create-container">
                 <div className="form-header">
                     <h2>📝 Đăng Tin Tòa Nhà Mới</h2>
-                    <p>Nhập thông tin chi tiết để tiếp cận khách hàng tiềm năng</p>
+                    <p>Nhập thông tin chi tiết (Ảnh sẽ được tải lên hệ thống lưu trữ Cloud)</p>
                 </div>
 
                 <form className="create-form" onSubmit={handleSubmit}>
@@ -142,7 +143,7 @@ const CreateBuilding = () => {
                             </div>
                             <div className="form-group">
                                 <label>Đường</label>
-                                <input type="text" name="street" value={formData.street} onChange={handleChange} placeholder="VD: 2 Hải Triều" />
+                                <input type="text" name="street" value={formData.street} onChange={handleChange} />
                             </div>
                             <div className="form-group">
                                 <label>Phường</label>
@@ -227,13 +228,21 @@ const CreateBuilding = () => {
                         <h3 className="section-title"><FaImage /> Hình ảnh & Loại</h3>
 
                         <div className="form-group full-width">
-                            <label>Chọn ảnh đại diện</label>
+                            <label>Chọn ảnh đại diện {isUploading && <span style={{ color: 'orange' }}>(Đang tải lên...)</span>}</label>
                             <input type="file" accept="image/*" onChange={handleImageChange} className="file-input" />
-                            {previewImage && (
-                                <div className="image-preview">
-                                    <img src={previewImage} alt="Preview" />
-                                </div>
-                            )}
+
+                            {/* Hiển thị Loading hoặc Preview */}
+                            <div className="image-preview-area" style={{ marginTop: '10px' }}>
+                                {isUploading ? (
+                                    <div className="loading-upload" style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#666' }}>
+                                        <FaSpinner className="icon-spin" /> Đang xử lý ảnh...
+                                    </div>
+                                ) : previewImage ? (
+                                    <div className="image-preview">
+                                        <img src={previewImage} alt="Preview" style={{ maxWidth: '200px', borderRadius: '8px', border: '1px solid #ddd' }} />
+                                    </div>
+                                ) : null}
+                            </div>
                         </div>
 
                         <div className="form-group full-width">
@@ -276,8 +285,8 @@ const CreateBuilding = () => {
 
                     {/* BUTTONS */}
                     <div className="form-actions">
-                        <button type="button" className="btn-cancel" onClick={() => navigate('/')}>Hủy bỏ</button>
-                        <button type="submit" className="btn-submit-form" disabled={isLoading}>
+                        <button type="button" className="btn-cancel" onClick={() => navigate('/admin/buildings')}>Hủy bỏ</button>
+                        <button type="submit" className="btn-submit-form" disabled={isLoading || isUploading}>
                             {isLoading ? <span className="spinner"></span> : <><FaCheck /> Đăng Tin Ngay</>}
                         </button>
                     </div>
