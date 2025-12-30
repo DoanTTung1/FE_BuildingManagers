@@ -56,8 +56,8 @@ const BuildingDetail = () => {
     if (isLoading) return <div style={{ padding: '100px', textAlign: 'center' }}>Đang tải dữ liệu...</div>;
     if (!building) return <div style={{ padding: '100px', textAlign: 'center' }}>Không tìm thấy tòa nhà!</div>;
 
-    // Xử lý ảnh: Ưu tiên ảnh từ DB, nếu không có thì dùng ảnh mẫu
-    const mainImage = building.image ? `data:image/jpeg;base64,${building.image}` : "https://via.placeholder.com/800x600?text=No+Image";
+    // Nếu có link ảnh thì dùng luôn, nếu null thì dùng ảnh mẫu
+    const mainImage = building.image || "https://via.placeholder.com/800x600?text=No+Image";
 
     return (
         <div className="detail-page-wrapper">
