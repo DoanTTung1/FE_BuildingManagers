@@ -1,7 +1,6 @@
 :root {
     --primary: #0f2557;
     --primary-light: #e0e7ff;
-    /* Màu nền nhạt khi focus */
     --accent: #ff6b6b;
     --accent-hover: #ff5252;
     --bg-page: #f8fafd;
@@ -13,7 +12,6 @@
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     --radius: 12px;
-    /* Bo góc chuẩn hiện đại */
 }
 
 /* =========================================
@@ -22,7 +20,8 @@
 .create-page-wrapper {
     background-color: var(--bg-page);
     min-height: 100vh;
-    padding-top: 120px;
+    padding-top: 40px;
+    /* Sửa lại padding cho cân đối */
     padding-bottom: 80px;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     animation: fadeIn 0.5s ease-out;
@@ -30,7 +29,6 @@
 
 .create-container {
     max-width: 950px;
-    /* Rộng hơn xíu cho thoáng */
     margin: 0 auto;
     padding: 0 24px;
 }
@@ -75,7 +73,6 @@
     background: var(--white);
     padding: 48px;
     border-radius: 24px;
-    /* Bo góc lớn hơn */
     box-shadow: var(--shadow-lg);
     border: 1px solid rgba(255, 255, 255, 0.5);
 }
@@ -102,7 +99,6 @@
     gap: 12px;
     padding-left: 10px;
     border-left: 4px solid var(--accent);
-    /* Điểm nhấn bên trái title */
 }
 
 /* =========================================
@@ -164,7 +160,6 @@
     border-color: var(--primary);
     background: var(--white);
     box-shadow: 0 0 0 4px rgba(15, 37, 87, 0.1);
-    /* Hiệu ứng Glow */
 }
 
 .form-group input::placeholder,
@@ -174,110 +169,181 @@
 }
 
 /* =========================================
-   CUSTOM CHECKBOX (CHIPS STYLE)
+   PHẦN HÌNH ẢNH & LOẠI (GIAO DIỆN MỚI)
    ========================================= */
+
+/* 1. Tạo khoảng cách ngăn cách */
+.form-section .form-group.full-width:has(.upload-box),
+.form-section .form-group.full-width:has(.checkbox-group) {
+    border-top: 1px dashed #eee;
+    padding-top: 25px;
+    margin-top: 20px;
+}
+
+/* 2. KHUNG UPLOAD (Custom File Upload) */
+.upload-box {
+    margin-top: 8px;
+    margin-bottom: 15px;
+}
+
+.custom-file-upload {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    padding: 25px;
+    border: 2px dashed #d9d9d9;
+    border-radius: 12px;
+    background: #fafafa;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.custom-file-upload:hover {
+    border-color: #1890ff;
+    background: #e6f7ff;
+    color: #1890ff;
+    box-shadow: 0 4px 12px rgba(24, 144, 255, 0.15);
+}
+
+.custom-file-upload svg {
+    font-size: 1.6rem;
+}
+
+/* 3. HIỂN THỊ ẢNH PREVIEW */
+.image-preview-item {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    background: #fff;
+}
+
+.image-preview-item:hover {
+    border-color: #1890ff;
+    box-shadow: 0 6px 15px rgba(24, 144, 255, 0.2);
+}
+
+.image-preview-item img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 4. NÚT XÓA ẢNH (Dấu X) */
+.btn-remove-img {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.5);
+    color: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    opacity: 0;
+    /* Ẩn mặc định */
+    transform: scale(0.8);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(4px);
+    z-index: 10;
+}
+
+.image-preview-item:hover .btn-remove-img {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.btn-remove-img:hover {
+    background: #ff4d4f;
+    color: white;
+    transform: scale(1.1) rotate(90deg);
+}
+
+/* 5. TÙY CHỈNH RIÊNG CHO AVATAR VÀ ALBUM */
+
+/* Avatar */
+.form-group:has(label:contains("Ảnh đại diện")) .image-preview-item {
+    max-width: 280px;
+    aspect-ratio: 4 / 3;
+}
+
+/* Album Grid */
+.album-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+    /* Đã sửa lỗi cú pháp JS 'marginTop' thành 'margin-top' */
+}
+
+.album-grid .image-preview-item {
+    width: auto !important;
+    height: 110px;
+}
+
+/* 6. CHECKBOX DẠNG THẺ (Tags/Chips) */
 .checkbox-group {
     display: flex;
-    gap: 12px;
     flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 15px;
 }
 
 .checkbox-item {
-    position: relative;
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 10px;
+    padding: 10px 18px;
+    border: 2px solid #e9e9e9;
+    border-radius: 30px;
     cursor: pointer;
-    background: var(--white);
-    padding: 10px 20px;
-    border-radius: 50px;
-    font-weight: 600;
-    font-size: 0.95rem;
-    color: var(--text);
-    border: 1px solid var(--border);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s;
+    font-weight: 500;
+    color: #666;
+    background: #fff;
     user-select: none;
 }
 
-.checkbox-item:hover {
-    border-color: var(--primary);
-    background: var(--bg-page);
+.checkbox-item input[type="checkbox"] {
+    display: none;
 }
 
-/* Logic: Khi input bên trong được check, style thẻ cha (Label) */
 .checkbox-item:has(input:checked) {
-    background-color: var(--primary);
-    color: var(--white);
-    border-color: var(--primary);
-    box-shadow: 0 4px 12px rgba(15, 37, 87, 0.3);
-    transform: translateY(-2px);
-}
-
-/* Ẩn checkbox mặc định đi hoặc style lại */
-.checkbox-item input {
-    width: 16px;
-    height: 16px;
-    accent-color: var(--accent);
-    /* Màu dấu tick */
-}
-
-/* =========================================
-   FILE UPLOAD (MODERN LOOK)
-   ========================================= */
-.file-input {
-    padding: 10px;
-    background: #f0fdf4;
-    border: 2px dashed #86efac !important;
-    /* Viền nét đứt */
-    border-radius: var(--radius);
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.file-input:hover {
-    background: #dcfce7;
-    border-color: #22c55e !important;
-}
-
-/* Tùy chỉnh nút "Choose File" mặc định của trình duyệt */
-.file-input::file-selector-button {
-    margin-right: 15px;
-    border: none;
-    background: var(--primary);
-    padding: 8px 16px;
-    border-radius: 6px;
-    color: #fff;
-    cursor: pointer;
-    transition: background .2s ease-in-out;
+    border-color: #1890ff;
+    background-color: #e6f7ff;
+    color: #1890ff;
+    box-shadow: 0 2px 8px rgba(24, 144, 255, 0.25);
     font-weight: 600;
 }
 
-.file-input::file-selector-button:hover {
-    background: #1e3a8a;
+.checkbox-item:not(:has(input:checked)):hover {
+    border-color: #bfbfbf;
+    background: #f5f5f5;
+    color: #333;
 }
 
-.image-preview-area {
-    margin-top: 15px;
-    animation: fadeIn 0.3s ease;
-}
-
-.image-preview {
-    padding: 10px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: #fff;
-    display: inline-block;
-    box-shadow: var(--shadow-md);
-}
-
+/* 7. TRẠNG THÁI LOADING */
 .loading-upload {
-    font-size: 0.9rem;
-    font-weight: 500;
-    padding: 10px;
-    background: #fff7ed;
-    color: #ea580c;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    background: #f0f2f5;
     border-radius: 8px;
-    border: 1px solid #ffedd5;
+    color: #666;
+    font-style: italic;
+    margin-top: 10px;
+    animation: fadeIn 0.3s ease-in;
 }
 
 /* =========================================
@@ -312,7 +378,6 @@
 .btn-submit-form {
     padding: 14px 40px;
     background: var(--accent);
-    /* Màu cam đỏ nổi bật */
     color: white;
     border: none;
     border-radius: var(--radius);
@@ -363,7 +428,7 @@
 }
 
 /* =========================================
-   RESPONSIVE
+   RESPONSIVE (MOBILE)
    ========================================= */
 @media (max-width: 768px) {
     .create-form {
@@ -372,13 +437,11 @@
 
     .form-grid {
         grid-template-columns: 1fr;
-        /* Chuyển về 1 cột trên mobile */
         gap: 16px;
     }
 
     .form-actions {
         flex-direction: column-reverse;
-        /* Nút Submit lên trên */
     }
 
     .btn-submit-form,
@@ -389,6 +452,5 @@
 
     .checkbox-item {
         width: 100%;
-        /* Checkbox full chiều rộng để dễ bấm */
     }
 }

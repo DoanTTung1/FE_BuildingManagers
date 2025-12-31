@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosClient from '../api/axiosClient';
-import { FaBuilding, FaDollarSign, FaImage, FaCheck, FaUserTie, FaListUl, FaSpinner } from 'react-icons/fa';
+import {
+    FaBuilding, FaDollarSign, FaImage, FaCheck, FaUserTie,
+    FaListUl, FaSpinner, FaTimes, FaCloudUploadAlt
+} from 'react-icons/fa';
 import '../styles/CreateBuilding.css';
 
 // Danh sách Quận
@@ -24,10 +27,12 @@ const BUILDING_TYPES = [
 const CreateBuilding = () => {
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
-    const [isUploading, setIsUploading] = useState(false); // Trạng thái đang upload ảnh
-    const [previewImage, setPreviewImage] = useState(null);
 
-    // State form khớp với DTO
+    // Trạng thái upload riêng biệt
+    const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+    const [isUploadingAlbum, setIsUploadingAlbum] = useState(false);
+
+    // State form khớp với DTO Backend
     const [formData, setFormData] = useState({
         name: '', street: '', ward: '', districtId: '',
         structure: '', numberOfBasement: 0, floorArea: 0,
@@ -39,9 +44,8 @@ const CreateBuilding = () => {
         note: '', linkOfBuilding: '', map: '',
         managerName: '', managerPhoneNumber: '',
         rentArea: '', typeCode: [],
-
-        // --- SỬA QUAN TRỌNG: Đổi 'image' thành 'avatar' ---
-        avatar: ''
+        avatar: '',         // Ảnh đại diện (String)
+        imageList: []       // Album ảnh (List<String>)
     });
 
     const handleChange = (e) => {
@@ -59,97 +63,100 @@ const CreateBuilding = () => {
         setFormData({ ...formData, typeCode: updatedTypes });
     };
 
-    // ==========================================================
-    // 1. XỬ LÝ UPLOAD ẢNH (FIX LỖI 403 + ĐÚNG TÊN AVATAR)
-    // ==========================================================
-    const handleImageChange = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        setPreviewImage(URL.createObjectURL(file));
-
+    // --- HÀM HỖ TRỢ UPLOAD FILE LÊN SERVER ---
+    const uploadFile = async (file) => {
         const uploadData = new FormData();
         uploadData.append('file', file);
-
-        // Lấy Token
         const token = localStorage.getItem("token");
-        if (!token) {
-            alert("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại!");
-            return;
-        }
 
-        setIsUploading(true);
-        try {
-            // Gọi API upload kèm Token
-            const response = await axiosClient.post('/api/upload/image', uploadData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            const imageUrl = response; // Backend trả về link ảnh (String)
-
-            // --- SỬA QUAN TRỌNG: Lưu vào field 'avatar' ---
-            setFormData(prev => ({ ...prev, avatar: imageUrl }));
-            console.log("Upload ảnh thành công:", imageUrl);
-
-        } catch (error) {
-            console.error("Lỗi upload ảnh:", error);
-            if (error.response && error.response.status === 403) {
-                alert("Lỗi 403 Upload: Bạn không có quyền upload!");
-            } else {
-                alert("Không thể upload ảnh, vui lòng thử lại!");
+        const res = await axiosClient.post('/api/upload/image', uploadData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+                'Authorization': `Bearer ${token}`
             }
-            // Reset nếu lỗi
-            setFormData(prev => ({ ...prev, avatar: '' }));
-        } finally {
-            setIsUploading(false);
-        }
+        });
+        return res; // Trả về URL string
     };
 
     // ==========================================================
-    // 2. XỬ LÝ LƯU TÒA NHÀ (FIX LỖI 403)
+    // 1. XỬ LÝ AVATAR (ẢNH ĐẠI DIỆN)
+    // ==========================================================
+    const handleAvatarChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setIsUploadingAvatar(true);
+        try {
+            const url = await uploadFile(file);
+            setFormData(prev => ({ ...prev, avatar: url }));
+        } catch (error) {
+            alert("Lỗi upload Avatar: " + (error.response?.status === 403 ? "Không có quyền!" : "Thử lại sau"));
+        } finally {
+            setIsUploadingAvatar(false);
+        }
+    };
+
+    const handleRemoveAvatar = () => {
+        setFormData(prev => ({ ...prev, avatar: '' }));
+        // (Optional) Gọi API deleteFile(url) nếu muốn xóa luôn trên Cloud
+    };
+
+    // ==========================================================
+    // 2. XỬ LÝ ALBUM ẢNH (DANH SÁCH NHIỀU ẢNH)
+    // ==========================================================
+    const handleAlbumChange = async (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
+
+        setIsUploadingAlbum(true);
+        try {
+            // Upload song song tất cả ảnh
+            const uploadPromises = files.map(file => uploadFile(file));
+            const urls = await Promise.all(uploadPromises);
+
+            // Gộp URL mới vào danh sách cũ
+            setFormData(prev => ({
+                ...prev,
+                imageList: [...prev.imageList, ...urls]
+            }));
+        } catch (error) {
+            alert("Có lỗi khi upload một số ảnh trong album.");
+        } finally {
+            setIsUploadingAlbum(false);
+        }
+    };
+
+    const handleRemoveAlbumImage = (indexToRemove) => {
+        setFormData(prev => ({
+            ...prev,
+            imageList: prev.imageList.filter((_, index) => index !== indexToRemove)
+        }));
+    };
+
+    // ==========================================================
+    // 3. SUBMIT FORM
     // ==========================================================
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Validate cơ bản
         if (!formData.name || !formData.districtId || !formData.rentPrice) {
             alert("Vui lòng điền các trường bắt buộc (*)");
             return;
         }
 
-        if (isUploading) {
-            alert("Vui lòng đợi ảnh tải lên hoàn tất!");
-            return;
-        }
-
-        // Lấy Token
-        const token = localStorage.getItem("token");
-        if (!token) {
-            alert("Bạn chưa đăng nhập!");
+        if (isUploadingAvatar || isUploadingAlbum) {
+            alert("Đang tải ảnh lên, vui lòng đợi...");
             return;
         }
 
         setIsLoading(true);
         try {
-            // Gọi API tạo tòa nhà kèm Token
-            await axiosClient.post('/api/buildings', formData, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
+            await axiosClient.post('/api/buildings', formData);
             alert("Đăng tin thành công!");
             navigate('/admin/buildings');
         } catch (error) {
-            console.error("Lỗi đăng tin:", error);
-            if (error.response && error.response.status === 403) {
-                alert("Lỗi 403: Bạn không có quyền đăng tin (Cần quyền ADMIN/STAFF)!");
-            } else {
-                alert("Có lỗi xảy ra khi lưu thông tin.");
-            }
+            console.error("Lỗi:", error);
+            alert("Lỗi khi lưu: " + (error.response?.data?.message || error.message));
         } finally {
             setIsLoading(false);
         }
@@ -160,12 +167,12 @@ const CreateBuilding = () => {
             <div className="create-container">
                 <div className="form-header">
                     <h2>📝 Đăng Tin Tòa Nhà Mới</h2>
-                    <p>Nhập thông tin chi tiết (Ảnh sẽ được tải lên hệ thống lưu trữ Cloud)</p>
+                    <p>Nhập thông tin chi tiết & hình ảnh</p>
                 </div>
 
                 <form className="create-form" onSubmit={handleSubmit}>
 
-                    {/* 1. THÔNG TIN CHUNG */}
+                    {/* 1. THÔNG TIN CHUNG (Giữ nguyên) */}
                     <div className="form-section">
                         <h3 className="section-title"><FaBuilding /> Thông tin chung</h3>
                         <div className="form-grid">
@@ -190,57 +197,30 @@ const CreateBuilding = () => {
                                     ))}
                                 </select>
                             </div>
-                            <div className="form-group">
-                                <label>Kết cấu</label>
-                                <input type="text" name="structure" value={formData.structure} onChange={handleChange} placeholder="VD: 2 Hầm - 10 Tầng" />
-                            </div>
-                            <div className="form-group">
-                                <label>Số tầng hầm</label>
-                                <input type="number" name="numberOfBasement" value={formData.numberOfBasement} onChange={handleChange} />
-                            </div>
-                            <div className="form-group">
-                                <label>Diện tích sàn (m²)</label>
-                                <input type="number" name="floorArea" value={formData.floorArea} onChange={handleChange} />
-                            </div>
-                            <div className="form-group">
-                                <label>Hướng</label>
-                                <input type="text" name="direction" value={formData.direction} onChange={handleChange} />
-                            </div>
-                            <div className="form-group">
-                                <label>Hạng</label>
-                                <input type="text" name="level" value={formData.level} onChange={handleChange} placeholder="VD: A, B, C" />
-                            </div>
+                            <div className="form-group"><label>Kết cấu</label><input type="text" name="structure" value={formData.structure} onChange={handleChange} /></div>
+                            <div className="form-group"><label>Số tầng hầm</label><input type="number" name="numberOfBasement" value={formData.numberOfBasement} onChange={handleChange} /></div>
+                            <div className="form-group"><label>Diện tích sàn (m²)</label><input type="number" name="floorArea" value={formData.floorArea} onChange={handleChange} /></div>
+                            <div className="form-group"><label>Hướng</label><input type="text" name="direction" value={formData.direction} onChange={handleChange} /></div>
+                            <div className="form-group"><label>Hạng</label><input type="text" name="level" value={formData.level} onChange={handleChange} /></div>
                         </div>
                     </div>
 
-                    {/* 2. DIỆN TÍCH & GIÁ */}
+                    {/* 2. GIÁ & PHÍ (Giữ nguyên) */}
                     <div className="form-section">
                         <h3 className="section-title"><FaDollarSign /> Giá thuê & Diện tích</h3>
                         <div className="form-grid">
                             <div className="form-group full-width">
-                                <label>Diện tích thuê (Nhập chuỗi cách nhau bởi dấu phẩy)</label>
-                                <input type="text" name="rentArea" value={formData.rentArea} onChange={handleChange} placeholder="VD: 100, 200, 500" />
+                                <label>Diện tích thuê (VD: 100, 200)</label>
+                                <input type="text" name="rentArea" value={formData.rentArea} onChange={handleChange} />
                             </div>
-                            <div className="form-group">
-                                <label>Giá thuê ($/m²) *</label>
-                                <input type="number" name="rentPrice" value={formData.rentPrice} onChange={handleChange} required />
-                            </div>
-                            <div className="form-group">
-                                <label>Mô tả giá</label>
-                                <input type="text" name="rentPriceDescription" value={formData.rentPriceDescription} onChange={handleChange} placeholder="VD: Đã bao gồm phí quản lý" />
-                            </div>
-                            <div className="form-group">
-                                <label>Phí dịch vụ</label>
-                                <input type="text" name="serviceFee" value={formData.serviceFee} onChange={handleChange} />
-                            </div>
-                            <div className="form-group">
-                                <label>Phí môi giới</label>
-                                <input type="number" step="0.1" name="brokerageFee" value={formData.brokerageFee} onChange={handleChange} />
-                            </div>
+                            <div className="form-group"><label>Giá thuê ($/m²) *</label><input type="number" name="rentPrice" value={formData.rentPrice} onChange={handleChange} required /></div>
+                            <div className="form-group"><label>Mô tả giá</label><input type="text" name="rentPriceDescription" value={formData.rentPriceDescription} onChange={handleChange} /></div>
+                            <div className="form-group"><label>Phí dịch vụ</label><input type="text" name="serviceFee" value={formData.serviceFee} onChange={handleChange} /></div>
+                            <div className="form-group"><label>Phí môi giới</label><input type="number" name="brokerageFee" value={formData.brokerageFee} onChange={handleChange} /></div>
                         </div>
                     </div>
 
-                    {/* 3. CÁC LOẠI PHÍ & TIỆN ÍCH KHÁC */}
+                    {/* 3. PHÍ KHÁC (Giữ nguyên) */}
                     <div className="form-section">
                         <h3 className="section-title"><FaListUl /> Phí & Điều kiện</h3>
                         <div className="form-grid">
@@ -248,6 +228,7 @@ const CreateBuilding = () => {
                             <div className="form-group"><label>Phí xe máy</label><input type="text" name="motorbikeFee" value={formData.motorbikeFee} onChange={handleChange} /></div>
                             <div className="form-group"><label>Phí ngoài giờ</label><input type="text" name="overtimeFee" value={formData.overtimeFee} onChange={handleChange} /></div>
                             <div className="form-group"><label>Tiền điện</label><input type="text" name="electricityFee" value={formData.electricityFee} onChange={handleChange} /></div>
+                            <div className="form-group"><label>Tiền nước</label><input type="text" name="waterFee" value={formData.waterFee} onChange={handleChange} /></div>
                             <div className="form-group"><label>Đặt cọc</label><input type="text" name="deposit" value={formData.deposit} onChange={handleChange} /></div>
                             <div className="form-group"><label>Thanh toán</label><input type="text" name="payment" value={formData.payment} onChange={handleChange} /></div>
                             <div className="form-group"><label>Thời hạn thuê</label><input type="text" name="rentTime" value={formData.rentTime} onChange={handleChange} /></div>
@@ -255,28 +236,70 @@ const CreateBuilding = () => {
                         </div>
                     </div>
 
-                    {/* 4. HÌNH ẢNH & LOẠI */}
+                    {/* 4. HÌNH ẢNH (AVATAR & ALBUM) - ĐÃ CẬP NHẬT */}
                     <div className="form-section">
                         <h3 className="section-title"><FaImage /> Hình ảnh & Loại</h3>
 
+                        {/* A. AVATAR */}
                         <div className="form-group full-width">
-                            <label>Chọn ảnh đại diện {isUploading && <span style={{ color: 'orange' }}>(Đang tải lên...)</span>}</label>
-                            <input type="file" accept="image/*" onChange={handleImageChange} className="file-input" />
+                            <label>Ảnh đại diện (Avatar) *</label>
 
-                            <div className="image-preview-area" style={{ marginTop: '10px' }}>
-                                {isUploading ? (
-                                    <div className="loading-upload" style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#666' }}>
-                                        <FaSpinner className="icon-spin" /> Đang xử lý ảnh...
+                            {/* Nếu chưa có ảnh -> Hiện nút Upload */}
+                            {!formData.avatar && !isUploadingAvatar && (
+                                <div className="upload-box">
+                                    <label className="custom-file-upload">
+                                        <FaCloudUploadAlt size={24} /> Chọn ảnh đại diện
+                                        <input type="file" accept="image/*" onChange={handleAvatarChange} style={{ display: 'none' }} />
+                                    </label>
+                                </div>
+                            )}
+
+                            {/* Nếu đang upload -> Hiện Loading */}
+                            {isUploadingAvatar && (
+                                <div className="loading-upload"><FaSpinner className="icon-spin" /> Đang tải ảnh lên...</div>
+                            )}
+
+                            {/* Nếu đã có ảnh -> Hiện Ảnh + Nút Xóa */}
+                            {formData.avatar && (
+                                <div className="image-preview-item" style={{ maxWidth: '200px' }}>
+                                    <img src={formData.avatar} alt="Avatar" />
+                                    <button type="button" className="btn-remove-img" onClick={handleRemoveAvatar}>
+                                        <FaTimes />
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* B. ALBUM ẢNH */}
+                        <div className="form-group full-width" style={{ marginTop: '20px' }}>
+                            <label>Album ảnh chi tiết (Chọn nhiều ảnh)</label>
+
+                            <div className="upload-box">
+                                <label className="custom-file-upload">
+                                    <FaCloudUploadAlt size={24} /> Thêm ảnh vào album
+                                    <input type="file" multiple accept="image/*" onChange={handleAlbumChange} style={{ display: 'none' }} />
+                                </label>
+                            </div>
+
+                            {isUploadingAlbum && (
+                                <div className="loading-upload"><FaSpinner className="icon-spin" /> Đang tải {isUploadingAlbum} ảnh...</div>
+                            )}
+
+                            {/* Grid hiển thị Album */}
+                            <div className="album-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '10px' }}>
+                                {formData.imageList.map((url, index) => (
+                                    <div key={index} className="image-preview-item" style={{ width: '100px', height: '100px' }}>
+                                        <img src={url} alt={`Album ${index}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        <button type="button" className="btn-remove-img" onClick={() => handleRemoveAlbumImage(index)}>
+                                            <FaTimes />
+                                        </button>
                                     </div>
-                                ) : previewImage ? (
-                                    <div className="image-preview">
-                                        <img src={previewImage} alt="Preview" style={{ maxWidth: '200px', borderRadius: '8px', border: '1px solid #ddd' }} />
-                                    </div>
-                                ) : null}
+                                ))}
                             </div>
                         </div>
 
-                        <div className="form-group full-width">
+                        {/* C. LOẠI TÒA NHÀ */}
+                        <div className="form-group full-width" style={{ marginTop: '20px' }}>
                             <label>Loại tòa nhà:</label>
                             <div className="checkbox-group">
                                 {BUILDING_TYPES.map(type => (
@@ -293,32 +316,24 @@ const CreateBuilding = () => {
                         </div>
                     </div>
 
-                    {/* 5. LIÊN HỆ QUẢN LÝ */}
+                    {/* 5. QUẢN LÝ & GHI CHÚ */}
                     <div className="form-section">
-                        <h3 className="section-title"><FaUserTie /> Liên hệ quản lý</h3>
+                        <h3 className="section-title"><FaUserTie /> Liên hệ & Khác</h3>
                         <div className="form-grid">
-                            <div className="form-group">
-                                <label>Tên quản lý</label>
-                                <input type="text" name="managerName" value={formData.managerName} onChange={handleChange} />
-                            </div>
-                            <div className="form-group">
-                                <label>SĐT quản lý</label>
-                                <input type="text" name="managerPhoneNumber" value={formData.managerPhoneNumber} onChange={handleChange} />
+                            <div className="form-group"><label>Tên quản lý</label><input type="text" name="managerName" value={formData.managerName} onChange={handleChange} /></div>
+                            <div className="form-group"><label>SĐT quản lý</label><input type="text" name="managerPhoneNumber" value={formData.managerPhoneNumber} onChange={handleChange} /></div>
+                            <div className="form-group full-width">
+                                <label>Ghi chú</label>
+                                <textarea name="note" value={formData.note} onChange={handleChange} rows="3"></textarea>
                             </div>
                         </div>
-                    </div>
-
-                    {/* GHI CHÚ */}
-                    <div className="form-group full-width">
-                        <label>Ghi chú thêm</label>
-                        <textarea name="note" value={formData.note} onChange={handleChange} rows="4" placeholder="Thông tin khác..."></textarea>
                     </div>
 
                     {/* BUTTONS */}
                     <div className="form-actions">
                         <button type="button" className="btn-cancel" onClick={() => navigate('/admin/buildings')}>Hủy bỏ</button>
-                        <button type="submit" className="btn-submit-form" disabled={isLoading || isUploading}>
-                            {isLoading ? <span className="spinner"></span> : <><FaCheck /> Đăng Tin Ngay</>}
+                        <button type="submit" className="btn-submit-form" disabled={isLoading || isUploadingAvatar || isUploadingAlbum}>
+                            {isLoading ? <span className="spinner"></span> : <><FaCheck /> Đăng Tin</>}
                         </button>
                     </div>
 
