@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosClient from '../api/axiosClient';
 import {
@@ -7,17 +7,12 @@ import {
 } from 'react-icons/fa';
 import '../styles/CreateBuilding.css';
 
-// Danh sách Quận
+// Danh sách Quận & Loại tòa nhà (Giữ nguyên)
 const DISTRICTS = [
-    { id: 1, name: 'Quận 1' },
-    { id: 2, name: 'Quận 2' },
-    { id: 3, name: 'Quận 3' },
-    { id: 4, name: 'Quận 4' },
-    { id: 5, name: 'Quận Bình Thạnh' },
-    { id: 6, name: 'Quận Phú Nhuận' }
+    { id: 1, name: 'Quận 1' }, { id: 2, name: 'Quận 2' },
+    { id: 3, name: 'Quận 3' }, { id: 4, name: 'Quận 4' },
+    { id: 5, name: 'Quận Bình Thạnh' }, { id: 6, name: 'Quận Phú Nhuận' }
 ];
-
-// Loại tòa nhà
 const BUILDING_TYPES = [
     { code: 'NOI_THAT', name: 'Nội thất' },
     { code: 'TANG_TRET', name: 'Tầng trệt' },
@@ -27,12 +22,18 @@ const BUILDING_TYPES = [
 const CreateBuilding = () => {
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
+    const [loadingMessage, setLoadingMessage] = useState(''); // Hiện thông báo chi tiết
 
-    // Trạng thái upload riêng biệt
-    const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
-    const [isUploadingAlbum, setIsUploadingAlbum] = useState(false);
+    // --- 1. STATE QUẢN LÝ FILE RAW (CHƯA UPLOAD) ---
+    // File object thực tế để gửi lên server khi submit
+    const [rawAvatarFile, setRawAvatarFile] = useState(null);
+    const [rawAlbumFiles, setRawAlbumFiles] = useState([]);
 
-    // State form khớp với DTO Backend
+    // URL ảo (blob:http...) để hiển thị preview
+    const [previewAvatarUrl, setPreviewAvatarUrl] = useState('');
+    const [previewAlbumUrls, setPreviewAlbumUrls] = useState([]);
+
+    // --- 2. STATE FORM DATA (CHỈ CHỨA TEXT) ---
     const [formData, setFormData] = useState({
         name: '', street: '', ward: '', districtId: '',
         structure: '', numberOfBasement: 0, floorArea: 0,
@@ -43,10 +44,17 @@ const CreateBuilding = () => {
         rentTime: '', decorationTime: '', brokerageFee: 0.0,
         note: '', linkOfBuilding: '', map: '',
         managerName: '', managerPhoneNumber: '',
-        rentArea: '', typeCode: [],
-        avatar: '',         // Ảnh đại diện (String)
-        imageList: []       // Album ảnh (List<String>)
+        rentArea: '', typeCode: []
+        // avatar và imageList sẽ được gộp vào lúc submit
     });
+
+    // Cleanup URL ảo để tránh rò rỉ bộ nhớ khi component unmount
+    useEffect(() => {
+        return () => {
+            if (previewAvatarUrl) URL.revokeObjectURL(previewAvatarUrl);
+            previewAlbumUrls.forEach(url => URL.revokeObjectURL(url));
+        };
+    }, []);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -63,102 +71,116 @@ const CreateBuilding = () => {
         setFormData({ ...formData, typeCode: updatedTypes });
     };
 
-    // --- HÀM HỖ TRỢ UPLOAD FILE LÊN SERVER ---
-    const uploadFile = async (file) => {
+    // ==========================================================
+    // 3. XỬ LÝ CHỌN ẢNH (CHỈ PREVIEW - KHÔNG UPLOAD)
+    // ==========================================================
+
+    // --- AVATAR ---
+    const handleAvatarSelect = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // 1. Lưu file gốc
+        setRawAvatarFile(file);
+
+        // 2. Tạo preview url
+        const objectUrl = URL.createObjectURL(file);
+        setPreviewAvatarUrl(objectUrl);
+    };
+
+    const handleRemoveAvatar = () => {
+        setRawAvatarFile(null);
+        setPreviewAvatarUrl('');
+    };
+
+    // --- ALBUM ---
+    const handleAlbumSelect = (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
+
+        // 1. Lưu file gốc (Nối thêm vào danh sách cũ)
+        setRawAlbumFiles(prev => [...prev, ...files]);
+
+        // 2. Tạo preview url (Nối thêm)
+        const newPreviewUrls = files.map(file => URL.createObjectURL(file));
+        setPreviewAlbumUrls(prev => [...prev, ...newPreviewUrls]);
+    };
+
+    const handleRemoveAlbumImage = (indexToRemove) => {
+        // Xóa file gốc tại index
+        setRawAlbumFiles(prev => prev.filter((_, i) => i !== indexToRemove));
+
+        // Xóa preview url tại index
+        setPreviewAlbumUrls(prev => {
+            URL.revokeObjectURL(prev[indexToRemove]); // Giải phóng bộ nhớ
+            return prev.filter((_, i) => i !== indexToRemove);
+        });
+    };
+
+    // ==========================================================
+    // 4. HÀM UPLOAD THỰC SỰ (CHỈ GỌI KHI SUBMIT)
+    // ==========================================================
+    const uploadSingleFile = async (file) => {
         const uploadData = new FormData();
         uploadData.append('file', file);
         const token = localStorage.getItem("token");
 
         const res = await axiosClient.post('/api/upload/image', uploadData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-                'Authorization': `Bearer ${token}`
-            }
+            headers: { 'Content-Type': 'multipart/form-data', 'Authorization': `Bearer ${token}` }
         });
-        return res; // Trả về URL string
+        return res; // Trả về URL String
     };
 
     // ==========================================================
-    // 1. XỬ LÝ AVATAR (ẢNH ĐẠI DIỆN)
-    // ==========================================================
-    const handleAvatarChange = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        setIsUploadingAvatar(true);
-        try {
-            const url = await uploadFile(file);
-            setFormData(prev => ({ ...prev, avatar: url }));
-        } catch (error) {
-            alert("Lỗi upload Avatar: " + (error.response?.status === 403 ? "Không có quyền!" : "Thử lại sau"));
-        } finally {
-            setIsUploadingAvatar(false);
-        }
-    };
-
-    const handleRemoveAvatar = () => {
-        setFormData(prev => ({ ...prev, avatar: '' }));
-        // (Optional) Gọi API deleteFile(url) nếu muốn xóa luôn trên Cloud
-    };
-
-    // ==========================================================
-    // 2. XỬ LÝ ALBUM ẢNH (DANH SÁCH NHIỀU ẢNH)
-    // ==========================================================
-    const handleAlbumChange = async (e) => {
-        const files = Array.from(e.target.files);
-        if (files.length === 0) return;
-
-        setIsUploadingAlbum(true);
-        try {
-            // Upload song song tất cả ảnh
-            const uploadPromises = files.map(file => uploadFile(file));
-            const urls = await Promise.all(uploadPromises);
-
-            // Gộp URL mới vào danh sách cũ
-            setFormData(prev => ({
-                ...prev,
-                imageList: [...prev.imageList, ...urls]
-            }));
-        } catch (error) {
-            alert("Có lỗi khi upload một số ảnh trong album.");
-        } finally {
-            setIsUploadingAlbum(false);
-        }
-    };
-
-    const handleRemoveAlbumImage = (indexToRemove) => {
-        setFormData(prev => ({
-            ...prev,
-            imageList: prev.imageList.filter((_, index) => index !== indexToRemove)
-        }));
-    };
-
-    // ==========================================================
-    // 3. SUBMIT FORM
+    // 5. SUBMIT FORM (UPLOAD RỒI MỚI SAVE DB)
     // ==========================================================
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        // Validate
         if (!formData.name || !formData.districtId || !formData.rentPrice) {
             alert("Vui lòng điền các trường bắt buộc (*)");
             return;
         }
 
-        if (isUploadingAvatar || isUploadingAlbum) {
-            alert("Đang tải ảnh lên, vui lòng đợi...");
-            return;
-        }
-
         setIsLoading(true);
         try {
-            await axiosClient.post('/api/buildings', formData);
+            // --- BƯỚC 1: UPLOAD AVATAR (NẾU CÓ) ---
+            let finalAvatarUrl = "";
+            if (rawAvatarFile) {
+                setLoadingMessage("Đang tải lên ảnh đại diện...");
+                finalAvatarUrl = await uploadSingleFile(rawAvatarFile);
+            }
+
+            // --- BƯỚC 2: UPLOAD ALBUM (NẾU CÓ) ---
+            let finalImageList = [];
+            if (rawAlbumFiles.length > 0) {
+                setLoadingMessage(`Đang tải lên ${rawAlbumFiles.length} ảnh chi tiết...`);
+                // Upload song song (Promise.all) cho nhanh
+                const uploadPromises = rawAlbumFiles.map(file => uploadSingleFile(file));
+                finalImageList = await Promise.all(uploadPromises);
+            }
+
+            // --- BƯỚC 3: GỘP DỮ LIỆU VÀ GỌI API TẠO TÒA NHÀ ---
+            setLoadingMessage("Đang lưu thông tin...");
+
+            const finalPayload = {
+                ...formData,
+                avatar: finalAvatarUrl,     // Gán URL thật vừa nhận được
+                imageList: finalImageList   // Gán List URL thật
+            };
+
+            await axiosClient.post('/api/buildings', finalPayload);
+
             alert("Đăng tin thành công!");
             navigate('/admin/buildings');
+
         } catch (error) {
             console.error("Lỗi:", error);
-            alert("Lỗi khi lưu: " + (error.response?.data?.message || error.message));
+            alert("Có lỗi xảy ra: " + (error.response?.data?.message || error.message));
         } finally {
             setIsLoading(false);
+            setLoadingMessage('');
         }
     };
 
@@ -172,7 +194,7 @@ const CreateBuilding = () => {
 
                 <form className="create-form" onSubmit={handleSubmit}>
 
-                    {/* 1. THÔNG TIN CHUNG (Giữ nguyên) */}
+                    {/* 1. THÔNG TIN CHUNG */}
                     <div className="form-section">
                         <h3 className="section-title"><FaBuilding /> Thông tin chung</h3>
                         <div className="form-grid">
@@ -180,21 +202,13 @@ const CreateBuilding = () => {
                                 <label>Tên tòa nhà *</label>
                                 <input type="text" name="name" value={formData.name} onChange={handleChange} required placeholder="VD: Bitexco Financial Tower" />
                             </div>
-                            <div className="form-group">
-                                <label>Đường</label>
-                                <input type="text" name="street" value={formData.street} onChange={handleChange} />
-                            </div>
-                            <div className="form-group">
-                                <label>Phường</label>
-                                <input type="text" name="ward" value={formData.ward} onChange={handleChange} />
-                            </div>
+                            <div className="form-group"><label>Đường</label><input type="text" name="street" value={formData.street} onChange={handleChange} /></div>
+                            <div className="form-group"><label>Phường</label><input type="text" name="ward" value={formData.ward} onChange={handleChange} /></div>
                             <div className="form-group">
                                 <label>Quận *</label>
                                 <select name="districtId" value={formData.districtId} onChange={handleChange} required>
                                     <option value="">-- Chọn Quận --</option>
-                                    {DISTRICTS.map(d => (
-                                        <option key={d.id} value={d.id}>{d.name}</option>
-                                    ))}
+                                    {DISTRICTS.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                                 </select>
                             </div>
                             <div className="form-group"><label>Kết cấu</label><input type="text" name="structure" value={formData.structure} onChange={handleChange} /></div>
@@ -205,14 +219,11 @@ const CreateBuilding = () => {
                         </div>
                     </div>
 
-                    {/* 2. GIÁ & PHÍ (Giữ nguyên) */}
+                    {/* 2. GIÁ & PHÍ */}
                     <div className="form-section">
                         <h3 className="section-title"><FaDollarSign /> Giá thuê & Diện tích</h3>
                         <div className="form-grid">
-                            <div className="form-group full-width">
-                                <label>Diện tích thuê (VD: 100, 200)</label>
-                                <input type="text" name="rentArea" value={formData.rentArea} onChange={handleChange} />
-                            </div>
+                            <div className="form-group full-width"><label>Diện tích thuê (VD: 100, 200)</label><input type="text" name="rentArea" value={formData.rentArea} onChange={handleChange} /></div>
                             <div className="form-group"><label>Giá thuê ($/m²) *</label><input type="number" name="rentPrice" value={formData.rentPrice} onChange={handleChange} required /></div>
                             <div className="form-group"><label>Mô tả giá</label><input type="text" name="rentPriceDescription" value={formData.rentPriceDescription} onChange={handleChange} /></div>
                             <div className="form-group"><label>Phí dịch vụ</label><input type="text" name="serviceFee" value={formData.serviceFee} onChange={handleChange} /></div>
@@ -220,7 +231,7 @@ const CreateBuilding = () => {
                         </div>
                     </div>
 
-                    {/* 3. PHÍ KHÁC (Giữ nguyên) */}
+                    {/* 3. PHÍ KHÁC */}
                     <div className="form-section">
                         <h3 className="section-title"><FaListUl /> Phí & Điều kiện</h3>
                         <div className="form-grid">
@@ -236,7 +247,7 @@ const CreateBuilding = () => {
                         </div>
                     </div>
 
-                    {/* 4. HÌNH ẢNH (AVATAR & ALBUM) - ĐÃ CẬP NHẬT */}
+                    {/* 4. HÌNH ẢNH (LOGIC MỚI: UPLOAD ON SUBMIT) */}
                     <div className="form-section">
                         <h3 className="section-title"><FaImage /> Hình ảnh & Loại</h3>
 
@@ -244,25 +255,20 @@ const CreateBuilding = () => {
                         <div className="form-group full-width">
                             <label>Ảnh đại diện (Avatar) *</label>
 
-                            {/* Nếu chưa có ảnh -> Hiện nút Upload */}
-                            {!formData.avatar && !isUploadingAvatar && (
+                            {/* Nếu chưa chọn ảnh -> Hiện nút Chọn */}
+                            {!previewAvatarUrl && (
                                 <div className="upload-box">
                                     <label className="custom-file-upload">
                                         <FaCloudUploadAlt size={24} /> Chọn ảnh đại diện
-                                        <input type="file" accept="image/*" onChange={handleAvatarChange} style={{ display: 'none' }} />
+                                        <input type="file" accept="image/*" onChange={handleAvatarSelect} style={{ display: 'none' }} />
                                     </label>
                                 </div>
                             )}
 
-                            {/* Nếu đang upload -> Hiện Loading */}
-                            {isUploadingAvatar && (
-                                <div className="loading-upload"><FaSpinner className="icon-spin" /> Đang tải ảnh lên...</div>
-                            )}
-
-                            {/* Nếu đã có ảnh -> Hiện Ảnh + Nút Xóa */}
-                            {formData.avatar && (
+                            {/* Nếu đã chọn -> Hiện Preview */}
+                            {previewAvatarUrl && (
                                 <div className="image-preview-item" style={{ maxWidth: '200px' }}>
-                                    <img src={formData.avatar} alt="Avatar" />
+                                    <img src={previewAvatarUrl} alt="Avatar Preview" />
                                     <button type="button" className="btn-remove-img" onClick={handleRemoveAvatar}>
                                         <FaTimes />
                                     </button>
@@ -277,25 +283,23 @@ const CreateBuilding = () => {
                             <div className="upload-box">
                                 <label className="custom-file-upload">
                                     <FaCloudUploadAlt size={24} /> Thêm ảnh vào album
-                                    <input type="file" multiple accept="image/*" onChange={handleAlbumChange} style={{ display: 'none' }} />
+                                    <input type="file" multiple accept="image/*" onChange={handleAlbumSelect} style={{ display: 'none' }} />
                                 </label>
                             </div>
 
-                            {isUploadingAlbum && (
-                                <div className="loading-upload"><FaSpinner className="icon-spin" /> Đang tải {isUploadingAlbum} ảnh...</div>
+                            {/* Grid hiển thị Album Preview */}
+                            {previewAlbumUrls.length > 0 && (
+                                <div className="album-grid">
+                                    {previewAlbumUrls.map((url, index) => (
+                                        <div key={index} className="image-preview-item">
+                                            <img src={url} alt={`Album Preview ${index}`} />
+                                            <button type="button" className="btn-remove-img" onClick={() => handleRemoveAlbumImage(index)}>
+                                                <FaTimes />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
                             )}
-
-                            {/* Grid hiển thị Album */}
-                            <div className="album-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '10px' }}>
-                                {formData.imageList.map((url, index) => (
-                                    <div key={index} className="image-preview-item" style={{ width: '100px', height: '100px' }}>
-                                        <img src={url} alt={`Album ${index}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                        <button type="button" className="btn-remove-img" onClick={() => handleRemoveAlbumImage(index)}>
-                                            <FaTimes />
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
                         </div>
 
                         {/* C. LOẠI TÒA NHÀ */}
@@ -332,8 +336,15 @@ const CreateBuilding = () => {
                     {/* BUTTONS */}
                     <div className="form-actions">
                         <button type="button" className="btn-cancel" onClick={() => navigate('/admin/buildings')}>Hủy bỏ</button>
-                        <button type="submit" className="btn-submit-form" disabled={isLoading || isUploadingAvatar || isUploadingAlbum}>
-                            {isLoading ? <span className="spinner"></span> : <><FaCheck /> Đăng Tin</>}
+                        <button type="submit" className="btn-submit-form" disabled={isLoading}>
+                            {isLoading ? (
+                                <>
+                                    <span className="spinner"></span>
+                                    <span style={{ marginLeft: '10px' }}>{loadingMessage || 'Đang xử lý...'}</span>
+                                </>
+                            ) : (
+                                <><FaCheck /> Đăng Tin</>
+                            )}
                         </button>
                     </div>
 
