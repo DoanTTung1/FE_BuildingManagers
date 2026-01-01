@@ -278,7 +278,7 @@ const BuildingDetail = () => {
                                     <FaUserTie />
                                 </div>
                                 <div>
-                                    <span className="sub">Quản lý tòa nhà</span>
+                                    <span className="sub">Quản lý tòa nhà: </span>
                                     <strong>{building.managerName || 'Hotline BQL'}</strong>
                                 </div>
                             </div>

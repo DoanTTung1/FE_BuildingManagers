@@ -167,7 +167,7 @@
     font-size: 0.7rem;
     text-transform: uppercase;
     font-weight: 700;
-    color: var(--h-white);
+    color: var(--h-navy);
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
     letter-spacing: 1px;
 }
