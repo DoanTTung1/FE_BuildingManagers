@@ -166,6 +166,12 @@
     margin-bottom: 20px;
     font-size: 0.9rem;
     animation: shake 0.3s;
+
+    /* --- THÊM DÒNG NÀY --- */
+    font-weight: 700;
+    /* Hoặc bold */
+    text-shadow: 0 0 5px rgba(255, 71, 87, 0.5);
+    /* Hiệu ứng phát sáng nhẹ cho chữ lỗi */
 }
 
 .back-home {

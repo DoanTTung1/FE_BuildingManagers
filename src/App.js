@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import AuthModal from './components/AuthModal';
 
+// ... các import khác giữ nguyên ...
 import Header from './components/Header';
 import Footer from './components/Footer';
 import HomePage from './components/HomePage';
@@ -13,10 +14,10 @@ import AdminLayout from './layouts/AdminLayout';
 import BuildingManager from './pages/admin/BuildingManager';
 import UserManager from './pages/admin/UserManager';
 import LoginPage from './pages/admin/LoginPage';
-
+import CreateStaff from './pages/admin/CreateStaff';
 import './styles/App.css';
 
-// 1. Layout User (Giữ nguyên)
+// UserLayout giữ nguyên
 const UserLayout = () => {
   return (
     <div className="user-layout" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
@@ -35,7 +36,7 @@ function App() {
       <AuthProvider>
         <div className="App">
           <Routes>
-            {/* === NHÓM 1: CÁC TRANG CÔNG KHAI (USER) === */}
+            {/* === NHÓM 1: USER === */}
             <Route element={<UserLayout />}>
               <Route path="/" element={<HomePage />} />
               <Route path="/search" element={<BuildingSearch />} />
@@ -43,26 +44,24 @@ function App() {
               <Route path="/post-building" element={<CreateBuilding />} />
             </Route>
 
-            {/* === NHÓM 2: TRANG LOGIN (ĐỨNG MỘT MÌNH) === */}
-            {/* SỬA: Đưa ra ngoài cùng, ngang hàng với User và Admin */}
+            {/* === NHÓM 2: LOGIN === */}
             <Route path="/login" element={<LoginPage />} />
 
-            {/* === NHÓM 3: KHU VỰC ADMIN (CÓ SIDEBAR) === */}
+            {/* === NHÓM 3: ADMIN (QUAN TRỌNG) === */}
             <Route path="/admin" element={<AdminLayout />}>
-              {/* index: Mặc định vào /admin sẽ hiện BuildingManager */}
               <Route index element={<BuildingManager />} />
-
-              {/* Các đường dẫn con KHÔNG được có dấu / ở đầu */}
               <Route path="buildings" element={<BuildingManager />} />
               <Route path="users" element={<UserManager />} />
+              
+              {/* --- SỬA Ở ĐÂY: Đưa vào trong và bỏ '/admin/' ở path --- */}
+              {/* React Router sẽ tự hiểu đường dẫn đầy đủ là: /admin/staff-create */}
+              <Route path="users/create" element={<CreateStaff />} /> 
             </Route>
 
-            {/* Trang 404 (Nếu cần) */}
+            {/* === 404 (Luôn để cuối cùng) === */}
             <Route path="*" element={<div style={{ textAlign: 'center', marginTop: '50px' }}>404 Not Found</div>} />
-
           </Routes>
 
-          {/* Modal vẫn để ngoài để bật lên được ở mọi nơi */}
           <AuthModal />
         </div>
       </AuthProvider>

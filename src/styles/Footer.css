@@ -1,110 +1,272 @@
-/* --- FOOTER STYLES --- */
+/* =========================================
+   ULTRA MODERN FOOTER (NAVY & RED)
+   ========================================= */
+
+:root {
+    /* --- GIỮ NGUYÊN MÀU NỀN XANH CHỦ ĐẠO --- */
+    --footer-bg: #0f172a;
+    /* Navy Slate 900 */
+
+    /* --- MÀU NHẤN: ĐỎ (RED ACCENT) --- */
+    --footer-accent: #ef4444;
+    /* Đỏ rực rỡ */
+    --accent-glow: rgba(239, 68, 68, 0.4);
+    /* Hiệu ứng phát sáng đỏ */
+    --accent-bg-light: rgba(239, 68, 68, 0.1);
+    /* Nền đỏ trong suốt */
+
+    /* --- Text & Glass Effect --- */
+    --footer-text: #cbd5e1;
+    /* Màu chữ xám bạc (Slate 300) */
+    --footer-title: #ffffff;
+    /* Tiêu đề trắng */
+    --glass-bg: rgba(255, 255, 255, 0.03);
+    --glass-border: rgba(255, 255, 255, 0.08);
+}
+
 .footer-wrapper {
-    background-color: var(--primary-color); /* Màu xanh Navy đậm #0f2557 */
-    color: #ecf0f1; /* Màu trắng xám nhẹ */
-    padding-top: 60px;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin-top: auto; /* Đẩy footer xuống đáy nếu nội dung ngắn */
+    background-color: var(--footer-bg);
+    /* Thêm gradient đen mờ dưới đáy để tạo chiều sâu */
+    background-image: linear-gradient(to bottom, var(--footer-bg), #020617);
+    color: var(--footer-text);
+    padding-top: 80px;
+    font-family: 'Inter', sans-serif;
+    margin-top: auto;
+    position: relative;
+    overflow: hidden;
+    /* Viền trên màu Đỏ tạo điểm cắt sắc nét */
+    border-top: 3px solid var(--footer-accent);
+}
+
+/* Họa tiết lưới mờ (Tech Grid) - Tạo cảm giác công nghệ */
+.footer-pattern {
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    opacity: 0.6;
 }
 
 .footer-container {
-    max-width: 1200px;
+    max-width: 1280px;
     margin: 0 auto;
-    padding: 0 20px 50px 20px;
+    padding: 0 20px 70px 20px;
     display: grid;
-    /* Chia 4 cột đều nhau. Nếu màn hình nhỏ thì tự xuống dòng */
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 40px;
+    /* Layout: Cột 1 và 4 rộng hơn 2 cột giữa */
+    grid-template-columns: 1.5fr 1fr 1fr 1.3fr;
+    gap: 50px;
+    position: relative;
+    z-index: 2;
 }
 
-/* --- TIÊU ĐỀ CỘT --- */
+/* --- TIÊU ĐỀ (MODERN STYLE) --- */
 .footer-title {
     font-size: 1.2rem;
     font-weight: 800;
-    margin-bottom: 25px;
-    color: #ffffff;
+    margin-bottom: 30px;
+    color: var(--footer-title);
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
     position: relative;
-    padding-bottom: 10px;
+    padding-left: 18px;
+    /* Chừa chỗ cho vạch đỏ */
 }
 
-/* Gạch chân nhỏ dưới tiêu đề */
-.footer-title::after {
+/* Vạch dấu ấn bên trái màu ĐỎ */
+.footer-title::before {
     content: '';
     position: absolute;
     left: 0;
-    bottom: 0;
-    width: 40px;
-    height: 3px;
-    background-color: var(--accent-color); /* Màu cam đỏ #ff6b6b */
+    top: 4px;
+    width: 4px;
+    height: 18px;
+    background-color: var(--footer-accent);
+    border-radius: 4px;
+    /* Hiệu ứng Glow nhẹ */
+    box-shadow: 0 0 10px var(--accent-glow);
 }
 
 .footer-desc {
-    line-height: 1.6;
-    color: #bdc3c7;
-    margin-bottom: 20px;
+    line-height: 1.8;
+    color: #94a3b8;
+    /* Slate 400 */
+    margin-bottom: 30px;
     font-size: 0.95rem;
 }
 
-/* --- SOCIAL ICONS --- */
+/* --- SOCIAL ICONS (GLASS + HOVER RED) --- */
+
 .social-links {
     display: flex;
     gap: 15px;
 }
+
 .social-icon {
-    width: 40px; height: 40px;
-    background: rgba(255,255,255,0.1);
-    display: flex; align-items: center; justify-content: center;
-    border-radius: 50%;
-    color: white;
-    transition: all 0.3s;
+    width: 42px;
+    height: 42px;
+
+    /* 1. Nền tối hơn nền Footer một chút để tạo độ sâu */
+    background: rgba(0, 0, 0, 0.2);
+
+    /* 2. Viền màu ĐỎ mờ (thay vì trắng) */
+    border: 1px solid rgba(239, 68, 68, 0.4);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+
+    /* 3. Icon màu ĐỎ rực rỡ (thay vì trắng) -> Nhìn rất rõ */
+    color: var(--footer-accent);
+
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     font-size: 1.1rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    /* Bóng nhẹ */
 }
+
+/* Hover: Nền chuyển sang Đỏ rực, Icon chuyển sang Trắng */
 .social-icon:hover {
-    background: var(--accent-color);
-    transform: translateY(-3px);
+    background: var(--footer-accent);
+    /* Nền đỏ */
+    border-color: var(--footer-accent);
+    color: white;
+    /* Icon trắng */
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px var(--accent-glow);
+    /* Phát sáng đỏ */
 }
 
 /* --- LINKS LIST --- */
 .footer-links {
     list-style: none;
-    padding: 0; margin: 0;
+    padding: 0;
+    margin: 0;
 }
+
 .footer-links li {
-    margin-bottom: 12px;
+    margin-bottom: 14px;
 }
+
 .footer-links a {
     text-decoration: none;
-    color: #bdc3c7;
-    transition: all 0.3s;
-    display: inline-block;
+    color: var(--footer-text);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    font-size: 0.95rem;
+    font-weight: 500;
 }
+
+.link-arrow {
+    font-size: 0.75rem;
+    margin-right: 10px;
+    color: var(--footer-accent);
+    /* Mũi tên đỏ */
+    opacity: 0.8;
+    transition: 0.3s;
+}
+
+/* Hover: Chữ sáng trắng, mũi tên đỏ rõ hơn */
 .footer-links a:hover {
-    color: var(--accent-color);
-    padding-left: 5px; /* Hiệu ứng đẩy chữ sang phải */
+    color: white;
+    transform: translateX(5px);
+}
+
+.footer-links a:hover .link-arrow {
+    opacity: 1;
+    margin-right: 15px;
 }
 
 /* --- CONTACT INFO --- */
+.contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
 .contact-item {
     display: flex;
     align-items: flex-start;
-    margin-bottom: 15px;
-    color: #bdc3c7;
-    font-size: 0.95rem;
-}
-.c-icon {
-    margin-right: 15px;
-    color: var(--accent-color);
-    margin-top: 4px; /* Căn chỉnh icon với dòng chữ đầu tiên */
+    padding: 10px;
+    border-radius: 12px;
+    transition: 0.3s;
+    border: 1px solid transparent;
 }
 
-/* --- FOOTER BOTTOM (COPYRIGHT) --- */
+.contact-item:hover {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+.icon-box {
+    width: 38px;
+    height: 38px;
+    background: var(--accent-bg-light);
+    /* Nền đỏ rất nhạt */
+    color: var(--footer-accent);
+    /* Icon đỏ */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    margin-right: 15px;
+    font-size: 1rem;
+    flex-shrink: 0;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.text-box {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.text-box strong {
+    color: white;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.text-box span {
+    color: #94a3b8;
+}
+
+/* Số điện thoại nổi bật màu Đỏ */
+.highlight-text {
+    color: var(--footer-accent) !important;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+/* --- FOOTER BOTTOM --- */
 .footer-bottom {
-    background-color: #0a1a3f; /* Màu đậm hơn nền chính một chút */
-    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.3);
+    /* Đen mờ */
+    padding: 20px 0;
     text-align: center;
-    border-top: 1px solid rgba(255,255,255,0.05);
-    font-size: 0.9rem;
-    color: #7f8c8d;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.85rem;
+    color: #64748b;
+    position: relative;
+    z-index: 2;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 1024px) {
+    .footer-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 40px;
+    }
+}
+
+@media (max-width: 600px) {
+    .footer-container {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
 }

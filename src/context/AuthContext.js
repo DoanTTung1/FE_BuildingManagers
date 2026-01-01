@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // Thêm navigate
+import { useNavigate } from 'react-router-dom';
 import authApi from '../api/authApi';
 
 const AuthContext = createContext();
@@ -7,7 +7,7 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const navigate = useNavigate(); // Khởi tạo điều hướng
+    const navigate = useNavigate();
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -21,34 +21,46 @@ export const AuthProvider = ({ children }) => {
         try {
             const res = await authApi.login(formData);
 
-            // res ở đây chính là AuthResponse từ Backend
+            // Kiểm tra dữ liệu trả về từ Backend
             if (res && res.token) {
                 // 1. Lưu Token
                 localStorage.setItem('token', res.token);
 
-                // 2. Lưu thông tin User và Roles (Khớp với AuthResponse DTO)
+                // 2. Lưu thông tin User
                 const userInfo = {
                     id: res.id,
-                    userName: res.username, // Khớp với trường 'username' trong DTO
+                    userName: res.username,
                     email: res.email,
-                    roles: res.roles // Đây là List<String> ["ADMIN", ...]
+                    roles: res.roles || [] // Đảm bảo luôn là mảng
                 };
 
                 localStorage.setItem('user', JSON.stringify(userInfo));
-                localStorage.setItem('roles', JSON.stringify(res.roles)); // Lưu riêng để dễ check
+
+                // Lưu roles riêng ra để AdminLayout dễ đọc (như chúng ta đã bàn)
+                localStorage.setItem('roles', JSON.stringify(res.roles || []));
 
                 setUser(userInfo);
                 setIsModalOpen(false);
 
-                // 3. LOGIC CHUYỂN HƯỚNG QUAN TRỌNG
-                // Kiểm tra nếu roles có chứa ADMIN hoặc STAFF
-                if (res.roles && (res.roles.includes("ADMIN") || res.roles.includes("STAFF"))) {
-                    navigate('/admin/buildings'); // Chuyển thẳng vào Dashboard Admin
-                } else {
-                    navigate('/'); // Khách hàng bình thường thì ở lại trang chủ
-                }
+                // --- THAY ĐỔI QUAN TRỌNG Ở ĐÂY ---
 
-                return { success: true };
+                // A. Tắt chuyển hướng tự động tại đây. 
+                // Lý do: Để LoginPage tự quyết định. Nếu Context tự chuyển trang, 
+                // logic báo lỗi "Không có quyền" bên LoginPage sẽ không kịp chạy.
+                /* if (res.roles && (res.roles.includes("ADMIN") || res.roles.includes("STAFF"))) {
+                    navigate('/admin/buildings');
+                } else {
+                    navigate('/');
+                }
+                */
+
+                // B. Trả về ĐẦY ĐỦ dữ liệu cho LoginPage dùng
+                // Dùng ...res để bung toàn bộ dữ liệu (token, roles, id...) ra
+                return {
+                    success: true,
+                    ...res,      // <-- Cực kỳ quan trọng: Trả lại roles cho LoginPage đọc
+                    roles: res.roles // Gán cứng thêm lần nữa cho chắc ăn
+                };
             }
         } catch (error) {
             console.error("Login failed:", error);
@@ -60,15 +72,18 @@ export const AuthProvider = ({ children }) => {
     };
 
     const logout = () => {
-        localStorage.clear();
+        localStorage.clear(); // Xóa sạch token, user, roles
         setUser(null);
-        navigate('/'); // Đăng xuất về trang chủ
+        navigate('/'); // Đăng xuất xong về trang chủ
     };
 
     return (
         <AuthContext.Provider value={{
-            user, login, register: (data) => authApi.register(data),
-            logout, isModalOpen,
+            user,
+            login,
+            register: (data) => authApi.register(data),
+            logout,
+            isModalOpen,
             openModal: () => setIsModalOpen(true),
             closeModal: () => setIsModalOpen(false)
         }}>

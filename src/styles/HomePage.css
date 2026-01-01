@@ -1,24 +1,38 @@
 /* =========================================
-   1. GLOBAL VARIABLES & SETTINGS
+   1. GLOBAL VARIABLES & SETTINGS (NAVY & RED THEME)
    ========================================= */
 :root {
-    --primary-color: #0f2557;
-    /* Xanh Navy đậm */
-    --accent-color: #ff6b6b;
-    /* Đỏ cam */
-    --text-dark: #2d3436;
-    --text-light: #636e72;
-    --bg-light: #f8fafd;
-    /* Xanh xám rất nhạt làm nền */
+    /* --- COLOR PALETTE (ĐỒNG BỘ ADMIN) --- */
+    --primary-navy: #0f172a;
+    /* Navy Đậm (Sidebar Admin) */
+    --primary-slate: #1e293b;
+    /* Navy Nhạt */
+
+    --accent-red: #ef4444;
+    /* Đỏ (Nút Logout/Active Admin) */
+    --accent-hover: #dc2626;
+    /* Đỏ đậm khi hover */
+
+    --text-main: #334155;
+    /* Slate 700 */
+    --text-light: #64748b;
+    /* Slate 500 */
+    --bg-light: #f8fafc;
+    /* Slate 50 */
     --white: #ffffff;
+
     --transition-speed: 0.3s;
+
+    /* --- SHADOWS (ULTRA MODERN) --- */
+    --shadow-card: 0 10px 30px -10px rgba(15, 23, 42, 0.1);
+    --shadow-float: 0 20px 50px -12px rgba(15, 23, 42, 0.15);
+    --shadow-glow: 0 10px 25px -5px rgba(239, 68, 68, 0.4);
 }
 
 .homepage-wrapper {
     font-family: 'Inter', 'Segoe UI', sans-serif;
     background-color: var(--bg-light);
     overflow-x: hidden;
-    /* Chống thanh cuộn ngang */
     width: 100%;
 }
 
@@ -32,14 +46,15 @@
     text-align: center;
 }
 
-/* Tiêu đề chung cho các section */
+/* Tiêu đề chung */
 .section-title {
     font-size: 2.2rem;
     font-weight: 800;
-    color: var(--primary-color);
+    color: var(--primary-navy);
     margin-bottom: 10px;
     position: relative;
     display: inline-block;
+    letter-spacing: -0.5px;
 }
 
 .section-desc {
@@ -49,6 +64,7 @@
     max-width: 600px;
     margin-left: auto;
     margin-right: auto;
+    line-height: 1.6;
 }
 
 /* =========================================
@@ -56,24 +72,23 @@
    ========================================= */
 .hero-section {
     height: 90vh;
-    /* Chiếm 90% chiều cao màn hình */
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
-    /* Hiệu ứng Parallax khi cuộn */
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: -100px;
-    /* Bù trừ cho padding của App.js để ảnh tràn lên trên */
-    padding-top: 100px;
+    margin-top: -90px;
+    /* Bù trừ Header */
+    padding-top: 90px;
 }
 
+/* Overlay Navy đậm đà */
 .hero-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to bottom, rgba(15, 37, 87, 0.4), rgba(15, 37, 87, 0.7));
+    background: linear-gradient(to bottom, rgba(15, 23, 42, 0.5), rgba(15, 23, 42, 0.85));
     z-index: 1;
 }
 
@@ -82,11 +97,10 @@
     z-index: 2;
     text-align: center;
     color: var(--white);
-    max-width: 800px;
+    max-width: 900px;
     padding: 0 20px;
 }
 
-/* Hiệu ứng text hiện lên */
 .fade-in-up {
     animation: fadeInUp 1s ease-out;
 }
@@ -107,26 +121,25 @@
     font-size: 3.5rem;
     font-weight: 800;
     line-height: 1.2;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
     text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
+/* Highlight màu Đỏ chuyển trắng */
 .highlight-text {
-    background: linear-gradient(90deg, #ff9a9e 0%, #ff6b6b 100%);
+    background: linear-gradient(90deg, #ffffff 0%, #fca5a5 100%);
     background-clip: text;
-    /* future-proof */
     -webkit-background-clip: text;
-    /* Chrome / Edge / Safari */
     color: transparent;
     -webkit-text-fill-color: transparent;
-    /* Safari fix */
 }
 
 .hero-subtitle {
-    font-size: 1.2rem;
-    margin-bottom: 40px;
+    font-size: 1.25rem;
+    margin-bottom: 45px;
     opacity: 0.9;
     line-height: 1.6;
+    font-weight: 300;
 }
 
 .hero-actions {
@@ -135,59 +148,63 @@
     justify-content: center;
 }
 
+/* Nút CTA Chính (Màu Đỏ) */
 .btn-primary-lg {
-    padding: 15px 40px;
+    padding: 16px 45px;
     font-size: 1.1rem;
     font-weight: 700;
-    background: var(--accent-color);
+    background: var(--accent-red);
     color: var(--white);
     border: none;
     border-radius: 50px;
     cursor: pointer;
     transition: var(--transition-speed);
-    box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
+    box-shadow: var(--shadow-glow);
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .btn-primary-lg:hover {
     transform: translateY(-3px);
-    background: #ff5252;
-    box-shadow: 0 15px 25px rgba(255, 107, 107, 0.4);
+    background: var(--accent-hover);
+    box-shadow: 0 15px 30px rgba(239, 68, 68, 0.5);
 }
 
 /* =========================================
    3. STATS SECTION (GLASSMORPHISM)
    ========================================= */
 .stats-section {
-    margin-top: -60px;
-    /* Đẩy lên đè lên Hero */
+    margin-top: -70px;
+    /* Đè lên Hero */
     position: relative;
     z-index: 3;
     padding: 0 20px;
 }
 
 .stats-container {
-    max-width: 1000px;
+    max-width: 1100px;
     margin: 0 auto;
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(15px);
-    /* Hiệu ứng kính mờ */
-    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
     padding: 40px;
-    box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-float);
     display: flex;
     justify-content: space-around;
     align-items: center;
-    border: 1px solid rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 1);
 }
 
 .stat-item {
     text-align: center;
 }
 
+/* Số liệu màu Đỏ */
 .stat-number {
     font-size: 2.5rem;
     font-weight: 800;
-    color: var(--primary-color);
+    color: var(--accent-red);
     margin: 0;
 }
 
@@ -210,7 +227,6 @@
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     grid-template-rows: repeat(2, 280px);
-    /* 2 hàng, mỗi hàng cao 280px */
     gap: 20px;
 }
 
@@ -219,11 +235,10 @@
     border-radius: 24px;
     overflow: hidden;
     cursor: pointer;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-card);
     transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-/* Logic chia ô to nhỏ */
 .item-large {
     grid-column: span 2;
     grid-row: span 2;
@@ -240,11 +255,12 @@
     transition: transform 0.8s ease;
 }
 
+/* Overlay Navy */
 .bento-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to top, rgba(15, 37, 87, 0.9), rgba(15, 37, 87, 0.1));
-    opacity: 0.7;
+    background: linear-gradient(to top, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.1));
+    opacity: 0.6;
     transition: opacity 0.3s;
 }
 
@@ -259,10 +275,11 @@
     transition: transform 0.4s;
 }
 
+/* Badge số lượng màu Đỏ */
 .bento-count {
     display: inline-block;
-    background: rgba(255, 255, 255, 0.25);
-    backdrop-filter: blur(4px);
+    background: var(--accent-red);
+    color: white;
     padding: 5px 12px;
     border-radius: 20px;
     font-size: 0.8rem;
@@ -296,7 +313,7 @@
     width: 45px;
     height: 45px;
     background: var(--white);
-    color: var(--primary-color);
+    color: var(--accent-red);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -307,10 +324,10 @@
     font-size: 1.2rem;
 }
 
-/* Hover Effect cho Bento */
+/* Hover Effect */
 .bento-item:hover {
     transform: translateY(-5px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--shadow-float);
 }
 
 .bento-item:hover .bento-bg {
@@ -339,23 +356,18 @@
 /* =========================================
    5. FEATURED BUILDINGS
    ========================================= */
-.featured-section {
-    background-color: var(--white);
-}
-
 .featured-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    /* Responsive Grid */
     gap: 30px;
     margin-bottom: 40px;
 }
 
 .featured-card {
     background: var(--white);
-    border-radius: 16px;
+    border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-card);
     border: 1px solid #f1f5f9;
     transition: all 0.3s ease;
     cursor: pointer;
@@ -363,7 +375,7 @@
 
 .featured-card:hover {
     transform: translateY(-10px);
-    box-shadow: 0 20px 30px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-float);
     border-color: transparent;
 }
 
@@ -384,28 +396,29 @@
     transform: scale(1.1);
 }
 
+/* Badge HOT màu Đỏ */
 .badge-hot {
     position: absolute;
     top: 15px;
     left: 15px;
-    background: var(--accent-color);
+    background: var(--accent-red);
     color: white;
     padding: 5px 12px;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 0.75rem;
     font-weight: 800;
     text-transform: uppercase;
 }
 
 .f-card-body {
-    padding: 20px;
+    padding: 22px;
 }
 
 .f-card-body h3 {
     font-size: 1.15rem;
     font-weight: 700;
     margin-bottom: 8px;
-    color: var(--primary-color);
+    color: var(--primary-navy);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -424,30 +437,27 @@
     padding-top: 15px;
     font-size: 0.95rem;
     font-weight: 600;
+    color: var(--text-main);
 }
 
 .f-price {
-    color: var(--accent-color);
+    color: var(--accent-red);
     font-size: 1.1rem;
-}
-
-.view-more-container {
-    text-align: center;
 }
 
 .btn-view-more {
     background: transparent;
-    border: 2px solid var(--primary-color);
-    color: var(--primary-color);
-    padding: 12px 30px;
-    border-radius: 30px;
+    border: 2px solid var(--primary-navy);
+    color: var(--primary-navy);
+    padding: 12px 35px;
+    border-radius: 50px;
     font-weight: 700;
     cursor: pointer;
     transition: 0.3s;
 }
 
 .btn-view-more:hover {
-    background: var(--primary-color);
+    background: var(--primary-navy);
     color: var(--white);
 }
 
@@ -469,20 +479,20 @@
 }
 
 .service-box {
-    padding: 30px 20px;
+    padding: 35px 25px;
     background: var(--white);
-    border-radius: 16px;
+    border-radius: 20px;
     border: 1px solid #f1f5f9;
     transition: all 0.3s;
     text-align: left;
 }
 
 .service-icon-wrapper {
-    width: 60px;
-    height: 60px;
-    background: #eef2ff;
-    color: var(--primary-color);
-    border-radius: 12px;
+    width: 65px;
+    height: 65px;
+    background: #f1f5f9;
+    color: var(--primary-navy);
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -495,23 +505,24 @@
     font-size: 1.1rem;
     font-weight: 700;
     margin-bottom: 10px;
-    color: var(--text-dark);
+    color: var(--primary-navy);
 }
 
 .service-box p {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     color: var(--text-light);
-    line-height: 1.5;
+    line-height: 1.6;
 }
 
+/* Hover: Icon chuyển Đỏ */
 .service-box:hover {
     transform: translateY(-8px);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-card);
     border-color: transparent;
 }
 
 .service-box:hover .service-icon-wrapper {
-    background: var(--primary-color);
+    background: var(--accent-red);
     color: white;
     transform: rotateY(180deg);
 }
@@ -526,8 +537,9 @@
 .cta-modern-container {
     max-width: 1200px;
     margin: 0 auto;
-    background: linear-gradient(120deg, var(--primary-color), #2d55aa);
-    border-radius: 24px;
+    /* Gradient Navy sang trọng */
+    background: linear-gradient(135deg, var(--primary-navy) 0%, var(--primary-slate) 100%);
+    border-radius: 30px;
     padding: 60px;
     display: flex;
     align-items: center;
@@ -535,19 +547,20 @@
     color: white;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 20px 50px rgba(15, 37, 87, 0.2);
+    box-shadow: var(--shadow-float);
 }
 
-/* Hình tròn trang trí background */
+/* Họa tiết tròn mờ */
 .cta-modern-container::before {
     content: '';
     position: absolute;
     top: -50%;
     right: -10%;
-    width: 400px;
-    height: 400px;
-    background: rgba(255, 255, 255, 0.05);
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(239, 68, 68, 0.2), transparent 70%);
     border-radius: 50%;
+    pointer-events: none;
 }
 
 .cta-text {
@@ -557,14 +570,14 @@
 }
 
 .cta-text h2 {
-    font-size: 2rem;
+    font-size: 2.2rem;
     font-weight: 800;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
 }
 
 .cta-text p {
     opacity: 0.9;
-    font-size: 1.05rem;
+    font-size: 1.1rem;
 }
 
 .cta-form-wrapper {
@@ -574,11 +587,12 @@
 }
 
 .input-with-button {
-    background: var(--white);
-    padding: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 8px;
     border-radius: 50px;
     display: flex;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .input-with-button input {
@@ -587,15 +601,19 @@
     outline: none;
     padding: 12px 20px;
     font-size: 1rem;
-    color: var(--text-dark);
+    color: white;
     background: transparent;
 }
 
+.input-with-button input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
 .input-with-button button {
-    background: var(--accent-color);
+    background: var(--accent-red);
     color: white;
     border: none;
-    padding: 12px 30px;
+    padding: 12px 35px;
     border-radius: 40px;
     font-weight: 700;
     cursor: pointer;
@@ -604,15 +622,15 @@
 }
 
 .input-with-button button:hover {
-    background: #ff4757;
+    background: var(--accent-hover);
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(255, 71, 87, 0.3);
+    box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
 }
 
 .cta-note {
     display: block;
     margin-top: 15px;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     opacity: 0.7;
     padding-left: 20px;
 }
@@ -670,11 +688,13 @@
     .input-with-button {
         flex-direction: column;
         background: transparent;
-        box-shadow: none;
+        border: none;
+        padding: 0;
     }
 
     .input-with-button input {
         background: white;
+        color: var(--text-main);
         margin-bottom: 10px;
         border-radius: 50px;
         width: 100%;

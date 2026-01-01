@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axiosClient from '../../api/axiosClient';
-import { FaTrash, FaUserPlus, FaUserShield } from 'react-icons/fa';
+import { FaTrash, FaUserPlus, FaEdit, FaUserShield, FaUserTie } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 const UserManager = () => {
+    const navigate = useNavigate();
     const [users, setUsers] = useState([]);
-    const [showModal, setShowModal] = useState(false);
-
-    // State form tạo nhân viên mới
-    const [newStaff, setNewStaff] = useState({
-        userName: '', fullName: '', password: '', email: '', phone: '', status: 1
-    });
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         fetchUsers();
@@ -17,104 +14,123 @@ const UserManager = () => {
 
     const fetchUsers = async () => {
         try {
+            setIsLoading(true);
+            // Giả sử API trả về mảng user trực tiếp hoặc res.data
             const res = await axiosClient.get('/api/users');
-            setUsers(res);
+            setUsers(Array.isArray(res) ? res : res.data || []);
         } catch (error) {
             console.error("Lỗi tải user:", error);
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm("Bạn có chắc muốn xóa user này?")) {
+        if (window.confirm("CẢNH BÁO: Bạn có chắc chắn muốn xóa nhân viên này?")) {
             try {
-                await axiosClient.delete(`/api/users/${id}`);
-                alert("Xóa thành công!");
-                fetchUsers();
+                await axiosClient.delete(`/api/users/${id}`); // Hoặc api delete tương ứng
+                // Xóa thành công thì lọc bỏ item đó khỏi state để đỡ phải load lại trang
+                setUsers(prev => prev.filter(u => u.id !== id));
             } catch (error) {
-                alert("Lỗi khi xóa!");
+                alert("Lỗi khi xóa! Có thể bạn không đủ quyền.");
             }
         }
     };
 
-    const handleCreateStaff = async () => {
-        try {
-            // BE cần xử lý thêm password và set Role ADMIN/STAFF ở Backend nếu dùng DTO này
-            await axiosClient.post('/api/users', newStaff);
-            alert("Tạo nhân viên thành công!");
-            setShowModal(false);
-            fetchUsers();
-        } catch (error) {
-            alert("Lỗi tạo nhân viên!");
-        }
-    };
-
     return (
-        <div>
+        <div className="fade-in-up">
+            {/* --- HEADER --- */}
             <div className="admin-header">
-                <h2>Quản Lý Người Dùng</h2>
-                <button className="btn-add" onClick={() => setShowModal(true)}>
+                <h2>Quản Lý Nhân Viên</h2>
+
+                {/* Nút này sẽ dẫn sang trang CreateStaff xịn xò chúng ta vừa làm */}
+                <button className="btn-add" onClick={() => navigate('/admin/users/create')}>
                     <FaUserPlus /> Thêm Nhân Viên
                 </button>
             </div>
 
+            {/* --- TABLE CONTAINER --- */}
             <div className="admin-table-container">
                 <table className="admin-table">
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Username</th>
-                            <th>Họ Tên</th>
-                            <th>Email</th>
-                            <th>SĐT</th>
+                            <th>Thông tin tài khoản</th>
+                            <th>Liên hệ</th>
                             <th>Vai trò</th>
-                            <th>Hành động</th>
+                            <th style={{ textAlign: 'right' }}>Hành động</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {users.map(user => (
-                            <tr key={user.id}>
-                                <td>{user.id}</td>
-                                <td>{user.userName}</td>
-                                <td>{user.fullName}</td>
-                                <td>{user.email}</td>
-                                <td>{user.phone}</td>
-                                <td>
-                                    {user.roleCodes && user.roleCodes.map(role => (
-                                        <span key={role} style={{ marginRight: 5, background: '#e0e7ff', padding: '2px 8px', borderRadius: 4, fontSize: 12 }}>{role}</span>
-                                    ))}
-                                </td>
-                                <td>
-                                    <button className="btn-action btn-delete" onClick={() => handleDelete(user.id)}><FaTrash /></button>
-                                </td>
-                            </tr>
-                        ))}
+                        {isLoading ? (
+                            <tr><td colSpan="5" style={{ textAlign: 'center', padding: '30px' }}>Đang tải dữ liệu...</td></tr>
+                        ) : users.length === 0 ? (
+                            <tr><td colSpan="5" style={{ textAlign: 'center', padding: '30px' }}>Chưa có nhân viên nào.</td></tr>
+                        ) : (
+                            users.map(user => (
+                                <tr key={user.id}>
+                                    <td>#{user.id}</td>
+
+                                    {/* Cột thông tin User */}
+                                    <td>
+                                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                            <b style={{ color: '#334155', fontSize: '1rem' }}>{user.fullName || user.userName}</b>
+                                            <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>@{user.userName}</span>
+                                        </div>
+                                    </td>
+
+                                    {/* Cột liên hệ */}
+                                    <td>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                            <span style={{ fontSize: '0.9rem' }}>{user.email}</span>
+                                            <span style={{ fontSize: '0.85rem', color: '#64748b' }}>{user.phone}</span>
+                                        </div>
+                                    </td>
+
+                                    {/* Cột Vai trò (Role) - Badge đẹp */}
+                                    <td>
+                                        {/* Xử lý hiển thị role tùy theo dữ liệu backend trả về (roleCodes hoặc roles) */}
+                                        {(user.roleCodes || user.roles || []).map((role, index) => {
+                                            const isAdmin = role.includes('ADMIN');
+                                            return (
+                                                <span key={index} style={{
+                                                    background: isAdmin ? '#fee2e2' : '#eff6ff',
+                                                    color: isAdmin ? '#ef4444' : '#3b82f6',
+                                                    padding: '6px 12px',
+                                                    borderRadius: '20px',
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: '700',
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    gap: '5px',
+                                                    marginRight: '5px'
+                                                }}>
+                                                    {isAdmin ? <FaUserShield /> : <FaUserTie />}
+                                                    {role}
+                                                </span>
+                                            );
+                                        })}
+                                    </td>
+
+                                    {/* Cột Hành động */}
+                                    <td style={{ textAlign: 'right' }}>
+                                        <button className="btn-action btn-edit" title="Sửa thông tin">
+                                            <FaEdit />
+                                        </button>
+                                        <button
+                                            className="btn-action btn-delete"
+                                            title="Xóa nhân viên"
+                                            onClick={() => handleDelete(user.id)}
+                                        >
+                                            <FaTrash />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
                     </tbody>
                 </table>
             </div>
-
-            {/* Modal Thêm Nhân Viên */}
-            {showModal && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
-                        <h3>Thêm Nhân Viên Mới</h3>
-                        <div style={{ display: 'grid', gap: '15px', marginTop: '20px' }}>
-                            <input type="text" placeholder="Username" className="form-control"
-                                onChange={e => setNewStaff({ ...newStaff, userName: e.target.value })} />
-                            <input type="text" placeholder="Họ tên" className="form-control"
-                                onChange={e => setNewStaff({ ...newStaff, fullName: e.target.value })} />
-                            {/* Lưu ý: API UserDTO của bạn chưa thấy trường password, cần bổ sung ở BE nếu muốn tạo login */}
-                            <input type="email" placeholder="Email" className="form-control"
-                                onChange={e => setNewStaff({ ...newStaff, email: e.target.value })} />
-                            <input type="text" placeholder="SĐT" className="form-control"
-                                onChange={e => setNewStaff({ ...newStaff, phone: e.target.value })} />
-                        </div>
-                        <div className="modal-actions">
-                            <button onClick={() => setShowModal(false)} className="btn-cancel">Hủy</button>
-                            <button onClick={handleCreateStaff} className="btn-add">Tạo</button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };
