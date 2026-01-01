@@ -186,7 +186,7 @@
 
 .hotline-number:hover {
     transform: scale(1.05);
-    color: white;
+    color: var(--h-red);
 }
 
 .main-header.scrolled .hotline-label {
