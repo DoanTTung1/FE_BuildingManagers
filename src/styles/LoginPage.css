@@ -1,0 +1,214 @@
+/* src/styles/LoginPage.css */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+.admin-login-container {
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* Hiệu ứng nền chuyển động ngầu */
+    background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #141e30);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+    font-family: 'Poppins', sans-serif;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Các hình tròn trang trí mờ ảo phía sau */
+.admin-login-container::before,
+.admin-login-container::after {
+    content: '';
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    filter: blur(80px);
+    z-index: 1;
+}
+
+.admin-login-container::before {
+    background: #ff00cc;
+    /* Màu Neon Pink */
+    top: -50px;
+    left: -50px;
+}
+
+.admin-login-container::after {
+    background: #3333ff;
+    /* Màu Neon Blue */
+    bottom: -50px;
+    right: -50px;
+}
+
+/* Card đăng nhập kính mờ */
+.login-card {
+    position: relative;
+    z-index: 10;
+    width: 400px;
+    background: rgba(255, 255, 255, 0.05);
+    /* Trong suốt */
+    backdrop-filter: blur(15px);
+    /* Làm mờ nền sau */
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 50px 40px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+    text-align: center;
+    color: white;
+}
+
+.login-header h2 {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+
+    background: linear-gradient(to right, #ffffff, #a5a5a5);
+    background-clip: text;
+    /* chuẩn tương lai */
+    -webkit-background-clip: text;
+    /* Chrome / Edge / Safari */
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    /* Safari */
+}
+
+
+.login-header p {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 40px;
+}
+
+/* Input Styles */
+.input-wrapper {
+    position: relative;
+    margin-bottom: 25px;
+}
+
+.input-wrapper input {
+    width: 100%;
+    padding: 15px 20px 15px 50px;
+    /* Chừa chỗ cho icon */
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 30px;
+    color: #fff;
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.input-wrapper input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.input-wrapper input:focus {
+    background: rgba(0, 0, 0, 0.4);
+    border-color: #00d2ff;
+    box-shadow: 0 0 10px rgba(0, 210, 255, 0.3);
+}
+
+.input-icon {
+    position: absolute;
+    top: 50%;
+    left: 20px;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 1.2rem;
+    transition: 0.3s;
+}
+
+.input-wrapper input:focus~.input-icon {
+    color: #00d2ff;
+}
+
+/* Button Style */
+.login-btn {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 30px;
+    background: linear-gradient(45deg, #3a7bd5, #00d2ff);
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+    box-shadow: 0 5px 15px rgba(0, 210, 255, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 210, 255, 0.5);
+    background: linear-gradient(45deg, #00d2ff, #3a7bd5);
+}
+
+.login-btn:disabled {
+    background: #555;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* Error Message */
+.error-msg {
+    background: rgba(255, 71, 87, 0.2);
+    border: 1px solid rgba(255, 71, 87, 0.5);
+    color: #ff4757;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+    animation: shake 0.3s;
+}
+
+.back-home {
+    margin-top: 30px;
+    display: block;
+    color: rgba(255, 255, 255, 0.5);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: 0.3s;
+}
+
+.back-home:hover {
+    color: white;
+    text-decoration: underline;
+}
+
+/* Keyframes */
+@keyframes gradientBG {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-5px);
+    }
+
+    75% {
+        transform: translateX(5px);
+    }
+}

@@ -12,16 +12,17 @@ import CreateBuilding from './components/CreateBuilding';
 import AdminLayout from './layouts/AdminLayout';
 import BuildingManager from './pages/admin/BuildingManager';
 import UserManager from './pages/admin/UserManager';
+import LoginPage from './pages/admin/LoginPage';
 
 import './styles/App.css';
 
-// 1. Tạo một Layout dành riêng cho các trang của User (Có Header/Footer)
+// 1. Layout User (Giữ nguyên)
 const UserLayout = () => {
   return (
     <div className="user-layout" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Header />
       <main style={{ paddingTop: '100px', flex: 1, backgroundColor: '#f8fafd' }}>
-        <Outlet /> {/* Nơi hiển thị các trang con của User */}
+        <Outlet />
       </main>
       <Footer />
     </div>
@@ -34,7 +35,7 @@ function App() {
       <AuthProvider>
         <div className="App">
           <Routes>
-            {/* --- NHÓM ROUTE NGƯỜI DÙNG (CÓ HEADER/FOOTER) --- */}
+            {/* === NHÓM 1: CÁC TRANG CÔNG KHAI (USER) === */}
             <Route element={<UserLayout />}>
               <Route path="/" element={<HomePage />} />
               <Route path="/search" element={<BuildingSearch />} />
@@ -42,12 +43,23 @@ function App() {
               <Route path="/post-building" element={<CreateBuilding />} />
             </Route>
 
-            {/* --- NHÓM ROUTE ADMIN (KHÔNG CÓ HEADER/FOOTER USER) --- */}
+            {/* === NHÓM 2: TRANG LOGIN (ĐỨNG MỘT MÌNH) === */}
+            {/* SỬA: Đưa ra ngoài cùng, ngang hàng với User và Admin */}
+            <Route path="/login" element={<LoginPage />} />
+
+            {/* === NHÓM 3: KHU VỰC ADMIN (CÓ SIDEBAR) === */}
             <Route path="/admin" element={<AdminLayout />}>
+              {/* index: Mặc định vào /admin sẽ hiện BuildingManager */}
               <Route index element={<BuildingManager />} />
+
+              {/* Các đường dẫn con KHÔNG được có dấu / ở đầu */}
               <Route path="buildings" element={<BuildingManager />} />
               <Route path="users" element={<UserManager />} />
             </Route>
+
+            {/* Trang 404 (Nếu cần) */}
+            <Route path="*" element={<div style={{ textAlign: 'center', marginTop: '50px' }}>404 Not Found</div>} />
+
           </Routes>
 
           {/* Modal vẫn để ngoài để bật lên được ở mọi nơi */}
