@@ -15,6 +15,7 @@ import BuildingManager from './pages/admin/BuildingManager';
 import UserManager from './pages/admin/UserManager';
 import LoginPage from './pages/admin/LoginPage';
 import CreateStaff from './pages/admin/CreateStaff';
+import UserProfile from './pages/UserProfile';
 import './styles/App.css';
 
 // UserLayout giữ nguyên
@@ -42,6 +43,7 @@ function App() {
               <Route path="/search" element={<BuildingSearch />} />
               <Route path="/building/:id" element={<BuildingDetail />} />
               <Route path="/post-building" element={<CreateBuilding />} />
+              <Route path="/profile" element={<UserProfile />} />
             </Route>
 
             {/* === NHÓM 2: LOGIN === */}
@@ -52,10 +54,10 @@ function App() {
               <Route index element={<BuildingManager />} />
               <Route path="buildings" element={<BuildingManager />} />
               <Route path="users" element={<UserManager />} />
-              
+
               {/* --- SỬA Ở ĐÂY: Đưa vào trong và bỏ '/admin/' ở path --- */}
               {/* React Router sẽ tự hiểu đường dẫn đầy đủ là: /admin/staff-create */}
-              <Route path="users/create" element={<CreateStaff />} /> 
+              <Route path="users/create" element={<CreateStaff />} />
             </Route>
 
             {/* === 404 (Luôn để cuối cùng) === */}

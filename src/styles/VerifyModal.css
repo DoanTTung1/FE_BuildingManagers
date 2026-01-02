@@ -1,0 +1,134 @@
+/* =========================================
+   OTP VERIFICATION MODAL - NAVY & RED
+   ========================================= */
+
+.verify-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(8px);
+    z-index: 3000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.3s ease;
+}
+
+.verify-box {
+    background: #ffffff;
+    width: 400px;
+    padding: 35px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.verify-icon {
+    width: 70px;
+    height: 70px;
+    background: #eff6ff;
+    color: #0f172a;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    margin: 0 auto 20px;
+    border: 2px solid #0f172a;
+}
+
+.verify-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 10px;
+}
+
+.verify-desc {
+    color: #64748b;
+    font-size: 0.95rem;
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+
+/* Input Code OTP */
+.otp-input-group {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 25px;
+}
+
+.otp-input {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-align: center;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    background: #f8fafc;
+    color: #0f172a;
+    transition: all 0.3s;
+}
+
+.otp-input:focus {
+    border-color: #ef4444;
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+    outline: none;
+}
+
+/* Buttons */
+.btn-verify-action {
+    width: 100%;
+    padding: 14px;
+    background: #0f172a;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-verify-action:hover {
+    background: #ef4444;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px -5px rgba(239, 68, 68, 0.4);
+}
+
+.btn-close-verify {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: #94a3b8;
+    cursor: pointer;
+}
+
+.btn-close-verify:hover {
+    color: #ef4444;
+}
+
+.resend-link {
+    display: block;
+    margin-top: 15px;
+    font-size: 0.9rem;
+    color: #64748b;
+    cursor: pointer;
+}
+
+.resend-link:hover {
+    color: #0f172a;
+    text-decoration: underline;
+}

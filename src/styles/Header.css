@@ -1,131 +1,111 @@
 /* =========================================
-   HEADER STYLES - ULTRA MODERN & LUXURY
-   Theme: Navy (#0f172a) & Red (#ef4444)
+   HEADER STYLES - MODERN & CLEAN
    ========================================= */
 
 :root {
-    --h-navy: #0f172a;
-    --h-red: #ef4444;
-    --h-red-hover: #dc2626;
-    --h-text-dark: #334155;
-    --h-white: #ffffff;
-    --h-height: 90px;
-    --h-scroll-height: 70px;
+    --primary-navy: #0f172a;
+    --primary-red: #ef4444;
+    --text-gray: #64748b;
+    --bg-light: #f8fafc;
+    --border-color: #e2e8f0;
+    --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
-/* --- MAIN WRAPPER --- */
+/* 1. KHUNG CHÍNH HEADER */
 .main-header {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    height: var(--h-height);
+    height: 80px;
+    /* Chiều cao mặc định */
+    background-color: #ffffff;
     z-index: 1000;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-
-    /* BỎ GRADIENT ĐEN -> CHUYỂN THÀNH TRONG SUỐT */
-    background: transparent;
-
-    /* Giữ lại viền trắng mờ cực nhẹ để tạo bố cục */
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-
-    padding-top: 10px;
+    transition: all 0.3s ease;
+    border-bottom: 1px solid transparent;
 }
 
-/* KHI CUỘN: Nền trắng kính mờ */
+/* Hiệu ứng khi cuộn trang */
 .main-header.scrolled {
-    height: var(--h-scroll-height);
-    padding-top: 0;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(12px);
-    box-shadow: 0 4px 30px rgba(15, 23, 42, 0.08);
-    border-bottom: 1px solid rgba(15, 23, 42, 0.05);
+    height: 70px;
+    /* Thu nhỏ lại xíu */
+    box-shadow: var(--shadow-md);
+    border-bottom: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
 }
 
 .header-container {
-    max-width: 1280px;
-    width: 95%;
-    margin: 0 auto;
+    max-width: 1200px;
     height: 100%;
+    margin: 0 auto;
+    padding: 0 20px;
     display: flex;
+    align-items: center;
     justify-content: space-between;
+}
+
+/* 2. LOGO */
+.logo-area {
+    cursor: pointer;
+    display: flex;
     align-items: center;
 }
 
-/* --- LOGO --- */
-.logo-area {
-    cursor: pointer;
-    user-select: none;
-}
-
 .logo-text {
-    font-size: 2rem;
+    font-size: 1.8rem;
     font-weight: 800;
+    color: var(--primary-navy);
     letter-spacing: -1px;
-
-    /* ĐỔI MÀU: Xanh Navy Đậm (Thay vì trắng) */
-    color: var(--h-navy);
-
     margin: 0;
-    transition: color 0.3s;
-
-    /* QUAN TRỌNG: Thêm viền sáng (Halo) màu trắng xung quanh chữ */
-    /* Giúp chữ Xanh Navy đọc được kể cả khi ảnh nền bị tối */
-    text-shadow:
-        0 0 20px rgba(255, 255, 255, 0.8),
-        /* Glow trắng lan tỏa */
-        0 2px 5px rgba(0, 0, 0, 0.1);
-    /* Bóng đen nhẹ tạo khối */
 }
 
 .logo-text span {
-    color: var(--h-red);
-    /* Thêm Glow trắng tương tự */
-    text-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+    color: var(--primary-red);
 }
 
-/* Khi cuộn xuống: Giữ nguyên màu sắc (Vì nền header đã là trắng) */
-.main-header.scrolled .logo-text {
-    color: var(--h-navy);
-    text-shadow: none;
-    /* Bỏ hiệu ứng Glow đi cho sắc nét */
-    font-size: 1.8rem;
+/* 3. MENU ĐIỀU HƯỚNG */
+.nav-menu {
+    flex: 1;
+    /* Đẩy menu ra giữa */
+    display: flex;
+    justify-content: center;
 }
 
-/* --- NAVIGATION --- */
 .nav-list {
     display: flex;
+    gap: 30px;
     list-style: none;
-    gap: 35px;
-    padding: 0;
     margin: 0;
+    padding: 0;
 }
 
 .nav-link {
     text-decoration: none;
-    color: var(--h-white);
-    font-weight: 600;
     font-size: 0.95rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-weight: 600;
+    color: #334155;
     position: relative;
     padding: 5px 0;
-    transition: all 0.3s;
-    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    transition: color 0.3s;
 }
 
-/* Effect gạch chân từ giữa */
+.nav-link:hover,
+.nav-link.active {
+    color: var(--primary-red);
+}
+
+/* Hiệu ứng gạch chân khi hover */
 .nav-link::after {
     content: '';
     position: absolute;
-    bottom: 0;
-    left: 50%;
     width: 0;
-    height: 3px;
-    background: var(--h-red);
-    transition: all 0.3s ease;
-    transform: translateX(-50%);
-    border-radius: 2px;
+    height: 2px;
+    bottom: 0;
+    left: 0;
+    background-color: var(--primary-red);
+    transition: width 0.3s;
 }
 
 .nav-link:hover::after,
@@ -133,291 +113,172 @@
     width: 100%;
 }
 
-.nav-link:hover {
-    opacity: 1;
-    transform: translateY(-1px);
-}
-
-.main-header.scrolled .nav-link {
-    color: var(--h-text-dark);
-    text-shadow: none;
-}
-
-.main-header.scrolled .nav-link:hover {
-    color: var(--h-navy);
-}
-
-
-/* --- ACTIONS AREA --- */
+/* 4. KHU VỰC BÊN PHẢI (HOTLINE + USER + BUTTON) */
 .header-actions {
     display: flex;
     align-items: center;
     gap: 20px;
 }
 
-/* HOTLINE */
+/* Hotline */
 .hotline-box {
+    text-align: right;
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
-    margin-right: 15px;
+    margin-right: 10px;
 }
 
 .hotline-label {
     font-size: 0.7rem;
+    color: var(--text-gray);
     text-transform: uppercase;
     font-weight: 700;
-    color: var(--h-navy);
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
-    letter-spacing: 1px;
 }
 
 .hotline-number {
-    font-weight: 900;
-    font-size: 1.2rem;
-    color: var(--h-red);
     text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--primary-navy);
     display: flex;
     align-items: center;
     gap: 5px;
-    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
-    transition: 0.2s;
+    transition: color 0.2s;
 }
 
 .hotline-number:hover {
-    transform: scale(1.05);
-    color: var(--h-red);
+    color: var(--primary-red);
 }
 
-.main-header.scrolled .hotline-label {
-    color: var(--h-navy);
-    text-shadow: none;
-}
-
-.main-header.scrolled .hotline-number {
-    text-shadow: none;
-}
-
-.main-header.scrolled .hotline-number:hover {
-    color: var(--h-red);
-}
-
-
-/* --- USER BADGE (KHU VỰC HIỂN THỊ TÊN - SỬA LẠI NỀN TỐI) --- */
+/* 5. USER BADGE (AVATAR + NAME) - ĐÃ CĂN CHỈNH ĐẸP */
 .user-badge {
     display: flex;
     align-items: center;
-    gap: 12px;
-
-    /* [QUAN TRỌNG] Đổi nền thành màu NAVY ĐẬM (thay vì kính trong suốt) */
-    background: var(--h-navy);
-
-    /* Thêm viền mờ nhẹ */
-    border: 1px solid rgba(255, 255, 255, 0.15);
-
-    /* Padding rộng rãi */
-    padding: 6px 6px 6px 20px;
-    border-radius: 50px;
-
-    transition: all 0.3s ease;
-
-    /* Đổ bóng để nổi lên khỏi nền ảnh */
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    background-color: #f1f5f9;
+    padding: 4px 6px 4px 6px;
+    /* Padding nhỏ gọn */
+    border-radius: 40px;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s;
 }
 
+.user-badge:hover {
+    background-color: #e2e8f0;
+    border-color: #cbd5e1;
+}
+
+/* Avatar Container */
+.user-avatar-small {
+    /* Các style inline trong JSX đã tốt, ở đây ta bổ sung hover effect */
+    transition: transform 0.2s;
+}
+
+.user-badge:hover .user-avatar-small {
+    transform: scale(1.05);
+}
+
+/* Info Text */
 .user-info {
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
+    margin: 0 12px 0 8px;
+    /* Căn cách avatar và nút logout */
     line-height: 1.2;
 }
 
 .hello-lbl {
-    font-size: 0.7rem;
-    color: rgba(255, 255, 255, 0.7);
-    /* Màu xám trắng nhạt */
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-size: 0.65rem;
+    color: var(--text-gray);
+    font-weight: 600;
 }
 
-.user-name {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: #ffffff;
-    /* Tên màu TRẮNG TINH -> Rất dễ đọc trên nền Navy */
-    max-width: 150px;
+.user-name-link {
+    font-size: 0.85rem;
+    /* Màu sắc đã set inline trong JSX, nhưng set ở đây cho chắc */
     white-space: nowrap;
+    max-width: 120px;
     overflow: hidden;
     text-overflow: ellipsis;
+    /* Cắt chữ nếu tên quá dài */
 }
 
+/* Divider */
 .divider-vertical {
     width: 1px;
-    height: 25px;
-    background: rgba(255, 255, 255, 0.2);
-    /* Vạch ngăn cách mờ */
+    height: 24px;
+    background-color: #cbd5e1;
+    margin-right: 8px;
 }
 
-/* Nút đăng xuất tròn */
+/* Nút Logout tròn nhỏ */
 .btn-logout-circle {
-    width: 38px;
-    height: 38px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    background: rgba(255, 255, 255, 0.1);
-    /* Nền nút hơi sáng hơn nền badge chút */
-    color: white;
-    font-size: 0.9rem;
+    border: none;
+    background: #fff;
+    color: var(--text-gray);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: all 0.2s;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .btn-logout-circle:hover {
-    background: var(--h-red);
-    /* Hover chuyển Đỏ */
-    border-color: var(--h-red);
+    background: var(--primary-red);
+    color: #fff;
     transform: rotate(90deg);
-    box-shadow: 0 0 10px var(--h-red);
+    /* Xoay nhẹ khi hover */
 }
 
-/* --- KHI CUỘN XUỐNG (SCROLLED) --- */
-/* Chuyển sang nền Xám nhạt, Chữ Navy để hợp với thanh header trắng */
-.main-header.scrolled .user-badge {
-    background: #f1f5f9;
-    border-color: #cbd5e1;
-    box-shadow: none;
-}
-
-.main-header.scrolled .hello-lbl {
-    color: #64748b;
-}
-
-.main-header.scrolled .user-name {
-    color: var(--h-navy);
-}
-
-.main-header.scrolled .divider-vertical {
-    background: #cbd5e1;
-}
-
-.main-header.scrolled .btn-logout-circle {
-    background: white;
-    color: var(--h-navy);
-    border-color: #cbd5e1;
-}
-
-.main-header.scrolled .btn-logout-circle:hover {
-    background: var(--h-red);
-    color: white;
-    border-color: var(--h-red);
-}
-
-
-/* --- BUTTONS (ĐĂNG NHẬP / ĐĂNG TIN) --- */
+/* 6. CÁC NÚT BẤM CHÍNH */
 .btn-header {
-    padding: 10px 24px;
-    border-radius: 50px;
-    border: none;
-    font-weight: 700;
-    font-size: 0.95rem;
-    cursor: pointer;
     display: flex;
     align-items: center;
     gap: 8px;
-    transition: all 0.3s;
-    position: relative;
-    overflow: hidden;
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
-/* Login Button */
+/* Nút Đăng nhập */
 .btn-login {
-    /* Đổi sang nền màu NAVY thay vì trong suốt */
-    background: var(--h-navy);
-
-    /* Viền cũng màu Navy */
-    border: 2px solid var(--h-navy);
-
-    /* Chữ Trắng tinh -> Tương phản cực cao với nền xanh */
-    color: #ffffff;
-
-    font-weight: 700;
-
-    /* Thêm bóng đổ nhẹ để nút nổi lên kiểu 3D */
-    box-shadow: 0 4px 15px rgba(15, 23, 42, 0.4);
-
-    /* Hiệu ứng kính mờ nhẹ nếu muốn nút trông "deep" hơn */
-    backdrop-filter: blur(4px);
+    background: transparent;
+    border: 1px solid var(--primary-navy);
+    color: var(--primary-navy);
 }
 
 .btn-login:hover {
-    background: #ffffff;
-    color: var(--h-navy);
-    border-color: #ffffff;
-    transform: translateY(-2px);
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
-    /* Glow trắng */
+    background: var(--primary-navy);
+    color: #fff;
 }
 
-.main-header.scrolled .btn-login {
-    background: transparent;
-    border: 2px solid var(--h-navy);
-    color: var(--h-navy);
-}
-
-.main-header.scrolled .btn-login:hover {
-    background: var(--h-navy);
-    color: white;
-}
-
-/* Post Button (Red) */
+/* Nút Đăng tin (Nổi bật) */
 .btn-post {
-    background: var(--h-red);
-    color: white;
-    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+    background: linear-gradient(135deg, var(--primary-red), #b91c1c);
+    border: none;
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
 }
 
 .btn-post:hover {
-    background: var(--h-red-hover);
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.6);
+    box-shadow: 0 6px 15px rgba(239, 68, 68, 0.4);
 }
 
-/* Hiệu ứng Shine cho nút Đăng tin */
-.btn-post::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 50%;
-    height: 100%;
-    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.4), transparent);
-    transform: skewX(-25deg);
-    transition: 0.5s;
-}
-
-.btn-post:hover::before {
-    left: 150%;
-}
-
-/* --- RESPONSIVE --- */
+/* Responsive cơ bản */
 @media (max-width: 992px) {
     .nav-menu {
         display: none;
     }
 
-    .btn-login {
+    /* Ẩn menu trên tablet/mobile (Cần làm menu burger sau) */
+    .hotline-box {
         display: none;
-    }
-
-    .user-badge {
-        display: none;
-    }
-
-    /* Ẩn User Badge trên mobile cho gọn */
-    .header-actions {
-        gap: 10px;
     }
 }

@@ -2,38 +2,32 @@ import axios from 'axios';
 import queryString from 'query-string';
 
 const axiosClient = axios.create({
-    baseURL: 'https://thanhtung-building.up.railway.app',
-    headers: {
-        'Content-Type': 'application/json',
-    },
+    baseURL: 'https://thanhtung-building.up.railway.app', // URL Backend của bạn
+    // headers: {
+    //     'Content-Type': 'application/json', // <--- QUAN TRỌNG: PHẢI XÓA HOẶC COMMENT DÒNG NÀY
+    // },
     paramsSerializer: params => queryString.stringify(params),
 });
 
-// --- THÊM ĐOẠN NÀY (REQUEST INTERCEPTOR) ---
-// Tác dụng: Trước khi gửi bất kỳ request nào đi, nó sẽ tự động chèn Token vào
+// REQUEST INTERCEPTOR: Tự động gắn Token vào mọi request
 axiosClient.interceptors.request.use(async (config) => {
-    // 1. Lấy token từ bộ nhớ trình duyệt
     const token = localStorage.getItem('token');
-
-    // 2. Nếu có token, gắn nó vào Header "Authorization"
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
-
     return config;
 }, (error) => {
     return Promise.reject(error);
 });
-// -------------------------------------------
 
+// RESPONSE INTERCEPTOR: Xử lý dữ liệu trả về gọn gàng
 axiosClient.interceptors.response.use((res) => {
     if (res && res.data) {
         return res.data;
     }
     return res;
 }, (error) => {
-    // Xử lý lỗi (nếu cần log ra console)
-    // console.error("Error API:", error);
+    // Ném lỗi ra để component (như Modal) bắt được và hiện thông báo
     throw error;
 });
 

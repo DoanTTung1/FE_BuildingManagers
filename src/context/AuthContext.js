@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import authApi from '../api/authApi';
+import authApi from '../api/authApi'; // Đảm bảo bạn có file này gọi axiosClient
 
 const AuthContext = createContext();
 
@@ -9,6 +9,7 @@ export const AuthProvider = ({ children }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const navigate = useNavigate();
 
+    // Load lại user khi F5 trang
     useEffect(() => {
         const token = localStorage.getItem('token');
         const savedUser = localStorage.getItem('user');
@@ -19,48 +20,34 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (formData) => {
         try {
+            // Gọi API đăng nhập
             const res = await authApi.login(formData);
 
-            // Kiểm tra dữ liệu trả về từ Backend
             if (res && res.token) {
                 // 1. Lưu Token
                 localStorage.setItem('token', res.token);
 
-                // 2. Lưu thông tin User
+                // 2. Chuẩn bị thông tin User để lưu
+                // Backend trả về 'username' hay 'userName' thì bạn map cho đúng vào đây
                 const userInfo = {
                     id: res.id,
-                    userName: res.username,
+                    username: res.username,
+                    fullName: res.fullName || res.username,
                     email: res.email,
-                    roles: res.roles || [] // Đảm bảo luôn là mảng
+                    phone: res.phone,
+                    avatar: res.avatar, // Lưu thêm avatar
+                    roles: res.roles || [],
+                    phoneVerified: res.phoneVerified // Quan trọng cho dấu tích xanh
                 };
 
+                // 3. Lưu vào LocalStorage và State
                 localStorage.setItem('user', JSON.stringify(userInfo));
-
-                // Lưu roles riêng ra để AdminLayout dễ đọc (như chúng ta đã bàn)
-                localStorage.setItem('roles', JSON.stringify(res.roles || []));
-
                 setUser(userInfo);
+
+                // Đóng modal đăng nhập
                 setIsModalOpen(false);
 
-                // --- THAY ĐỔI QUAN TRỌNG Ở ĐÂY ---
-
-                // A. Tắt chuyển hướng tự động tại đây. 
-                // Lý do: Để LoginPage tự quyết định. Nếu Context tự chuyển trang, 
-                // logic báo lỗi "Không có quyền" bên LoginPage sẽ không kịp chạy.
-                /* if (res.roles && (res.roles.includes("ADMIN") || res.roles.includes("STAFF"))) {
-                    navigate('/admin/buildings');
-                } else {
-                    navigate('/');
-                }
-                */
-
-                // B. Trả về ĐẦY ĐỦ dữ liệu cho LoginPage dùng
-                // Dùng ...res để bung toàn bộ dữ liệu (token, roles, id...) ra
-                return {
-                    success: true,
-                    ...res,      // <-- Cực kỳ quan trọng: Trả lại roles cho LoginPage đọc
-                    roles: res.roles // Gán cứng thêm lần nữa cho chắc ăn
-                };
+                return { success: true, ...res };
             }
         } catch (error) {
             console.error("Login failed:", error);
@@ -72,16 +59,24 @@ export const AuthProvider = ({ children }) => {
     };
 
     const logout = () => {
-        localStorage.clear(); // Xóa sạch token, user, roles
+        localStorage.clear(); // Xóa sạch token và user
         setUser(null);
-        navigate('/'); // Đăng xuất xong về trang chủ
+        navigate('/'); // Quay về trang chủ
+    };
+
+    // Hàm này để Modal Update Profile gọi sau khi lưu thành công
+    // Giúp Header cập nhật avatar/tên ngay lập tức
+    const updateUser = (newUserData) => {
+        // Giữ lại token cũ, chỉ update thông tin user
+        setUser(newUserData);
+        localStorage.setItem('user', JSON.stringify(newUserData));
     };
 
     return (
         <AuthContext.Provider value={{
             user,
+            setUser: updateUser, // Export hàm này để các Component con dùng
             login,
-            register: (data) => authApi.register(data),
             logout,
             isModalOpen,
             openModal: () => setIsModalOpen(true),
