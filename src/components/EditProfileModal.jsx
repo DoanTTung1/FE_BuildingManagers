@@ -7,7 +7,13 @@ import '../styles/UserProfile.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+// --- QUAN TRỌNG: Import useAuth để cập nhật state toàn cục ---
+import { useAuth } from '../context/AuthContext';
+
 const EditProfileModal = ({ isOpen, onClose, currentUser, onUpdateSuccess }) => {
+    // 1. Lấy hàm setUser từ AuthContext
+    const { setUser } = useAuth();
+
     const [formData, setFormData] = useState({
         username: '',
         fullName: '',
@@ -19,6 +25,7 @@ const EditProfileModal = ({ isOpen, onClose, currentUser, onUpdateSuccess }) => 
     const [previewAvatar, setPreviewAvatar] = useState(null);
     const [loading, setLoading] = useState(false);
 
+    // Load dữ liệu khi mở Modal
     useEffect(() => {
         if (currentUser && isOpen) {
             setFormData({
@@ -32,9 +39,11 @@ const EditProfileModal = ({ isOpen, onClose, currentUser, onUpdateSuccess }) => 
         }
     }, [currentUser, isOpen]);
 
+    // Xử lý chọn ảnh
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
+            // Giới hạn 5MB
             if (file.size > 5 * 1024 * 1024) {
                 toast.warning("Ảnh quá lớn! Vui lòng chọn ảnh dưới 5MB.");
                 return;
@@ -44,7 +53,9 @@ const EditProfileModal = ({ isOpen, onClose, currentUser, onUpdateSuccess }) => 
         }
     };
 
+    // Xử lý Submit
     const handleSubmit = async () => {
+        // Validate cơ bản
         if (!formData.fullName.trim()) {
             toast.warning("Vui lòng nhập họ tên!");
             return;
@@ -54,6 +65,7 @@ const EditProfileModal = ({ isOpen, onClose, currentUser, onUpdateSuccess }) => 
         const toastId = toast.loading("Đang cập nhật hồ sơ...");
 
         try {
+            // Chuẩn bị dữ liệu gửi đi
             const data = new FormData();
             data.append('fullName', formData.fullName);
             data.append('email', formData.email);
@@ -64,7 +76,15 @@ const EditProfileModal = ({ isOpen, onClose, currentUser, onUpdateSuccess }) => 
                 data.append('avatarFile', avatarFile);
             }
 
+            // Gọi API
             const res = await axiosClient.post('/api/users/profile/update', data);
+
+            // --- CẬP NHẬT CONTEXT VÀ LOCALSTORAGE NGAY LẬP TỨC ---
+            // res là UserDTO mới trả về từ server
+            if (res) {
+                setUser(res);
+            }
+            // -----------------------------------------------------
 
             toast.update(toastId, {
                 render: "Cập nhật thành công! 🎉",
@@ -73,7 +93,10 @@ const EditProfileModal = ({ isOpen, onClose, currentUser, onUpdateSuccess }) => 
                 autoClose: 2000
             });
 
-            onUpdateSuccess(res);
+            // Callback ra ngoài (nếu component cha cần)
+            if (onUpdateSuccess) onUpdateSuccess(res);
+
+            // Đóng Modal sau 1.5s
             setTimeout(() => onClose(), 1500);
 
         } catch (error) {
@@ -93,6 +116,7 @@ const EditProfileModal = ({ isOpen, onClose, currentUser, onUpdateSuccess }) => 
 
     return (
         <div className="modal-overlay">
+            {/* Toast Container riêng cho Modal để hiển thị nổi lên trên */}
             <ToastContainer
                 position="top-right" autoClose={3000} theme="colored" style={{ zIndex: 99999 }}
             />
@@ -161,6 +185,7 @@ const EditProfileModal = ({ isOpen, onClose, currentUser, onUpdateSuccess }) => 
                                     value={formData.phone}
                                     placeholder="090..."
                                     onChange={(e) => {
+                                        // Chỉ cho phép nhập số
                                         if (/^[0-9\s+]*$/.test(e.target.value)) {
                                             setFormData({ ...formData, phone: e.target.value })
                                         }
