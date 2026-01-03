@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosClient from '../api/axiosClient';
+import { useAuth } from '../context/AuthContext'; // Thêm hook để lấy thông tin user
 import {
     FaBuilding, FaDollarSign, FaImage, FaCheck, FaUserTie,
     FaListUl, FaSpinner, FaTimes, FaCloudUploadAlt, FaCheckCircle, FaArrowRight
 } from 'react-icons/fa';
 import '../styles/CreateBuilding.css';
 
-// Danh sách Quận & Loại (Giữ nguyên)
 const DISTRICTS = [
     { id: 1, name: 'Quận 1' }, { id: 2, name: 'Quận 2' },
     { id: 3, name: 'Quận 3' }, { id: 4, name: 'Quận 4' },
@@ -21,10 +21,9 @@ const BUILDING_TYPES = [
 
 const CreateBuilding = () => {
     const navigate = useNavigate();
+    const { user } = useAuth(); // Lấy user hiện tại
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
-
-    // State điều khiển Popup Thành Công
     const [showSuccess, setShowSuccess] = useState(false);
 
     // File States
@@ -33,7 +32,7 @@ const CreateBuilding = () => {
     const [previewAvatarUrl, setPreviewAvatarUrl] = useState('');
     const [previewAlbumUrls, setPreviewAlbumUrls] = useState([]);
 
-    // Form Data
+    // Form Data (GIỮ NGUYÊN)
     const [formData, setFormData] = useState({
         name: '', street: '', ward: '', districtId: '',
         structure: '', numberOfBasement: 0, floorArea: 0,
@@ -47,7 +46,6 @@ const CreateBuilding = () => {
         rentArea: '', typeCode: []
     });
 
-    // Cleanup URLs
     useEffect(() => {
         return () => {
             if (previewAvatarUrl) URL.revokeObjectURL(previewAvatarUrl);
@@ -64,7 +62,6 @@ const CreateBuilding = () => {
         setFormData({ ...formData, typeCode: updatedTypes });
     };
 
-    // --- HANDLE IMAGES ---
     const handleAvatarSelect = (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -93,7 +90,6 @@ const CreateBuilding = () => {
         });
     };
 
-    // --- API UPLOAD ---
     const uploadSingleFile = async (file) => {
         const uploadData = new FormData();
         uploadData.append('file', file);
@@ -103,24 +99,21 @@ const CreateBuilding = () => {
         return res;
     };
 
-    // --- SUBMIT ---
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!formData.name || !formData.districtId || !formData.rentPrice) {
-            alert("Vui lòng điền các trường bắt buộc (*)"); // Giữ alert thường cho lỗi validation nhẹ
+            alert("Vui lòng điền các trường bắt buộc (*)");
             return;
         }
 
         setIsLoading(true);
         try {
-            // 1. Upload Avatar
             let finalAvatarUrl = "";
             if (rawAvatarFile) {
                 setLoadingMessage("Đang tải lên ảnh đại diện...");
                 finalAvatarUrl = await uploadSingleFile(rawAvatarFile);
             }
 
-            // 2. Upload Album
             let finalImageList = [];
             if (rawAlbumFiles.length > 0) {
                 setLoadingMessage(`Đang tải lên ${rawAlbumFiles.length} ảnh chi tiết...`);
@@ -128,7 +121,6 @@ const CreateBuilding = () => {
                 finalImageList = await Promise.all(uploadPromises);
             }
 
-            // 3. Submit Data
             setLoadingMessage("Đang lưu thông tin...");
             const finalPayload = {
                 ...formData,
@@ -138,9 +130,8 @@ const CreateBuilding = () => {
 
             await axiosClient.post('/api/buildings', finalPayload);
 
-            // THÀNH CÔNG -> HIỆN POPUP ĐẸP
             setIsLoading(false);
-            setShowSuccess(true); // Kích hoạt Popup
+            setShowSuccess(true); // MỞ POPUP THÀNH CÔNG
 
         } catch (error) {
             console.error("Lỗi:", error);
@@ -149,14 +140,17 @@ const CreateBuilding = () => {
         }
     };
 
-    // Hàm chuyển hướng khi bấm nút trên Popup
     const handleSuccessRedirect = () => {
-        navigate('/'); // Về trang chủ cho an toàn
+        navigate('/');
     };
+
+    // KIỂM TRA ROLE ADMIN
+    const isAdmin = user?.roles?.includes('ADMIN');
 
     return (
         <div className="create-page-wrapper">
-            {/* POPUP THÀNH CÔNG (MODAL) */}
+
+            {/* POPUP THÀNH CÔNG (ĐÃ NÂNG CẤP) */}
             {showSuccess && (
                 <div className="success-overlay">
                     <div className="success-modal">
@@ -164,7 +158,18 @@ const CreateBuilding = () => {
                             <FaCheckCircle />
                         </div>
                         <h3>Đăng Tin Thành Công!</h3>
-                        <p>Tòa nhà <strong>{formData.name}</strong> đã được thêm vào hệ thống.</p>
+                        <p className="success-subtitle">Tòa nhà <strong>{formData.name}</strong> đã được thêm vào hệ thống.</p>
+
+                        {/* --- NỘI DUNG THÔNG BÁO KHÁC NHAU --- */}
+                        <div className={`status-alert ${isAdmin ? 'alert-active' : 'alert-pending'}`}>
+                            {isAdmin ? (
+                                <>✅ Tin đăng của bạn đã được hiển thị công khai ngay lập tức.</>
+                            ) : (
+                                <>⚠️ Bài viết đang chờ Quản trị viên xét duyệt. Vui lòng theo dõi tại Trang cá nhân.</>
+                            )}
+                        </div>
+                        {/* ------------------------------------ */}
+
                         <button className="btn-success-ok" onClick={handleSuccessRedirect}>
                             Về Trang Chủ <FaArrowRight />
                         </button>
@@ -179,7 +184,7 @@ const CreateBuilding = () => {
                 </div>
 
                 <form className="create-form" onSubmit={handleSubmit}>
-                    {/* 1. THÔNG TIN CHUNG */}
+                    {/* FORM GIỮ NGUYÊN CODE CŨ CỦA BẠN, CHỈ THAY ĐỔI CSS BÊN NGOÀI */}
                     <div className="form-section">
                         <h3 className="section-title"><FaBuilding /> Thông tin chung</h3>
                         <div className="form-grid">
@@ -204,7 +209,6 @@ const CreateBuilding = () => {
                         </div>
                     </div>
 
-                    {/* 2. GIÁ & DIỆN TÍCH */}
                     <div className="form-section">
                         <h3 className="section-title"><FaDollarSign /> Giá thuê & Diện tích</h3>
                         <div className="form-grid">
@@ -216,7 +220,6 @@ const CreateBuilding = () => {
                         </div>
                     </div>
 
-                    {/* 3. PHÍ KHÁC */}
                     <div className="form-section">
                         <h3 className="section-title"><FaListUl /> Phí & Điều kiện</h3>
                         <div className="form-grid">
@@ -232,7 +235,6 @@ const CreateBuilding = () => {
                         </div>
                     </div>
 
-                    {/* 4. HÌNH ẢNH */}
                     <div className="form-section">
                         <h3 className="section-title"><FaImage /> Hình ảnh & Loại</h3>
                         <div className="form-group full-width">
@@ -240,13 +242,14 @@ const CreateBuilding = () => {
                             {!previewAvatarUrl ? (
                                 <div className="upload-box">
                                     <label className="custom-file-upload">
-                                        <FaCloudUploadAlt size={24} /> Chọn ảnh đại diện
+                                        <FaCloudUploadAlt size={30} />
+                                        <span>Nhấn để chọn ảnh</span>
                                         <input type="file" accept="image/*" onChange={handleAvatarSelect} style={{ display: 'none' }} />
                                     </label>
                                 </div>
                             ) : (
                                 <div className="image-preview-item" style={{ maxWidth: '200px' }}>
-                                    <img src={previewAvatarUrl} alt="Avatar Preview" />
+                                    <img src={previewAvatarUrl} alt="Preview" />
                                     <button type="button" className="btn-remove-img" onClick={handleRemoveAvatar}><FaTimes /></button>
                                 </div>
                             )}
@@ -256,7 +259,8 @@ const CreateBuilding = () => {
                             <label>Album ảnh chi tiết</label>
                             <div className="upload-box">
                                 <label className="custom-file-upload">
-                                    <FaCloudUploadAlt size={24} /> Thêm ảnh vào album
+                                    <FaCloudUploadAlt size={30} />
+                                    <span>Thêm ảnh vào album</span>
                                     <input type="file" multiple accept="image/*" onChange={handleAlbumSelect} style={{ display: 'none' }} />
                                 </label>
                             </div>
@@ -285,7 +289,6 @@ const CreateBuilding = () => {
                         </div>
                     </div>
 
-                    {/* 5. QUẢN LÝ & GHI CHÚ */}
                     <div className="form-section">
                         <h3 className="section-title"><FaUserTie /> Liên hệ & Khác</h3>
                         <div className="form-grid">
@@ -302,7 +305,7 @@ const CreateBuilding = () => {
                         <button type="button" className="btn-cancel" onClick={() => navigate('/')}>Hủy bỏ</button>
                         <button type="submit" className="btn-submit-form" disabled={isLoading}>
                             {isLoading ? (
-                                <><span className="spinner"></span> <span style={{ marginLeft: '10px' }}>{loadingMessage}</span></>
+                                <><span className="spinner"></span> {loadingMessage}</>
                             ) : (
                                 <><FaCheck /> Đăng Tin</>
                             )}

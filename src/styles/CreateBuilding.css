@@ -1,549 +1,301 @@
-/* =========================================
-   CREATE/EDIT BUILDING - ULTRA MODERN THEME
-   Color: Navy (#0f172a) & Red (#ef4444)
-   ========================================= */
-
-:root {
-    /* --- COLOR PALETTE --- */
-    --c-navy: #0f172a;
-    /* Navy Đậm */
-    --c-navy-light: #1e293b;
-    --c-red: #ef4444;
-    /* Đỏ Accent */
-    --c-red-hover: #dc2626;
-
-    --c-bg: #f8fafc;
-    /* Nền trang Slate-50 */
-    --c-white: #ffffff;
-    --c-border: #e2e8f0;
-    --c-text: #334155;
-    --c-text-light: #64748b;
-
-    --c-radius: 16px;
-    /* Bo góc hiện đại */
-    --c-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --c-shadow-lg: 0 20px 25px -5px rgba(15, 23, 42, 0.1);
-    /* Bóng màu Navy nhạt */
-}
-
-/* =========================================
-   1. PAGE LAYOUT & ANIMATION
-   ========================================= */
 .create-page-wrapper {
-    background-color: var(--c-bg);
+    background-color: #f1f5f9;
     min-height: 100vh;
-    padding-top: 120px;
-    /* Tránh Header che mất */
-    padding-bottom: 80px;
+    padding: 100px 20px 60px;
     font-family: 'Inter', sans-serif;
-    color: var(--c-text);
-    animation: fadeInPage 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .create-container {
-    max-width: 1000px;
+    max-width: 900px;
     margin: 0 auto;
-    padding: 0 20px;
 }
 
-@keyframes fadeInPage {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* =========================================
-   2. HEADER
-   ========================================= */
 .form-header {
     text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 30px;
 }
 
 .form-header h2 {
-    font-size: 2.5rem;
+    color: #0f172a;
+    margin-bottom: 5px;
     font-weight: 800;
-    color: var(--c-navy);
-    margin-bottom: 10px;
-    letter-spacing: -1px;
+    font-size: 2rem;
 }
 
 .form-header p {
-    color: var(--c-text-light);
-    font-size: 1.1rem;
+    color: #64748b;
+    font-size: 1rem;
 }
 
-/* =========================================
-   3. FORM CARD
-   ========================================= */
 .create-form {
-    background: var(--c-white);
-    padding: 50px;
-    border-radius: 24px;
-    box-shadow: var(--c-shadow-lg);
-    border: 1px solid var(--c-border);
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
 }
 
 .form-section {
-    margin-bottom: 40px;
-    border-bottom: 1px dashed var(--c-border);
-    padding-bottom: 30px;
-}
-
-.form-section:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-    padding-bottom: 0;
+    background: #fff;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
 }
 
 .section-title {
-    font-size: 1.25rem;
+    font-size: 1.2rem;
     font-weight: 700;
-    color: var(--c-navy);
+    color: #0f172a;
+    border-bottom: 2px solid #f1f5f9;
+    padding-bottom: 15px;
     margin-bottom: 25px;
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding-left: 15px;
-    border-left: 4px solid var(--c-red);
-    /* Vạch đỏ điểm nhấn */
+    gap: 10px;
 }
 
-/* =========================================
-   4. INPUTS & GRID
-   ========================================= */
 .form-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 25px;
-}
-
-.full-width {
-    grid-column: 1 / -1;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
 }
 
 .form-group {
     display: flex;
     flex-direction: column;
+    gap: 8px;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
 }
 
 .form-group label {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-weight: 600;
-    color: var(--c-navy);
-    margin-bottom: 8px;
+    color: #475569;
 }
 
-/* Input Styles */
 .form-group input,
 .form-group select,
 .form-group textarea {
-    padding: 14px 16px;
-    border: 1px solid var(--c-border);
-    border-radius: 12px;
-    outline: none;
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
     font-size: 1rem;
-    font-family: inherit;
-    color: var(--c-text);
-    background: #f8fafc;
-    transition: all 0.3s ease;
+    transition: all 0.2s;
+    outline: none;
 }
 
-.form-group textarea {
-    resize: vertical;
-    min-height: 120px;
+.form-group input:focus {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
 }
 
-.form-group input:hover,
-.form-group select:hover,
-.form-group textarea:hover {
-    background: var(--c-white);
-    border-color: #cbd5e1;
-}
-
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-    border-color: var(--c-navy);
-    background: var(--c-white);
-    box-shadow: 0 0 0 4px rgba(15, 23, 42, 0.1);
-}
-
-.form-group input::placeholder,
-.form-group textarea::placeholder {
-    color: #94a3b8;
-    font-weight: 400;
-}
-
-/* =========================================
-   5. UPLOAD AREA (IMAGES)
-   ========================================= */
+/* UPLOAD BOX */
 .upload-box {
-    margin-top: 10px;
-    margin-bottom: 20px;
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 30px;
+    text-align: center;
+    background: #f8fafc;
+    transition: all 0.2s;
+}
+
+.upload-box:hover {
+    border-color: #ef4444;
+    background: #fff;
 }
 
 .custom-file-upload {
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
-    gap: 15px;
-    padding: 40px;
-    border: 2px dashed #cbd5e1;
-    border-radius: var(--c-radius);
-    background: #f8fafc;
-    color: var(--c-text-light);
+    gap: 10px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: 500;
+    color: #64748b;
+    font-weight: 600;
 }
 
-.custom-file-upload:hover {
-    border-color: var(--c-red);
-    background: #fef2f2;
-    color: var(--c-red);
-    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.1);
+.album-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+    margin-top: 15px;
 }
 
-/* Preview Items */
 .image-preview-item {
     position: relative;
-    border-radius: 12px;
+    border-radius: 8px;
     overflow: hidden;
-    box-shadow: var(--c-shadow);
-    border: 2px solid transparent;
-    transition: all 0.3s ease;
-    background: #fff;
-}
-
-.image-preview-item:hover {
-    border-color: var(--c-red);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    border: 1px solid #e2e8f0;
 }
 
 .image-preview-item img {
-    display: block;
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+    display: block;
 }
 
-/* Remove Button (X) */
 .btn-remove-img {
     position: absolute;
-    top: 8px;
-    right: 8px;
-    background: rgba(15, 23, 42, 0.7);
+    top: 5px;
+    right: 5px;
+    background: rgba(239, 68, 68, 0.9);
     color: white;
     border: none;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
-    width: 30px;
-    height: 30px;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    font-size: 14px;
-    opacity: 0;
-    transform: scale(0.8);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    backdrop-filter: blur(4px);
-    z-index: 10;
 }
 
-.image-preview-item:hover .btn-remove-img {
-    opacity: 1;
-    transform: scale(1);
-}
-
-.btn-remove-img:hover {
-    background: var(--c-red);
-    transform: scale(1.1) rotate(90deg);
-}
-
-/* Album Grid */
-.album-grid {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 15px;
-    margin-top: 15px;
-}
-
-.album-grid .image-preview-item {
-    width: auto !important;
-    height: 120px;
-}
-
-/* =========================================
-   6. CHECKBOX TAGS (Amenities)
-   ========================================= */
-.checkbox-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-top: 15px;
-}
-
-.checkbox-item {
-    display: inline-flex;
-    align-items: center;
-    padding: 10px 20px;
-    border: 1px solid var(--c-border);
-    border-radius: 50px;
-    cursor: pointer;
-    transition: all 0.3s;
-    font-weight: 500;
-    color: var(--c-text);
-    background: #fff;
-    user-select: none;
-}
-
-.checkbox-item input[type="checkbox"] {
-    display: none;
-}
-
-/* Checked State: Red Styling */
-.checkbox-item:has(input:checked) {
-    border-color: var(--c-red);
-    background-color: #fef2f2;
-    color: var(--c-red);
-    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2);
-    font-weight: 700;
-}
-
-.checkbox-item:not(:has(input:checked)):hover {
-    border-color: var(--c-navy-light);
-    background: #f1f5f9;
-    color: var(--c-navy);
-}
-
-/* =========================================
-   7. ACTIONS & BUTTONS
-   ========================================= */
+/* ACTIONS */
 .form-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 20px;
-    margin-top: 50px;
-    padding-top: 30px;
-    border-top: 1px solid var(--c-border);
+    gap: 15px;
+    margin-top: 20px;
 }
 
 .btn-cancel {
-    padding: 15px 35px;
-    border: 1px solid var(--c-border);
-    background: var(--c-white);
-    color: var(--c-text);
-    border-radius: var(--c-radius);
-    font-weight: 600;
+    padding: 12px 25px;
+    border: none;
+    background: #e2e8f0;
+    color: #475569;
+    font-weight: 700;
+    border-radius: 8px;
     cursor: pointer;
-    transition: all 0.2s;
-    font-size: 1rem;
-}
-
-.btn-cancel:hover {
-    background: #f1f5f9;
-    color: var(--c-navy);
-    border-color: #cbd5e1;
 }
 
 .btn-submit-form {
-    padding: 15px 45px;
-    background: var(--c-red);
-    color: white;
+    padding: 12px 35px;
     border: none;
-    border-radius: var(--c-radius);
+    background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+    color: white;
     font-weight: 700;
-    font-size: 1rem;
+    border-radius: 8px;
     cursor: pointer;
+    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
     display: flex;
     align-items: center;
     gap: 10px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
 }
 
-.btn-submit-form:hover:not(:disabled) {
-    background: var(--c-red-hover);
+.btn-submit-form:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(239, 68, 68, 0.5);
+    box-shadow: 0 6px 15px rgba(239, 68, 68, 0.4);
 }
 
-.btn-submit-form:disabled {
-    background: #cbd5e1;
-    cursor: not-allowed;
-    box-shadow: none;
-    opacity: 0.7;
-}
-
-/* Spinner Animation */
-.spinner {
-    width: 20px;
-    height: 20px;
-    border: 3px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    border-top-color: #fff;
-    animation: spin 1s ease-in-out infinite;
-    display: inline-block;
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-/* =========================================
-   8. SUCCESS POPUP (MODAL) - SIÊU ĐẸP
-   ========================================= */
+/* SUCCESS MODAL STYLES */
 .success-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(15, 23, 42, 0.7);
-    /* Navy tối mờ */
-    backdrop-filter: blur(8px);
-    z-index: 9999;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(5px);
     display: flex;
     justify-content: center;
     align-items: center;
-    animation: fadeInOverlay 0.4s ease forwards;
+    z-index: 2000;
+    animation: fadeIn 0.3s;
 }
 
 .success-modal {
-    background: #ffffff;
-    width: 400px;
-    padding: 40px 30px;
-    border-radius: 24px;
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
     text-align: center;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
-    position: relative;
-    animation: zoomInSuccess 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    width: 90%;
+    max-width: 450px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .success-icon-box {
-    width: 80px;
-    height: 80px;
-    background: #dcfce7;
-    color: #16a34a;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 3rem;
-    margin: 0 auto 20px auto;
-    box-shadow: 0 10px 20px rgba(22, 163, 74, 0.2);
-    animation: bounceIcon 1s ease infinite;
+    font-size: 4rem;
+    color: #10b981;
+    margin-bottom: 20px;
 }
 
 .success-modal h3 {
-    font-size: 1.6rem;
-    color: var(--c-navy);
+    font-size: 1.8rem;
     font-weight: 800;
+    color: #0f172a;
     margin-bottom: 10px;
 }
 
-.success-modal p {
-    color: var(--c-text-light);
-    font-size: 1rem;
-    margin-bottom: 30px;
-    line-height: 1.5;
+.success-subtitle {
+    color: #64748b;
+    margin-bottom: 20px;
 }
 
-.success-modal strong {
-    color: var(--c-red);
+/* STATUS ALERT BOX */
+.status-alert {
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 25px;
+    text-align: left;
+    line-height: 1.5;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.alert-pending {
+    background: #fffbeb;
+    color: #b45309;
+    border: 1px solid #fcd34d;
+}
+
+.alert-active {
+    background: #ecfdf5;
+    color: #047857;
+    border: 1px solid #6ee7b7;
 }
 
 .btn-success-ok {
-    background: var(--c-navy);
+    background: #0f172a;
     color: white;
+    padding: 12px 30px;
     border: none;
-    padding: 14px 30px;
-    border-radius: 50px;
-    font-size: 1rem;
+    border-radius: 8px;
     font-weight: 700;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    transition: all 0.3s;
-    box-shadow: 0 8px 20px -5px rgba(15, 23, 42, 0.4);
+    transition: all 0.2s;
 }
 
 .btn-success-ok:hover {
-    background: var(--c-red);
-    transform: translateY(-3px);
-    box-shadow: 0 12px 25px -5px rgba(239, 68, 68, 0.4);
+    background: #1e293b;
+    transform: scale(1.05);
 }
 
-@keyframes fadeInOverlay {
+@keyframes slideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeIn {
     from {
         opacity: 0;
     }
 
     to {
         opacity: 1;
-    }
-}
-
-@keyframes zoomInSuccess {
-    from {
-        opacity: 0;
-        transform: scale(0.8) translateY(20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
-}
-
-@keyframes bounceIcon {
-
-    0%,
-    100% {
-        transform: scale(1);
-    }
-
-    50% {
-        transform: scale(1.1);
-    }
-}
-
-/* =========================================
-   9. RESPONSIVE
-   ========================================= */
-@media (max-width: 768px) {
-    .create-form {
-        padding: 25px;
-    }
-
-    .form-grid {
-        grid-template-columns: 1fr;
-        gap: 20px;
-    }
-
-    .form-actions {
-        flex-direction: column-reverse;
-    }
-
-    .btn-submit-form,
-    .btn-cancel {
-        width: 100%;
-        justify-content: center;
-    }
-
-    .checkbox-item {
-        width: 100%;
-        justify-content: center;
     }
 }

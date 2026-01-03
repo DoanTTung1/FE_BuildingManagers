@@ -1,5 +1,5 @@
 /* =========================================
-   HEADER STYLES - MODERN & CLEAN
+   HEADER STYLES - CRYSTAL CLEAR & SHIMMER
    ========================================= */
 
 :root {
@@ -7,9 +7,15 @@
     --primary-red: #ef4444;
     --text-gray: #64748b;
     --bg-light: #f8fafc;
-    --border-color: #e2e8f0;
-    --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.08);
+
+    /* CẤU HÌNH KÍNH MỚI (TRONG HƠN) */
+    --glass-bg-default: rgba(255, 255, 255, 0.6);
+    /* Trong hơn (0.6 thay vì 0.85) */
+    --glass-bg-scrolled: rgba(255, 255, 255, 0.9);
+    /* Khi cuộn thì đục hơn chút */
+    --glass-border: 1px solid rgba(255, 255, 255, 0.8);
+    /* Viền trắng rõ */
+    --glass-blur: 20px;
 }
 
 /* 1. KHUNG CHÍNH HEADER */
@@ -19,21 +25,72 @@
     left: 0;
     width: 100%;
     height: 80px;
-    /* Chiều cao mặc định */
-    background-color: #ffffff;
     z-index: 1000;
-    transition: all 0.3s ease;
-    border-bottom: 1px solid transparent;
+    transition: all 0.4s ease;
+
+    /* --- SỬA LỖI MÀU "TRẮNG HƠI ĐEN" --- */
+    background-color: var(--glass-bg-default);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+
+    /* Thay bóng đen bằng viền trắng và bóng rất nhẹ */
+    border-bottom: var(--glass-border);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
+    /* Bóng cực nhạt, gần như vô hình */
+
+    overflow: hidden;
+    /* Để chứa hiệu ứng loáng */
+}
+
+/* --- HIỆU ỨNG LOÁNG SÁNG (SHIMMER) --- */
+.main-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -150%;
+    /* Bắt đầu xa hơn bên trái */
+    width: 100%;
+    height: 100%;
+
+    /* Gradient tạo vệt sáng trắng mềm mại hơn */
+    background: linear-gradient(to right,
+            transparent 0%,
+            rgba(255, 255, 255, 0.8) 50%,
+            /* Vệt sáng trắng tinh ở giữa */
+            transparent 100%);
+
+    transform: skewX(-25deg);
+    animation: shimmer 6s infinite;
+    /* Chạy chậm lại cho sang (6s) */
+    pointer-events: none;
+}
+
+/* Keyframes: Chạy từ trái qua phải */
+@keyframes shimmer {
+    0% {
+        left: -150%;
+    }
+
+    40% {
+        left: 150%;
+    }
+
+    /* Chạy xong trong 40% thời gian */
+    100% {
+        left: 150%;
+    }
+
+    /* Nghỉ 60% thời gian còn lại */
 }
 
 /* Hiệu ứng khi cuộn trang */
 .main-header.scrolled {
     height: 70px;
-    /* Thu nhỏ lại xíu */
-    box-shadow: var(--shadow-md);
-    border-bottom: 1px solid var(--border-color);
-    background: rgba(255, 255, 255, 0.98);
-    backdrop-filter: blur(10px);
+    background-color: var(--glass-bg-scrolled);
+    /* Đục hơn để đọc chữ rõ */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    /* Bóng đen nhẹ xuất hiện khi cuộn */
+    border-bottom: 1px solid rgba(203, 213, 225, 0.5);
 }
 
 .header-container {
@@ -44,13 +101,25 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    position: relative;
+    z-index: 2;
+    /* Nội dung nổi lên trên vệt sáng */
 }
+
+/* =========================================
+   CÁC PHẦN TỬ BÊN TRONG (GIỮ NGUYÊN)
+   ========================================= */
 
 /* 2. LOGO */
 .logo-area {
     cursor: pointer;
     display: flex;
     align-items: center;
+    transition: transform 0.3s ease;
+}
+
+.logo-area:hover {
+    transform: scale(1.05);
 }
 
 .logo-text {
@@ -68,7 +137,6 @@
 /* 3. MENU ĐIỀU HƯỚNG */
 .nav-menu {
     flex: 1;
-    /* Đẩy menu ra giữa */
     display: flex;
     justify-content: center;
 }
@@ -96,7 +164,6 @@
     color: var(--primary-red);
 }
 
-/* Hiệu ứng gạch chân khi hover */
 .nav-link::after {
     content: '';
     position: absolute;
@@ -113,7 +180,7 @@
     width: 100%;
 }
 
-/* 4. KHU VỰC BÊN PHẢI (HOTLINE + USER + BUTTON) */
+/* 4. KHU VỰC BÊN PHẢI */
 .header-actions {
     display: flex;
     align-items: center;
@@ -150,26 +217,28 @@
     color: var(--primary-red);
 }
 
-/* 5. USER BADGE (AVATAR + NAME) - ĐÃ CĂN CHỈNH ĐẸP */
+/* 5. USER BADGE (KÍNH TRONG SUỐT) */
 .user-badge {
     display: flex;
     align-items: center;
-    background-color: #f1f5f9;
+    background-color: rgba(255, 255, 255, 0.5);
+    /* Trong suốt hơn */
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
     padding: 4px 6px 4px 6px;
-    /* Padding nhỏ gọn */
     border-radius: 40px;
-    border: 1px solid var(--border-color);
-    transition: all 0.2s;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
 }
 
 .user-badge:hover {
-    background-color: #e2e8f0;
+    background-color: #fff;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
     border-color: #cbd5e1;
+    transform: translateY(-1px);
 }
 
-/* Avatar Container */
 .user-avatar-small {
-    /* Các style inline trong JSX đã tốt, ở đây ta bổ sung hover effect */
     transition: transform 0.2s;
 }
 
@@ -177,12 +246,10 @@
     transform: scale(1.05);
 }
 
-/* Info Text */
 .user-info {
     display: flex;
     flex-direction: column;
     margin: 0 12px 0 8px;
-    /* Căn cách avatar và nút logout */
     line-height: 1.2;
 }
 
@@ -194,15 +261,12 @@
 
 .user-name-link {
     font-size: 0.85rem;
-    /* Màu sắc đã set inline trong JSX, nhưng set ở đây cho chắc */
     white-space: nowrap;
     max-width: 120px;
     overflow: hidden;
     text-overflow: ellipsis;
-    /* Cắt chữ nếu tên quá dài */
 }
 
-/* Divider */
 .divider-vertical {
     width: 1px;
     height: 24px;
@@ -210,7 +274,6 @@
     margin-right: 8px;
 }
 
-/* Nút Logout tròn nhỏ */
 .btn-logout-circle {
     width: 32px;
     height: 32px;
@@ -230,7 +293,6 @@
     background: var(--primary-red);
     color: #fff;
     transform: rotate(90deg);
-    /* Xoay nhẹ khi hover */
 }
 
 /* 6. CÁC NÚT BẤM CHÍNH */
@@ -246,7 +308,6 @@
     transition: all 0.3s ease;
 }
 
-/* Nút Đăng nhập */
 .btn-login {
     background: transparent;
     border: 1px solid var(--primary-navy);
@@ -256,19 +317,38 @@
 .btn-login:hover {
     background: var(--primary-navy);
     color: #fff;
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.2);
 }
 
-/* Nút Đăng tin (Nổi bật) */
+/* Nút Đăng tin - Hiệu ứng Gradient mượt */
 .btn-post {
     background: linear-gradient(135deg, var(--primary-red), #b91c1c);
     border: none;
     color: #fff;
+    position: relative;
+    overflow: hidden;
     box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
+}
+
+/* Hiệu ứng loáng riêng cho nút đăng tin */
+.btn-post::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: 0.5s;
 }
 
 .btn-post:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 15px rgba(239, 68, 68, 0.4);
+}
+
+.btn-post:hover::after {
+    left: 100%;
 }
 
 /* Responsive cơ bản */
@@ -277,7 +357,6 @@
         display: none;
     }
 
-    /* Ẩn menu trên tablet/mobile (Cần làm menu burger sau) */
     .hotline-box {
         display: none;
     }
