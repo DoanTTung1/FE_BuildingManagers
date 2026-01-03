@@ -158,7 +158,7 @@ const UserProfile = () => {
                                             {item.name}
                                         </h4>
                                         <p className="card-address">
-                                            <FaMapMarkerAlt /> {item.street}, {item.district}
+                                            <FaMapMarkerAlt /> {item.address || "Chưa cập nhật địa chỉ"}
                                         </p>
 
                                         <div className="card-actions">

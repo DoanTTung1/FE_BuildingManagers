@@ -79,7 +79,7 @@ const Header = () => {
                         <ul className="nav-list">
                             <li><Link to="/" className={`nav-link ${isActive('/')}`}>Trang Chủ</Link></li>
                             <li><Link to="/search" className={`nav-link ${isActive('/search')}`}>Thuê Văn Phòng</Link></li>
-                            <li><Link to="/projects" className={`nav-link ${isActive('/projects')}`}>Dự Án</Link></li>
+                            <li><Link to="/projects" className={`nav-link ${isActive('/projects')}`}>Ký Gửi</Link></li>
                             <li><Link to="/news" className={`nav-link ${isActive('/news')}`}>Tin Tức</Link></li>
                             <li><Link to="/contact" className={`nav-link ${isActive('/contact')}`}>Liên Hệ</Link></li>
                         </ul>
