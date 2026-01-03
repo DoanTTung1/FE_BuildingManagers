@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { FaUser, FaLock, FaEnvelope, FaPhone, FaTimes, FaIdCard } from 'react-icons/fa';
 import '../styles/AuthModal.css';
+import toast from 'react-hot-toast';
 
 const AuthModal = () => {
     // Lấy các hàm và state từ Context
     const { isModalOpen, closeModal, login, register } = useAuth();
-    
+
     // State quản lý View: true = Đăng nhập, false = Đăng ký
     const [isLoginView, setIsLoginView] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
@@ -32,40 +33,62 @@ const AuthModal = () => {
     };
 
     // Hàm xử lý Submit Form
+    // Hàm xử lý Submit Form
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
+
+        // Xóa các thông báo cũ trước khi gửi
         setErrorMsg('');
         setSuccessMsg('');
 
-        if (isLoginView) {
-            // --- XỬ LÝ ĐĂNG NHẬP ---
-            const res = await login({ 
-                userName: formData.userName, 
-                password: formData.password 
-            });
-            
-            if (!res.success) {
-                setErrorMsg(res.message);
-            }
-        } else {
-            // --- XỬ LÝ ĐĂNG KÝ ---
-            const res = await register(formData);
-            
-            if (res.success) {
-                setSuccessMsg("Đăng ký thành công! Vui lòng đăng nhập.");
-                // Tự động chuyển về tab Đăng nhập sau 1.5 giây
-                setTimeout(() => {
-                    setIsLoginView(true);
-                    setSuccessMsg('');
-                    // Xóa mật khẩu để người dùng nhập lại cho an toàn
-                    setFormData(prev => ({...prev, password: ''})); 
-                }, 1500);
+        try {
+            if (isLoginView) {
+                // --- XỬ LÝ ĐĂNG NHẬP ---
+                const res = await login({
+                    username: formData.userName,
+                    password: formData.password
+                });
+
+                if (res && res.success) {
+                    toast.success("Chào mừng bạn trở lại!");
+                    handleClose(); // Đóng luôn modal khi đăng nhập xong
+                } else {
+                    // Ưu tiên dùng toast.error thay vì setErrorMsg để đồng bộ giao diện
+                    toast.error(res?.message || "Sai tài khoản hoặc mật khẩu");
+                }
             } else {
-                setErrorMsg(res.message);
+                // --- XỬ LÝ ĐĂNG KÝ ---
+                const registerData = {
+                    username: formData.userName,
+                    password: formData.password,
+                    fullName: formData.fullName,
+                    email: formData.email,
+                    phone: formData.phone
+                };
+
+                const res = await register(registerData);
+
+                if (res && res.success) {
+                    toast.success("Đăng ký thành công!");
+                    setSuccessMsg("Đăng ký thành công! Đang chuyển sang đăng nhập...");
+
+                    setTimeout(() => {
+                        setIsLoginView(true);
+                        setSuccessMsg('');
+                        setFormData(prev => ({ ...prev, password: '' }));
+                    }, 1500);
+                } else {
+                    toast.error(res?.message || "Đăng ký thất bại");
+                    setErrorMsg(res?.message || "Đăng ký thất bại");
+                }
             }
+        } catch (error) {
+            console.error("Lỗi hệ thống:", error);
+            toast.error("Lỗi kết nối đến máy chủ!");
+        } finally {
+            setIsLoading(false);
         }
-        setIsLoading(false);
     };
 
     // Hàm đóng modal và reset lại trạng thái
@@ -81,18 +104,18 @@ const AuthModal = () => {
                 <button className="close-btn" onClick={handleClose}>
                     <FaTimes />
                 </button>
-                
+
                 {/* --- HEADER VỚI THANH TRƯỢT (SLIDING BAR) --- */}
                 <div className="auth-header-wrapper">
                     <div className="auth-header-tabs">
-                        <div 
-                            className={`tab-item ${isLoginView ? 'active' : ''}`} 
+                        <div
+                            className={`tab-item ${isLoginView ? 'active' : ''}`}
                             onClick={() => setIsLoginView(true)}
                         >
                             Đăng Nhập
                         </div>
-                        <div 
-                            className={`tab-item ${!isLoginView ? 'active' : ''}`} 
+                        <div
+                            className={`tab-item ${!isLoginView ? 'active' : ''}`}
                             onClick={() => setIsLoginView(false)}
                         >
                             Đăng Ký
@@ -108,16 +131,16 @@ const AuthModal = () => {
                     {successMsg && <div className="alert-box success fade-in">{successMsg}</div>}
 
                     <form onSubmit={handleSubmit} className={isLoginView ? 'form-login' : 'form-register'}>
-                        
+
                         {/* --- USERNAME --- */}
                         <div className="input-group-auth">
                             <FaUser className="icon" />
-                            <input 
-                                type="text" 
-                                name="userName" 
-                                placeholder="Tên đăng nhập" 
-                                required 
-                                value={formData.userName} 
+                            <input
+                                type="text"
+                                name="userName"
+                                placeholder="Tên đăng nhập"
+                                required
+                                value={formData.userName}
                                 onChange={handleChange}
                             />
                         </div>
@@ -125,12 +148,12 @@ const AuthModal = () => {
                         {/* --- PASSWORD --- */}
                         <div className="input-group-auth">
                             <FaLock className="icon" />
-                            <input 
-                                type="password" 
-                                name="password" 
-                                placeholder="Mật khẩu" 
-                                required 
-                                value={formData.password} 
+                            <input
+                                type="password"
+                                name="password"
+                                placeholder="Mật khẩu"
+                                required
+                                value={formData.password}
                                 onChange={handleChange}
                             />
                         </div>
@@ -139,35 +162,35 @@ const AuthModal = () => {
                         <div className={`register-expand ${!isLoginView ? 'open' : ''}`}>
                             <div className="input-group-auth">
                                 <FaIdCard className="icon" />
-                                <input 
-                                    type="text" 
-                                    name="fullName" 
-                                    placeholder="Họ và tên đầy đủ" 
-                                    value={formData.fullName} 
-                                    onChange={handleChange} 
-                                    required={!isLoginView} 
+                                <input
+                                    type="text"
+                                    name="fullName"
+                                    placeholder="Họ và tên đầy đủ"
+                                    value={formData.fullName}
+                                    onChange={handleChange}
+                                    required={!isLoginView}
                                 />
                             </div>
                             <div className="input-group-auth">
                                 <FaEnvelope className="icon" />
-                                <input 
-                                    type="email" 
-                                    name="email" 
-                                    placeholder="Email liên hệ" 
-                                    value={formData.email} 
-                                    onChange={handleChange} 
-                                    required={!isLoginView} 
+                                <input
+                                    type="email"
+                                    name="email"
+                                    placeholder="Email liên hệ"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    required={!isLoginView}
                                 />
                             </div>
                             <div className="input-group-auth">
                                 <FaPhone className="icon" />
-                                <input 
-                                    type="tel" 
-                                    name="phone" 
-                                    placeholder="Số điện thoại" 
-                                    value={formData.phone} 
-                                    onChange={handleChange} 
-                                    required={!isLoginView} 
+                                <input
+                                    type="tel"
+                                    name="phone"
+                                    placeholder="Số điện thoại"
+                                    value={formData.phone}
+                                    onChange={handleChange}
+                                    required={!isLoginView}
                                 />
                             </div>
                         </div>
@@ -176,7 +199,7 @@ const AuthModal = () => {
                             {isLoading ? 'Đang xử lý...' : (isLoginView ? 'Đăng Nhập Ngay' : 'Tạo Tài Khoản Mới')}
                         </button>
                     </form>
-                    
+
                     {isLoginView && <p className="forgot-pass">Quên mật khẩu?</p>}
                 </div>
             </div>

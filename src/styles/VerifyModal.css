@@ -1,5 +1,5 @@
 /* =========================================
-   OTP VERIFICATION MODAL - NAVY & RED
+   OTP VERIFICATION MODAL - MODERN RE-STYLE
    ========================================= */
 
 .verify-overlay {
@@ -8,127 +8,182 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(15, 23, 42, 0.75);
-    backdrop-filter: blur(8px);
-    z-index: 3000;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(10px);
+    z-index: 9999;
     display: flex;
     justify-content: center;
     align-items: center;
-    animation: fadeIn 0.3s ease;
 }
 
 .verify-box {
     background: #ffffff;
-    width: 400px;
-    padding: 35px;
-    border-radius: 20px;
+    width: 420px;
+    padding: 40px;
+    border-radius: 24px;
     text-align: center;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
     position: relative;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1px solid #e2e8f0;
 }
 
+/* Biểu tượng điện thoại nhảy nhẹ */
 .verify-icon {
-    width: 70px;
-    height: 70px;
-    background: #eff6ff;
-    color: #0f172a;
-    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    background: #f1f5f9;
+    color: #ef4444; /* Đổi màu icon sang Đỏ để tạo điểm nhấn */
+    border-radius: 20px; /* Bo góc hiện đại thay vì tròn xoe */
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2rem;
-    margin: 0 auto 20px;
-    border: 2px solid #0f172a;
+    font-size: 2.2rem;
+    margin: 0 auto 24px;
+    border: 1px solid #e2e8f0;
+    transition: transform 0.3s ease;
+}
+
+.verify-box:hover .verify-icon {
+    transform: scale(1.1) rotate(5deg);
 }
 
 .verify-title {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     font-weight: 800;
     color: #0f172a;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
 }
 
+/* Mô tả có chứa số điện thoại nổi bật */
 .verify-desc {
     color: #64748b;
     font-size: 0.95rem;
-    margin-bottom: 25px;
-    line-height: 1.5;
+    margin-bottom: 30px;
+    line-height: 1.6;
 }
 
-/* Input Code OTP */
+.verify-desc strong {
+    color: #0f172a;
+    background: #fef2f2;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+/* --- Ô NHẬP OTP RÕ RÀNG HƠN --- */
 .otp-input-group {
     display: flex;
     justify-content: center;
-    gap: 10px;
-    margin-bottom: 25px;
+    margin-bottom: 30px;
 }
 
 .otp-input {
-    width: 50px;
-    height: 50px;
-    font-size: 1.5rem;
-    font-weight: 700;
+    width: 100%;
+    max-width: 280px;
+    height: 60px;
+    font-size: 2rem;
+    font-weight: 800;
     text-align: center;
+    letter-spacing: 12px; /* Tạo khoảng cách giữa các con số */
     border: 2px solid #e2e8f0;
-    border-radius: 10px;
+    border-radius: 16px;
     background: #f8fafc;
     color: #0f172a;
-    transition: all 0.3s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .otp-input:focus {
     border-color: #ef4444;
     background: #fff;
-    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15);
     outline: none;
+    transform: translateY(-2px);
 }
 
-/* Buttons */
+/* Placeholder trông như các ô trống */
+.otp-input::placeholder {
+    color: #cbd5e1;
+    letter-spacing: 12px;
+}
+
+/* --- NÚT BẤM VÀ CÁC THÔNG BÁO --- */
 .btn-verify-action {
     width: 100%;
-    padding: 14px;
+    padding: 16px;
     background: #0f172a;
     color: white;
     border: none;
-    border-radius: 12px;
+    border-radius: 14px;
     font-weight: 700;
-    font-size: 1rem;
+    font-size: 1.05rem;
     cursor: pointer;
-    transition: 0.3s;
+    transition: all 0.3s;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-.btn-verify-action:hover {
+.btn-verify-action:hover:not(:disabled) {
     background: #ef4444;
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px -5px rgba(239, 68, 68, 0.4);
+    box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.3);
 }
 
-.btn-close-verify {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background: none;
-    border: none;
-    font-size: 1.2rem;
-    color: #94a3b8;
-    cursor: pointer;
+.btn-verify-action:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: #94a3b8;
 }
 
-.btn-close-verify:hover {
-    color: #ef4444;
-}
-
+/* Link gửi lại mã */
 .resend-link {
-    display: block;
-    margin-top: 15px;
+    display: inline-block;
+    margin-top: 20px;
     font-size: 0.9rem;
     color: #64748b;
     cursor: pointer;
+    transition: 0.2s;
+    padding: 8px 12px;
+    border-radius: 8px;
 }
 
 .resend-link:hover {
-    color: #0f172a;
-    text-decoration: underline;
+    background: #f1f5f9;
+    color: #ef4444;
+}
+
+.resend-link strong {
+    color: #ef4444;
+}
+
+/* Nút đóng X */
+.btn-close-verify {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: #f8fafc;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-close-verify:hover {
+    background: #f1f5f9;
+    color: #ef4444;
+    transform: rotate(90deg);
+}
+
+/* --- ANIMATIONS --- */
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.verify-box {
+    animation: slideUp 0.4s ease-out;
 }
