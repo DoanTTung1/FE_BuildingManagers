@@ -4,12 +4,11 @@ import axiosClient from '../api/axiosClient';
 import { FaArrowRight, FaBuilding, FaHandshake, FaBalanceScale, FaDraftingCompass } from 'react-icons/fa';
 import '../styles/HomePage.css';
 
-// --- DỮ LIỆU TĨNH (Banner, Quận, Dịch vụ) ---
+// --- DỮ LIỆU TĨNH ---
 const HERO_IMAGES = [
     "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1920&q=80",
 ];
 
-// ID phải khớp với Enum/String District trong Database
 const POPULAR_DISTRICTS = [
     { id: 'QUAN_1', name: 'Quận 1 - Trung Tâm', desc: 'Trái tim tài chính sầm uất', img: 'https://canhonewcity.com/wp-content/uploads/2017/03/can-ho-chung-cu-new-city-quan-2.jpg', count: 120, size: 'large' },
     { id: 'QUAN_2', name: 'Thủ Thiêm (Q2)', desc: 'Khu đô thị mới hiện đại', img: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=600&q=80', count: 45, size: 'small' },
@@ -36,14 +35,22 @@ const HomePage = () => {
     // State hiệu ứng số (Stats)
     const [stats, setStats] = useState({ buildings: 0, clients: 0, satisfaction: 0 });
 
-    // 1. Gọi API lấy danh sách tòa nhà nổi bật
+    // 1. Gọi API lấy danh sách tòa nhà nổi bật (9 TÒA)
     useEffect(() => {
         const fetchFeaturedData = async () => {
             try {
-                // Gọi API số nhiều: /api/buildings
-                const res = await axiosClient.get('/api/buildings');
-                if (res && Array.isArray(res)) {
-                    setFeaturedBuildings(res.slice(0, 4)); // Lấy 4 cái đầu tiên
+                // GỌI API VỚI SIZE = 9 VÀ SẮP XẾP MỚI NHẤT
+                const res = await axiosClient.get('/api/buildings?page=0&size=9&sort=id,desc');
+
+                // Xử lý dữ liệu trả về (Page hoặc List)
+                if (res.content && Array.isArray(res.content)) {
+                    setFeaturedBuildings(res.content);
+                }
+                else if (Array.isArray(res)) {
+                    setFeaturedBuildings(res.slice(0, 9));
+                }
+                else {
+                    setFeaturedBuildings([]);
                 }
             } catch (error) {
                 console.error("Lỗi tải trang chủ:", error);
@@ -163,7 +170,7 @@ const HomePage = () => {
                 </div>
             </section>
 
-            {/* --- FEATURED BUILDINGS --- */}
+            {/* --- FEATURED BUILDINGS (HIỂN THỊ 9 TÒA NHÀ) --- */}
             <section className="section-container featured-section">
                 <div className="section-header">
                     <h2 className="section-title">🌟 Tòa Nhà Mới Nhất</h2>
@@ -177,8 +184,13 @@ const HomePage = () => {
                         featuredBuildings.map(item => (
                             <div key={item.id} className="featured-card" onClick={() => navigate(`/building/${item.id}`)}>
                                 <div className="f-card-img">
-                                    {item.image ? (
-                                        <img src={`data:image/jpeg;base64,${item.image}`} alt={item.name} />
+                                    {/* Ưu tiên hiển thị Avatar, nếu không có thì lấy Image, lỗi thì hiện ảnh placeholder */}
+                                    {item.avatar || item.image ? (
+                                        <img
+                                            src={item.avatar || item.image}
+                                            alt={item.name}
+                                            onError={(e) => { e.target.onerror = null; e.target.src = "https://via.placeholder.com/400x300?text=No+Image" }}
+                                        />
                                     ) : (
                                         <div className="no-image-placeholder"><span>No Image</span></div>
                                     )}
@@ -186,7 +198,10 @@ const HomePage = () => {
                                 </div>
                                 <div className="f-card-body">
                                     <h3 title={item.name}>{item.name}</h3>
-                                    <p className="f-address">📍 {item.address}</p>
+                                    {/* Xử lý hiển thị địa chỉ an toàn */}
+                                    <p className="f-address">
+                                        📍 {item.address ? item.address : `${item.street || ''}, ${item.ward || ''}`}
+                                    </p>
                                     <div className="f-specs">
                                         <span>📐 {item.floorArea}m²</span>
                                         <span className="f-price">${item.rentPrice}<small>/m²</small></span>
