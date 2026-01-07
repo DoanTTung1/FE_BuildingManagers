@@ -12,7 +12,7 @@ const LoginPage = () => {
     const [errorMsg, setErrorMsg] = useState('');
 
     const [formData, setFormData] = useState({
-        userName: '',
+        username: '',
         password: ''
     });
 
@@ -30,7 +30,7 @@ const LoginPage = () => {
 
         // 2. KIỂM TRA ĐẦU VÀO (VALIDATION)
         // Dùng .trim() để loại bỏ dấu cách thừa, tránh trường hợp người dùng chỉ nhập dấu cách
-        const user = formData.userName.trim();
+        const user = formData.username.trim();
         const pass = formData.password.trim();
 
         if (!user && !pass) {
@@ -119,11 +119,11 @@ const LoginPage = () => {
                     <div className="input-wrapper">
                         <input
                             type="text"
-                            name="userName"
+                            name="username"
                             placeholder="Tên đăng nhập"
                             // Đã bỏ 'required' để dùng validate JS tùy chỉnh
                             autoFocus
-                            value={formData.userName}
+                            value={formData.username}
                             onChange={handleChange}
                         />
                         <FaUser className="input-icon" />

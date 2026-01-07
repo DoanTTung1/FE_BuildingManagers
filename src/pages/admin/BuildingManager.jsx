@@ -17,7 +17,7 @@ const BuildingManager = () => {
 
     const fetchBuildings = async () => {
         try {
-            const res = await axiosClient.get('/api/buildings');
+            const res = await axiosClient.get('/api/buildings/admin');
             setBuildings(res);
         } catch (error) {
             console.error("Lỗi tải tòa nhà:", error);
