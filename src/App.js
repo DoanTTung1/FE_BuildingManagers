@@ -24,6 +24,7 @@ import UserManager from './pages/admin/UserManager';
 import LoginPage from './pages/admin/LoginPage';
 import CreateStaff from './pages/admin/CreateStaff';
 import Dashboard from './pages/admin/Dashboard';
+import UpdateBuilding from './pages/admin/UpdateBuilding';
 // Styles
 import './styles/App.css';
 
@@ -89,13 +90,14 @@ function App() {
 
             {/* === NHÓM 3: QUẢN TRỊ (ADMIN) === */}
             <Route path="/admin" element={<AdminLayout />}>
-              {/* SỬA DÒNG NÀY: Mặc định vào Dashboard */}
               <Route index element={<Dashboard />} />
 
               {/* Thêm dòng này để truy cập được bằng link /admin/dashboard */}
               <Route path="dashboard" element={<Dashboard />} />
 
               <Route path="buildings" element={<BuildingManager />} />
+              <Route path="building-create" element={<CreateBuilding />} />
+              <Route path="building-edit/:id" element={<UpdateBuilding />} />
               <Route path="users" element={<UserManager />} />
               <Route path="users/create" element={<CreateStaff />} />
             </Route>

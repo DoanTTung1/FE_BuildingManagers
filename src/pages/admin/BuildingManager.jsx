@@ -245,7 +245,7 @@ const BuildingManager = () => {
                         type="primary"
                         icon={<PlusOutlined />}
                         style={{ backgroundColor: '#001529' }}
-                        onClick={() => navigate('/post-building')}
+                        onClick={() => navigate('/admin/building-create')}
                         disabled={filterStatus === 0} // Không cho thêm mới khi đang ở thùng rác
                     >
                         Thêm Tòa Nhà
