@@ -2,7 +2,7 @@ import axios from 'axios';
 import queryString from 'query-string';
 
 const axiosClient = axios.create({
-    baseURL: 'https://thanhtung-building.up.railway.app', // URL Backend của bạn
+    baseURL: 'https://be-buildingmanagers.onrender.com', // URL Backend của bạn
     // headers: {
     //     'Content-Type': 'application/json', // <--- QUAN TRỌNG: PHẢI XÓA HOẶC COMMENT DÒNG NÀY
     // },

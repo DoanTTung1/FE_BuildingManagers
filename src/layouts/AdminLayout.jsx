@@ -1,6 +1,7 @@
-import React from 'react'; // Bỏ useEffect đi
+import React from 'react';
 import { Outlet, NavLink, useNavigate, Navigate } from 'react-router-dom';
-import { FaBuilding, FaUsers, FaSignOutAlt, FaChartPie } from 'react-icons/fa';
+// Thêm FaTachometerAlt (biểu tượng đồng hồ đo) cho Dashboard, FaHome cho trang chủ khách
+import { FaBuilding, FaUsers, FaSignOutAlt, FaChartPie, FaTachometerAlt, FaHome } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import ForbiddenPage from '../pages/admin/ForbiddenPage';
 import '../styles/Admin.css';
@@ -9,7 +10,7 @@ const AdminLayout = () => {
     const navigate = useNavigate();
     const { logout } = useAuth();
 
-    // 1. LẤY THÔNG TIN QUYỀN NGAY LẬP TỨC
+    // 1. LẤY THÔNG TIN QUYỀN
     const token = localStorage.getItem('token');
     const roles = JSON.parse(localStorage.getItem('roles') || '[]');
 
@@ -22,9 +23,9 @@ const AdminLayout = () => {
     // 3. LOGIC CHẶN CỬA (Render có điều kiện)
     // ============================================================
 
-    // Nếu chưa đăng nhập -> Đá về Login (hoặc trang chủ)
+    // Nếu chưa đăng nhập -> Đá về Login
     if (!token) {
-      return <Navigate to="/login" replace />;
+        return <Navigate to="/login" replace />;
     }
 
     // Nếu đã đăng nhập nhưng KHÔNG CÓ QUYỀN -> Hiện trang báo lỗi 403
@@ -33,7 +34,7 @@ const AdminLayout = () => {
     }
 
     // ============================================================
-    // 4. NẾU CÓ QUYỀN -> Mới render giao diện Admin bên dưới
+    // 4. GIAO DIỆN ADMIN
     // ============================================================
 
     const handleLogout = (e) => {
@@ -47,11 +48,21 @@ const AdminLayout = () => {
     return (
         <div className="admin-layout">
             <aside className="admin-sidebar">
+                {/* Header của Sidebar */}
                 <div className="sidebar-brand">
-                    <FaChartPie /> <span>Admin Panel</span>
+                    <FaChartPie /> <span>Admin System</span>
                 </div>
 
                 <ul className="sidebar-menu">
+                    {/* --- MỤC MỚI: DASHBOARD (TỔNG QUAN) --- */}
+                    {/* Dùng props 'end' để không bị active khi vào các trang con khác */}
+                    <li>
+                        <NavLink to="/admin" end className={({ isActive }) => isActive ? 'active' : ''}>
+                            <FaTachometerAlt /> <span>Tổng quan</span>
+                        </NavLink>
+                    </li>
+
+                    {/* --- MỤC QUẢN LÝ --- */}
                     <li>
                         <NavLink to="/admin/buildings" className={({ isActive }) => isActive ? 'active' : ''}>
                             <FaBuilding /> <span>Quản lý Tòa nhà</span>
@@ -68,10 +79,11 @@ const AdminLayout = () => {
                     )}
                 </ul>
 
+                {/* Footer của Sidebar */}
                 <ul className="sidebar-menu" style={{ marginTop: 'auto', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                     <li>
                         <NavLink to="/">
-                            <FaChartPie /> <span>Về Trang Chủ</span>
+                            <FaHome /> <span>Về Trang Khách</span>
                         </NavLink>
                     </li>
                     <li>
@@ -82,6 +94,7 @@ const AdminLayout = () => {
                 </ul>
             </aside>
 
+            {/* Nội dung chính thay đổi dynamic ở đây */}
             <main className="admin-content">
                 <Outlet />
             </main>
