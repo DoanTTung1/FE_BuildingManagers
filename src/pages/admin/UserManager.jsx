@@ -1,136 +1,219 @@
 import React, { useState, useEffect } from 'react';
-import axiosClient from '../../api/axiosClient';
-import { FaTrash, FaUserPlus, FaEdit, FaUserShield, FaUserTie } from 'react-icons/fa';
+import {
+    Table, Button, Input, Space, Avatar, Tag, Modal, Tooltip, message, Badge
+} from 'antd';
+import {
+    SearchOutlined, PlusOutlined, EditOutlined, DeleteOutlined,
+    UserOutlined, PhoneOutlined, MailOutlined, CheckCircleTwoTone
+} from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+
+// 👇 QUAN TRỌNG: Kiểm tra lại đường dẫn này tùy theo cấu trúc thư mục của bạn
+// Nếu file này ở src/pages/admin/UserManager.jsx -> dùng ../../api/axiosClient
+import axiosClient from '../../api/axiosClient';
 
 const UserManager = () => {
     const navigate = useNavigate();
     const [users, setUsers] = useState([]);
-    const [isLoading, setIsLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [searchText, setSearchText] = useState('');
 
+    // --- 1. CALL API ---
     useEffect(() => {
         fetchUsers();
     }, []);
 
     const fetchUsers = async () => {
+        setLoading(true);
         try {
-            setIsLoading(true);
-            // Giả sử API trả về mảng user trực tiếp hoặc res.data
+            // Gọi API: GET /api/users
             const res = await axiosClient.get('/api/users');
-            setUsers(Array.isArray(res) ? res : res.data || []);
+            // Đảm bảo dữ liệu luôn là mảng, tránh lỗi map()
+            setUsers(Array.isArray(res) ? res : []);
         } catch (error) {
-            console.error("Lỗi tải user:", error);
+            message.error("Không thể tải danh sách nhân viên!");
+            console.error(error);
         } finally {
-            setIsLoading(false);
+            setLoading(false);
         }
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm("CẢNH BÁO: Bạn có chắc chắn muốn xóa nhân viên này?")) {
-            try {
-                await axiosClient.delete(`/api/users/${id}`); // Hoặc api delete tương ứng
-                // Xóa thành công thì lọc bỏ item đó khỏi state để đỡ phải load lại trang
-                setUsers(prev => prev.filter(u => u.id !== id));
-            } catch (error) {
-                alert("Lỗi khi xóa! Có thể bạn không đủ quyền.");
+    // --- 2. XỬ LÝ XÓA ---
+    const handleDelete = (id) => {
+        Modal.confirm({
+            title: 'Xác nhận xóa',
+            content: 'Bạn có chắc chắn muốn xóa tài khoản này không? Hành động này không thể hoàn tác.',
+            okText: 'Xóa ngay',
+            okType: 'danger',
+            cancelText: 'Hủy',
+            onOk: async () => {
+                try {
+                    await axiosClient.delete(`/api/users/${id}`);
+                    message.success('Xóa thành công!');
+                    fetchUsers(); // Tải lại danh sách sau khi xóa
+                } catch (error) {
+                    message.error('Xóa thất bại! Có thể tài khoản đang có dữ liệu liên quan.');
+                }
             }
-        }
+        });
     };
+
+    // --- 3. CẤU HÌNH CỘT CHO BẢNG (ANT DESIGN TABLE) ---
+    const columns = [
+        {
+            title: 'Thông tin tài khoản',
+            dataIndex: 'fullName',
+            key: 'info',
+            render: (_, record) => (
+                <Space>
+                    <Avatar
+                        src={record.avatar}
+                        icon={<UserOutlined />}
+                        size={48}
+                        style={{ backgroundColor: '#87d068' }}
+                    />
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        {/* Ưu tiên hiện FullName, nếu không có thì hiện Username */}
+                        <span style={{ fontWeight: 600, fontSize: '15px' }}>
+                            {record.fullName || record.username}
+                        </span>
+                        <span style={{ color: '#8c8c8c', fontSize: '12px' }}>
+                            @{record.username}
+                        </span>
+                    </div>
+                </Space>
+            ),
+            // Tính năng tìm kiếm (Client-side)
+            filteredValue: [searchText],
+            onFilter: (value, record) => {
+                if (!value) return true;
+                const searchStr = value.toLowerCase();
+                return (
+                    String(record.fullName || '').toLowerCase().includes(searchStr) ||
+                    String(record.username || '').toLowerCase().includes(searchStr) ||
+                    String(record.email || '').toLowerCase().includes(searchStr)
+                );
+            },
+        },
+        {
+            title: 'Liên hệ',
+            key: 'contact',
+            render: (_, record) => (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <MailOutlined style={{ color: '#1890ff' }} />
+                        <span>{record.email}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <PhoneOutlined style={{ color: '#52c41a' }} />
+                        <span>{record.phone}</span>
+                        {/* Check xem SĐT đã xác thực chưa (nếu DTO có trả về) */}
+                        {record.phoneVerified && (
+                            <Tooltip title="Đã xác thực SĐT">
+                                <CheckCircleTwoTone twoToneColor="#52c41a" />
+                            </Tooltip>
+                        )}
+                    </div>
+                </div>
+            ),
+        },
+        {
+            title: 'Vai trò',
+            dataIndex: 'roles', // Cột này sẽ lấy List<String> roles từ API
+            key: 'roles',
+            render: (roles) => (
+                <>
+                    {/* Kiểm tra nếu roles tồn tại mới map */}
+                    {roles && roles.map((role) => {
+                        let color = 'geekblue';
+                        if (role === 'ADMIN') color = 'volcano';
+                        if (role === 'STAFF') color = 'blue';
+                        if (role === 'USER') color = 'green';
+                        return (
+                            <Tag color={color} key={role} style={{ fontWeight: 'bold' }}>
+                                {role.toUpperCase()}
+                            </Tag>
+                        );
+                    })}
+                </>
+            ),
+        },
+        {
+            title: 'Trạng thái',
+            dataIndex: 'status',
+            key: 'status',
+            render: (status) => (
+                status === 1
+                    ? <Badge status="success" text="Hoạt động" />
+                    : <Badge status="error" text="Đã khóa" />
+            ),
+        },
+        {
+            title: 'Hành động',
+            key: 'action',
+            align: 'right',
+            render: (_, record) => (
+                <Space size="middle">
+                    <Tooltip title="Chỉnh sửa">
+                        <Button
+                            type="primary"
+                            ghost
+                            icon={<EditOutlined />}
+                            onClick={() => message.info("Chức năng sửa đang cập nhật!")}
+                        />
+                    </Tooltip>
+                    <Tooltip title="Xóa nhân viên">
+                        <Button
+                            danger
+                            icon={<DeleteOutlined />}
+                            onClick={() => handleDelete(record.id)}
+                        />
+                    </Tooltip>
+                </Space>
+            ),
+        },
+    ];
 
     return (
-        <div className="fade-in-up">
-            {/* --- HEADER --- */}
-            <div className="admin-header">
-                <h2>Quản Lý Nhân Viên</h2>
+        <div style={{ padding: 24, background: '#fff', borderRadius: 8, minHeight: '80vh' }}>
+            {/* --- HEADER CÔNG CỤ --- */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24 }}>
+                <div style={{ display: 'flex', gap: 10 }}>
+                    <h2 style={{ margin: 0, color: '#001529', fontWeight: 'bold', fontSize: '24px' }}>Quản Lý Người Dùng</h2>
+                    <Badge count={users.length} overflowCount={999} style={{ backgroundColor: '#52c41a' }} />
+                </div>
 
-                {/* Nút này sẽ dẫn sang trang CreateStaff xịn xò chúng ta vừa làm */}
-                <button className="btn-add" onClick={() => navigate('/admin/users/create')}>
-                    <FaUserPlus /> Thêm Nhân Viên
-                </button>
+                <Space>
+                    <Input
+                        placeholder="Tìm theo tên, email..."
+                        prefix={<SearchOutlined />}
+                        onChange={e => setSearchText(e.target.value)}
+                        style={{ width: 250 }}
+                    />
+                    <Button
+                        type="primary"
+                        icon={<PlusOutlined />}
+                        onClick={() => navigate('/admin/users/create')}
+                        style={{ backgroundColor: '#001529' }}
+                    >
+                        Thêm Nhân Viên
+                    </Button>
+                </Space>
             </div>
 
-            {/* --- TABLE CONTAINER --- */}
-            <div className="admin-table-container">
-                <table className="admin-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Thông tin tài khoản</th>
-                            <th>Liên hệ</th>
-                            <th>Vai trò</th>
-                            <th style={{ textAlign: 'right' }}>Hành động</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {isLoading ? (
-                            <tr><td colSpan="5" style={{ textAlign: 'center', padding: '30px' }}>Đang tải dữ liệu...</td></tr>
-                        ) : users.length === 0 ? (
-                            <tr><td colSpan="5" style={{ textAlign: 'center', padding: '30px' }}>Chưa có nhân viên nào.</td></tr>
-                        ) : (
-                            users.map(user => (
-                                <tr key={user.id}>
-                                    <td>#{user.id}</td>
-
-                                    {/* Cột thông tin User */}
-                                    <td>
-                                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                            <b style={{ color: '#334155', fontSize: '1rem' }}>{user.fullName || user.userName}</b>
-                                            <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>@{user.userName}</span>
-                                        </div>
-                                    </td>
-
-                                    {/* Cột liên hệ */}
-                                    <td>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                            <span style={{ fontSize: '0.9rem' }}>{user.email}</span>
-                                            <span style={{ fontSize: '0.85rem', color: '#64748b' }}>{user.phone}</span>
-                                        </div>
-                                    </td>
-
-                                    {/* Cột Vai trò (Role) - Badge đẹp */}
-                                    <td>
-                                        {/* Xử lý hiển thị role tùy theo dữ liệu backend trả về (roleCodes hoặc roles) */}
-                                        {(user.roleCodes || user.roles || []).map((role, index) => {
-                                            const isAdmin = role.includes('ADMIN');
-                                            return (
-                                                <span key={index} style={{
-                                                    background: isAdmin ? '#fee2e2' : '#eff6ff',
-                                                    color: isAdmin ? '#ef4444' : '#3b82f6',
-                                                    padding: '6px 12px',
-                                                    borderRadius: '20px',
-                                                    fontSize: '0.75rem',
-                                                    fontWeight: '700',
-                                                    display: 'inline-flex',
-                                                    alignItems: 'center',
-                                                    gap: '5px',
-                                                    marginRight: '5px'
-                                                }}>
-                                                    {isAdmin ? <FaUserShield /> : <FaUserTie />}
-                                                    {role}
-                                                </span>
-                                            );
-                                        })}
-                                    </td>
-
-                                    {/* Cột Hành động */}
-                                    <td style={{ textAlign: 'right' }}>
-                                        <button className="btn-action btn-edit" title="Sửa thông tin">
-                                            <FaEdit />
-                                        </button>
-                                        <button
-                                            className="btn-action btn-delete"
-                                            title="Xóa nhân viên"
-                                            onClick={() => handleDelete(user.id)}
-                                        >
-                                            <FaTrash />
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
-            </div>
+            {/* --- BẢNG DỮ LIỆU --- */}
+            <Table
+                columns={columns}
+                dataSource={users}
+                rowKey="id"
+                loading={loading}
+                pagination={{
+                    pageSize: 5,
+                    showSizeChanger: true,
+                    showTotal: (total) => `Tổng cộng ${total} nhân viên`
+                }}
+                locale={{ emptyText: 'Không có dữ liệu người dùng' }}
+            />
         </div>
     );
 };
