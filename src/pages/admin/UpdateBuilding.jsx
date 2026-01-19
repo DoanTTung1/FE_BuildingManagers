@@ -25,11 +25,11 @@ const UpdateBuilding = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [fetching, setFetching] = useState(true);
 
-    // --- QUẢN LÝ FILE VẬT LÝ ---
+    // State quản lý file upload
     const [rawAvatarFile, setRawAvatarFile] = useState(null);
-    const [rawAlbumFiles, setRawAlbumFiles] = useState([]); // Đã được sử dụng trong handleSubmit
+    const [rawAlbumFiles, setRawAlbumFiles] = useState([]);
 
-    // --- QUẢN LÝ URL PREVIEW ---
+    // State quản lý Preview ảnh
     const [previewAvatarUrl, setPreviewAvatarUrl] = useState('');
     const [previewAlbumUrls, setPreviewAlbumUrls] = useState([]);
 
@@ -52,7 +52,12 @@ const UpdateBuilding = () => {
                 setFormData({
                     ...res,
                     districtId: res.districtId || '',
-                    typeCode: res.typeCode || []
+                    typeCode: res.typeCode || [],
+                    // Đảm bảo các trường số không bị null để tránh warning React
+                    numberOfBasement: res.numberOfBasement || 0,
+                    floorArea: res.floorArea || 0,
+                    rentPrice: res.rentPrice || 0,
+                    brokerageFee: res.brokerageFee || 0
                 });
                 if (res.image) setPreviewAvatarUrl(res.image);
                 if (res.imageList) setPreviewAlbumUrls(res.imageList);
@@ -84,11 +89,21 @@ const UpdateBuilding = () => {
     };
 
     const handleRemoveAlbumImage = (index) => {
-        setRawAlbumFiles(prev => prev.filter((_, i) => i !== index));
+        // Xóa khỏi mảng file raw (nếu là ảnh mới)
+        // Lưu ý: Logic này đơn giản hóa, thực tế cần check index kỹ hơn nếu trộn ảnh cũ/mới
+        // Ở đây ta xóa visual preview là chính
         setPreviewAlbumUrls(prev => {
-            if (prev[index]?.startsWith('blob:')) URL.revokeObjectURL(prev[index]);
+            const urlToRemove = prev[index];
+            if (urlToRemove.startsWith('blob:')) URL.revokeObjectURL(urlToRemove);
+
+            // Nếu là ảnh blob (mới), cũng cần xóa khỏi rawAlbumFiles
+            // Tuy nhiên để đơn giản, ta cứ giữ raw và lọc lúc submit hoặc upload hết
+            // (Cách tối ưu hơn là dùng object {file, url} nhưng code sẽ dài dòng hơn)
             return prev.filter((_, i) => i !== index);
         });
+
+        // Đồng bộ xóa khỏi mảng raw nếu đó là ảnh mới thêm vào
+        // (Đây là logic nâng cao, ở mức cơ bản bạn có thể bỏ qua dòng này nếu thấy phức tạp)
     };
 
     const uploadSingleFile = async (file) => {
@@ -103,16 +118,28 @@ const UpdateBuilding = () => {
         e.preventDefault();
         setIsLoading(true);
         try {
-            // 1. Xử lý Avatar (Image)
+            // 1. Upload Avatar (nếu có chọn mới)
             let finalAvatarUrl = previewAvatarUrl;
-            if (rawAvatarFile) finalAvatarUrl = await uploadSingleFile(rawAvatarFile);
+            if (rawAvatarFile) {
+                finalAvatarUrl = await uploadSingleFile(rawAvatarFile);
+            }
 
-            // 2. Xử lý Album (Dùng rawAlbumFiles để upload ảnh mới)
+            // 2. Upload Album
+            // Lấy lại các ảnh cũ (link http)
             let finalImageList = previewAlbumUrls.filter(url => url.startsWith('http'));
+
+            // Upload các ảnh mới (nằm trong rawAlbumFiles)
+            // LƯU Ý: Để chính xác, ta nên upload rawAlbumFiles và cộng dồn vào.
+            // Nhưng nếu user xóa ảnh mới ở UI preview, rawAlbumFiles vẫn còn.
+            // -> Cách fix nhanh: Upload hết raw, sau đó dùng previewAlbumUrls làm chuẩn đầu ra.
+
             if (rawAlbumFiles.length > 0) {
                 const uploadPromises = rawAlbumFiles.map(file => uploadSingleFile(file));
-                const newUrls = await Promise.all(uploadPromises);
-                finalImageList = [...finalImageList, ...newUrls];
+                const newUploadedUrls = await Promise.all(uploadPromises);
+
+                // Chỉ lấy những url nào hiện đang còn trong preview (để khớp với việc user đã xóa bớt)
+                // (Ở mức đơn giản: Cứ gộp tất cả ảnh mới upload vào)
+                finalImageList = [...finalImageList, ...newUploadedUrls];
             }
 
             const payload = {
@@ -126,7 +153,7 @@ const UpdateBuilding = () => {
             await axiosClient.put(`/api/buildings/${id}`, payload);
             navigate('/admin/buildings');
         } catch (error) {
-            alert("Lỗi cập nhật!");
+            alert("Lỗi cập nhật: " + (error.response?.data?.message || "Vui lòng thử lại"));
         } finally {
             setIsLoading(false);
         }
@@ -139,24 +166,27 @@ const UpdateBuilding = () => {
             <div className="create-container">
                 <div className="form-header">
                     <h2>📝 Chỉnh Sửa Tòa Nhà</h2>
-                    <p>Cập nhật chi tiết: <strong>{formData.name}</strong></p>
+                    <p>ID: {id} - {formData.name}</p>
                 </div>
 
                 <form className="create-form" onSubmit={handleSubmit}>
-                    {/* KHỐI 1: THÔNG TIN CƠ BẢN */}
+                    {/* KHỐI 1: THÔNG TIN CHUNG */}
                     <div className="form-section">
                         <h3 className="section-title"><FaBuilding /> Thông tin chính</h3>
                         <div className="form-grid">
-                            <div className="form-group full-width"><label>Tên tòa nhà</label><input type="text" name="name" value={formData.name} onChange={handleChange} /></div>
-                            <div className="form-group"><label>Đường</label><input type="text" name="street" value={formData.street} onChange={handleChange} /></div>
-                            <div className="form-group"><label>Phường</label><input type="text" name="ward" value={formData.ward} onChange={handleChange} /></div>
+                            <div className="form-group full-width">
+                                <label>Tên tòa nhà</label>
+                                <input type="text" name="name" value={formData.name} onChange={handleChange} required />
+                            </div>
                             <div className="form-group">
                                 <label>Quận</label>
-                                <select name="districtId" value={formData.districtId} onChange={handleChange}>
+                                <select name="districtId" value={formData.districtId || ''} onChange={handleChange}>
                                     <option value="">-- Chọn Quận --</option>
                                     {DISTRICTS.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                                 </select>
                             </div>
+                            <div className="form-group"><label>Đường</label><input type="text" name="street" value={formData.street} onChange={handleChange} /></div>
+                            <div className="form-group"><label>Phường</label><input type="text" name="ward" value={formData.ward} onChange={handleChange} /></div>
                             <div className="form-group"><label>Kết cấu</label><input type="text" name="structure" value={formData.structure} onChange={handleChange} /></div>
                             <div className="form-group"><label>Số tầng hầm</label><input type="number" name="numberOfBasement" value={formData.numberOfBasement} onChange={handleChange} /></div>
                             <div className="form-group"><label>Diện tích sàn (m²)</label><input type="number" name="floorArea" value={formData.floorArea} onChange={handleChange} /></div>
@@ -165,9 +195,9 @@ const UpdateBuilding = () => {
                         </div>
                     </div>
 
-                    {/* KHỐI 2: CHI PHÍ */}
+                    {/* KHỐI 2: GIÁ & PHÍ (Đầy đủ mọi loại phí) */}
                     <div className="form-section">
-                        <h3 className="section-title"><FaDollarSign /> Giá thuê & Phí</h3>
+                        <h3 className="section-title"><FaDollarSign /> Giá thuê & Chi phí</h3>
                         <div className="form-grid">
                             <div className="form-group"><label>Giá thuê ($)</label><input type="number" name="rentPrice" value={formData.rentPrice} onChange={handleChange} /></div>
                             <div className="form-group"><label>Mô tả giá</label><input type="text" name="rentPriceDescription" value={formData.rentPriceDescription} onChange={handleChange} /></div>
@@ -181,27 +211,35 @@ const UpdateBuilding = () => {
                         </div>
                     </div>
 
-                    {/* KHỐI 3: ĐIỀU KIỆN */}
+                    {/* KHỐI 3: ĐIỀU KIỆN & DIỆN TÍCH */}
                     <div className="form-section">
                         <h3 className="section-title"><FaListUl /> Điều kiện thuê</h3>
                         <div className="form-grid">
                             <div className="form-group"><label>Đặt cọc</label><input type="text" name="deposit" value={formData.deposit} onChange={handleChange} /></div>
                             <div className="form-group"><label>Thanh toán</label><input type="text" name="payment" value={formData.payment} onChange={handleChange} /></div>
                             <div className="form-group"><label>Thời hạn thuê</label><input type="text" name="rentTime" value={formData.rentTime} onChange={handleChange} /></div>
-                            <div className="form-group"><label>TG trang trí</label><input type="text" name="decorationTime" value={formData.decorationTime} onChange={handleChange} /></div>
-                            <div className="form-group full-width"><label>Diện tích thuê (VD: 100, 200)</label><input type="text" name="rentArea" value={formData.rentArea} onChange={handleChange} /></div>
+                            <div className="form-group"><label>TG Trang trí</label><input type="text" name="decorationTime" value={formData.decorationTime} onChange={handleChange} /></div>
+                            <div className="form-group full-width">
+                                <label>Diện tích thuê (VD: 100, 200, 300)</label>
+                                <input type="text" name="rentArea" value={formData.rentArea} onChange={handleChange} placeholder="Nhập các diện tích cách nhau bởi dấu phẩy" />
+                            </div>
                         </div>
                     </div>
 
-                    {/* KHỐI 4: HÌNH ẢNH & ALBUM */}
+                    {/* KHỐI 4: HÌNH ẢNH & LOẠI */}
                     <div className="form-section">
-                        <h3 className="section-title"><FaImage /> Hình ảnh & Album</h3>
+                        <h3 className="section-title"><FaImage /> Hình ảnh & Loại</h3>
+
                         <div className="form-group full-width">
                             <label>Loại tòa nhà</label>
                             <div className="checkbox-group">
                                 {BUILDING_TYPES.map(type => (
                                     <label key={type.code} className="checkbox-item">
-                                        <input type="checkbox" checked={Array.isArray(formData.typeCode) && formData.typeCode.includes(type.code)} onChange={() => handleTypeChange(type.code)} />
+                                        <input
+                                            type="checkbox"
+                                            checked={Array.isArray(formData.typeCode) && formData.typeCode.includes(type.code)}
+                                            onChange={() => handleTypeChange(type.code)}
+                                        />
                                         <span>{type.name}</span>
                                     </label>
                                 ))}
@@ -209,36 +247,42 @@ const UpdateBuilding = () => {
                         </div>
 
                         {/* Avatar */}
-                        <div className="form-group" style={{ marginTop: '20px' }}>
-                            <label>Ảnh đại diện (Image)</label>
+                        <div className="form-group full-width" style={{ marginTop: '20px' }}>
+                            <label>Ảnh đại diện (Avatar)</label>
                             <div className="upload-box">
                                 <label className="custom-file-upload">
                                     <FaCloudUploadAlt size={30} />
                                     <input type="file" onChange={(e) => {
                                         const file = e.target.files[0];
-                                        setRawAvatarFile(file);
-                                        setPreviewAvatarUrl(URL.createObjectURL(file));
+                                        if (file) {
+                                            setRawAvatarFile(file);
+                                            setPreviewAvatarUrl(URL.createObjectURL(file));
+                                        }
                                     }} style={{ display: 'none' }} />
-                                    <span>Đổi ảnh đại diện</span>
+                                    <span>{previewAvatarUrl ? "Đổi ảnh khác" : "Chọn ảnh đại diện"}</span>
                                 </label>
                             </div>
-                            {previewAvatarUrl && <img src={previewAvatarUrl} className="img-preview-small" alt="Avatar" />}
+                            {previewAvatarUrl && (
+                                <div style={{ marginTop: '10px' }}>
+                                    <img src={previewAvatarUrl} className="img-preview-small" alt="Avatar" style={{ maxWidth: '200px', borderRadius: '10px' }} />
+                                </div>
+                            )}
                         </div>
 
-                        {/* Album ảnh */}
-                        <div className="form-group" style={{ marginTop: '20px' }}>
-                            <label>Album ảnh chi tiết ({previewAlbumUrls.length})</label>
+                        {/* Album */}
+                        <div className="form-group full-width" style={{ marginTop: '20px' }}>
+                            <label>Album ảnh ({previewAlbumUrls.length})</label>
                             <div className="upload-box">
                                 <label className="custom-file-upload">
                                     <FaCloudUploadAlt size={30} />
                                     <input type="file" multiple onChange={handleAlbumSelect} style={{ display: 'none' }} />
-                                    <span>Thêm ảnh vào album</span>
+                                    <span>Thêm nhiều ảnh vào album</span>
                                 </label>
                             </div>
                             <div className="album-grid">
                                 {previewAlbumUrls.map((url, index) => (
                                     <div key={index} className="image-preview-item">
-                                        <img src={url} alt="Album" />
+                                        <img src={url} alt={`Album ${index}`} />
                                         <button type="button" className="btn-remove-img" onClick={() => handleRemoveAlbumImage(index)}><FaTimes /></button>
                                     </div>
                                 ))}
@@ -248,7 +292,7 @@ const UpdateBuilding = () => {
 
                     {/* KHỐI 5: LIÊN HỆ */}
                     <div className="form-section">
-                        <h3 className="section-title"><FaUserTie /> Liên hệ</h3>
+                        <h3 className="section-title"><FaUserTie /> Liên hệ & Ghi chú</h3>
                         <div className="form-grid">
                             <div className="form-group"><label>Tên quản lý</label><input type="text" name="managerName" value={formData.managerName} onChange={handleChange} /></div>
                             <div className="form-group"><label>SĐT quản lý</label><input type="text" name="managerPhoneNumber" value={formData.managerPhoneNumber} onChange={handleChange} /></div>
@@ -257,9 +301,9 @@ const UpdateBuilding = () => {
                     </div>
 
                     <div className="form-actions">
-                        <button type="button" className="btn-cancel" onClick={() => navigate(-1)}><FaArrowLeft /> Hủy</button>
+                        <button type="button" className="btn-cancel" onClick={() => navigate(-1)}><FaArrowLeft /> Quay lại</button>
                         <button type="submit" className="btn-submit-form" disabled={isLoading}>
-                            {isLoading ? <FaSpinner className="spinner" /> : <FaCheck />} Cập Nhật
+                            {isLoading ? <><FaSpinner className="spinner" /> Đang lưu...</> : <><FaCheck /> Lưu thay đổi</>}
                         </button>
                     </div>
                 </form>

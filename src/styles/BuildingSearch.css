@@ -1,32 +1,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 :root {
-    /* --- BẢNG MÀU CAO CẤP --- */
     --primary: #0f172a;
-    /* Màu chữ chính (Navy đậm) */
     --primary-blue: #3b82f6;
-    /* Màu chủ đạo (Xanh hiện đại) */
     --accent: #f59e0b;
-    /* Màu nhấn (Vàng cam) */
     --bg-page: #f8fafc;
-    /* Màu nền trang */
     --white: #ffffff;
-
-    /* --- BÓNG ĐỔ & HIỆU ỨNG --- */
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.06);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
     --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
-
-    /* --- KÍCH THƯỚC --- */
     --radius-md: 10px;
     --radius-lg: 16px;
     --sidebar-width: 280px;
     --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* =========================================
-   1. GLOBAL LAYOUT
-   ========================================= */
 body {
     font-family: 'Plus Jakarta Sans', sans-serif;
     color: var(--primary);
@@ -38,7 +26,6 @@ body {
 .search-page-wrapper {
     padding: 40px 20px;
     min-height: 100vh;
-    /* Hiệu ứng nền nhẹ nhàng */
     background-image:
         radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.08) 0px, transparent 50%),
         radial-gradient(at 100% 0%, rgba(245, 158, 11, 0.03) 0px, transparent 50%);
@@ -51,40 +38,26 @@ body {
     grid-template-columns: var(--sidebar-width) 1fr;
     gap: 40px;
     align-items: start;
-    /* Quan trọng để Sticky hoạt động */
 }
 
-/* =========================================
-   2. SIDEBAR BỘ LỌC (STICKY & MODERN)
-   ========================================= */
+/* --- SIDEBAR --- */
 .filter-sidebar {
     background: var(--white);
     border: 1px solid #e2e8f0;
     border-radius: var(--radius-lg);
     padding: 24px;
     box-shadow: var(--shadow-sm);
-
-    /* Sticky Logic: Luôn bám theo màn hình */
     position: sticky;
     top: 24px;
     max-height: calc(100vh - 48px);
-    /* Chiều cao tối đa bằng màn hình trừ lề */
     overflow-y: auto;
-    /* Hiện thanh cuộn nếu nội dung dài */
     z-index: 10;
-
-    /* Custom Scrollbar */
     scrollbar-width: thin;
     scrollbar-color: #cbd5e1 transparent;
 }
 
-/* Scrollbar cho Chrome/Safari */
 .filter-sidebar::-webkit-scrollbar {
     width: 6px;
-}
-
-.filter-sidebar::-webkit-scrollbar-track {
-    background: transparent;
 }
 
 .filter-sidebar::-webkit-scrollbar-thumb {
@@ -92,7 +65,6 @@ body {
     border-radius: 20px;
 }
 
-/* Header Sidebar */
 .sidebar-header {
     display: flex;
     justify-content: space-between;
@@ -129,9 +101,7 @@ body {
     transform: rotate(-90deg);
 }
 
-/* =========================================
-   3. FORM ELEMENTS (INPUTS & DROPDOWN)
-   ========================================= */
+/* --- INPUTS --- */
 .filter-section {
     margin-bottom: 24px;
 }
@@ -146,7 +116,6 @@ body {
     margin-bottom: 8px;
 }
 
-/* --- Input Group (Chứa Icon + Input/Select) --- */
 .input-group {
     position: relative;
     display: flex;
@@ -159,16 +128,13 @@ body {
     color: #94a3b8;
     font-size: 0.95rem;
     pointer-events: none;
-    /* Để click xuyên qua */
     z-index: 2;
 }
 
-/* Style chung cho cả Input Text và Select Dropdown */
 .input-group input,
 .input-group select {
     width: 100%;
     padding: 12px 12px 12px 40px;
-    /* Padding trái né icon */
     border: 1px solid #cbd5e1;
     border-radius: var(--radius-md);
     font-size: 0.9rem;
@@ -178,16 +144,9 @@ body {
     transition: var(--transition);
     font-family: inherit;
     font-weight: 500;
-
-    /* Xóa style mặc định xấu của Select */
     appearance: none;
     -webkit-appearance: none;
     cursor: pointer;
-}
-
-.input-group input::placeholder {
-    color: #cbd5e1;
-    font-weight: 400;
 }
 
 .input-group input:focus,
@@ -196,7 +155,6 @@ body {
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-/* Mũi tên Custom cho Select (Vẽ bằng CSS) */
 .select-arrow {
     position: absolute;
     right: 14px;
@@ -209,7 +167,7 @@ body {
     pointer-events: none;
 }
 
-/* --- Range Group (Giá tiền) --- */
+/* --- RANGE INPUT --- */
 .range-group {
     display: flex;
     align-items: center;
@@ -236,20 +194,12 @@ body {
     font-weight: 600;
 }
 
-/* Xóa nút tăng giảm của input number */
-.range-group input::-webkit-outer-spin-button,
-.range-group input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-
 .range-group .separator {
     color: #cbd5e1;
     font-weight: 400;
     font-size: 1.2rem;
 }
 
-/* Quick Options (Chọn giá nhanh) */
 .quick-options {
     display: flex;
     justify-content: space-between;
@@ -271,7 +221,10 @@ body {
     border-bottom-color: var(--primary-blue);
 }
 
-/* --- Checkbox List --- */
+/* =======================================================
+   FIXED CHECKBOX STYLE (SỬA LỖI 2 Ô - BẢN FINAL)
+   ======================================================= */
+
 .checkbox-list {
     display: flex;
     flex-direction: column;
@@ -281,61 +234,81 @@ body {
 .checkbox-item {
     display: flex;
     align-items: center;
+    position: relative;
+    cursor: pointer;
     font-size: 0.9rem;
     color: #334155;
-    cursor: pointer;
-    position: relative;
-    padding-left: 30px;
     user-select: none;
+    /* Xóa padding cũ để căn chỉnh bằng flex cho đẹp */
+    padding: 0;
+    margin: 0;
 }
 
+/* 1. ẨN HOÀN TOÀN INPUT MẶC ĐỊNH (Cái gây ra lỗi 2 ô) */
 .checkbox-item input {
-    position: absolute;
-    opacity: 0;
-    height: 0;
-    width: 0;
+    display: none;
+    /* Ẩn khỏi giao diện 100% */
 }
 
+/* 2. TẠO Ô TÍCH MỚI (Hình vuông) */
 .checkmark {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 18px;
-    width: 18px;
+    height: 20px;
+    width: 20px;
     background-color: #fff;
     border: 1px solid #cbd5e1;
-    border-radius: 5px;
-    transition: var(--transition);
+    border-radius: 4px;
+    /* Bo góc nhẹ cho đẹp */
+    margin-right: 12px;
+    /* Khoảng cách giữa ô vuông và chữ */
+
+    /* Để căn giữa dấu tích V sau này */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease-in-out;
+    flex-shrink: 0;
+    /* Đảm bảo ô vuông không bị bóp méo */
 }
 
+/* Hiệu ứng khi di chuột vào dòng đó */
 .checkbox-item:hover .checkmark {
-    border-color: #94a3b8;
-    background: #f8fafc;
+    border-color: #3b82f6;
+    background-color: #f1f5f9;
 }
 
-.checkbox-item input:checked~.checkmark {
-    background-color: var(--primary-blue);
-    border-color: var(--primary-blue);
+/* 3. TRẠNG THÁI KHI ĐƯỢC CHỌN (Active) */
+/* Khi input (đang ẩn) được checked, thì đổi màu cái .checkmark nằm ngay sau nó */
+.checkbox-item input:checked+.checkmark {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
 }
 
+/* 4. VẼ DẤU TÍCH (Hình chữ V) */
 .checkmark:after {
     content: "";
-    position: absolute;
     display: none;
-    left: 6px;
-    top: 2px;
-    width: 4px;
-    height: 9px;
+    /* Mặc định ẩn */
+    width: 5px;
+    height: 10px;
     border: solid white;
     border-width: 0 2px 2px 0;
     transform: rotate(45deg);
+    margin-bottom: 2px;
+    /* Căn chỉnh dấu tích vào giữa một chút */
 }
 
-.checkbox-item input:checked~.checkmark:after {
+/* Khi input được checked, thì hiện dấu tích bên trong .checkmark */
+.checkbox-item input:checked+.checkmark:after {
     display: block;
 }
 
-/* Submit Button */
+.checkbox-label {
+    line-height: 1.4;
+    font-weight: 500;
+}
+
+/* ======================================================= */
+
 .btn-search-primary {
     width: 100%;
     padding: 14px;
@@ -363,9 +336,7 @@ body {
     transform: none;
 }
 
-/* =========================================
-   4. RESULTS AREA & CARD STYLE
-   ========================================= */
+/* --- RESULTS AREA --- */
 .results-header {
     display: flex;
     justify-content: space-between;
@@ -398,7 +369,7 @@ body {
     gap: 30px;
 }
 
-/* --- Card Design --- */
+/* --- CARD --- */
 .building-card {
     background: #fff;
     border-radius: var(--radius-lg);
@@ -519,7 +490,6 @@ body {
     border-top: 1px dashed #e2e8f0;
     display: flex;
     justify-content: space-between;
-    align-items: center;
 }
 
 .meta-item {
@@ -552,9 +522,7 @@ body {
     background: #e2e8f0;
 }
 
-/* =========================================
-   5. PAGINATION (Cuối trang)
-   ========================================= */
+/* --- PAGINATION --- */
 .pagination-container {
     margin-top: 50px;
     padding-top: 30px;
@@ -629,9 +597,7 @@ body {
     cursor: not-allowed;
 }
 
-/* =========================================
-   6. RESPONSIVE & SKELETON
-   ========================================= */
+/* RESPONSIVE & SKELETON */
 @media (max-width: 900px) {
     .main-content-grid {
         grid-template-columns: 1fr;
