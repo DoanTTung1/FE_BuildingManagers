@@ -125,35 +125,65 @@ const UpdateBuilding = () => {
             }
 
             // 2. Upload Album
-            // Lấy lại các ảnh cũ (link http)
             let finalImageList = previewAlbumUrls.filter(url => url.startsWith('http'));
-
-            // Upload các ảnh mới (nằm trong rawAlbumFiles)
-            // LƯU Ý: Để chính xác, ta nên upload rawAlbumFiles và cộng dồn vào.
-            // Nhưng nếu user xóa ảnh mới ở UI preview, rawAlbumFiles vẫn còn.
-            // -> Cách fix nhanh: Upload hết raw, sau đó dùng previewAlbumUrls làm chuẩn đầu ra.
-
             if (rawAlbumFiles.length > 0) {
                 const uploadPromises = rawAlbumFiles.map(file => uploadSingleFile(file));
                 const newUploadedUrls = await Promise.all(uploadPromises);
-
-                // Chỉ lấy những url nào hiện đang còn trong preview (để khớp với việc user đã xóa bớt)
-                // (Ở mức đơn giản: Cứ gộp tất cả ảnh mới upload vào)
                 finalImageList = [...finalImageList, ...newUploadedUrls];
             }
 
+            // 3. XỬ LÝ DỮ LIỆU AN TOÀN TRƯỚC KHI GỬI (QUAN TRỌNG) 
+            // Logic: Nếu formData.districtId không có, thử tìm trong formData.district.id
+            const safeDistrictId = formData.districtId || formData.district?.id;
+
             const payload = {
-                ...formData,
-                id: Number(id),
-                districtId: Number(formData.districtId),
+                // Chỉ lấy những trường cần thiết, không dùng ...formData để tránh rác
+                name: formData.name,
+                street: formData.street,
+                ward: formData.ward,
+                districtId: Number(safeDistrictId), // <-- Bắt buộc ép về số
+
+                structure: formData.structure,
+                numberOfBasement: Number(formData.numberOfBasement),
+                floorArea: Number(formData.floorArea),
+                direction: formData.direction,
+                level: formData.level,
+
+                rentPrice: Number(formData.rentPrice),
+                rentPriceDescription: formData.rentPriceDescription,
+                serviceFee: formData.serviceFee,
+                carFee: formData.carFee,
+                motorbikeFee: formData.motorbikeFee,
+                overtimeFee: formData.overtimeFee,
+                waterFee: formData.waterFee,
+                electricityFee: formData.electricityFee,
+
+                deposit: formData.deposit,
+                payment: formData.payment,
+                rentTime: formData.rentTime,
+                decorationTime: formData.decorationTime,
+                brokerageFee: Number(formData.brokerageFee),
+
+                note: formData.note,
+                managerName: formData.managerName,
+                managerPhoneNumber: formData.managerPhoneNumber,
+                rentArea: formData.rentArea,
+                typeCode: formData.typeCode, // Mảng code (List<String>)
+
+                // Hình ảnh
                 image: finalAvatarUrl,
                 imageList: finalImageList
             };
 
+            // Log ra để kiểm tra nếu còn lỗi
+            console.log("Payload gửi đi:", payload);
+
             await axiosClient.put(`/api/buildings/${id}`, payload);
             navigate('/admin/buildings');
+
         } catch (error) {
-            alert("Lỗi cập nhật: " + (error.response?.data?.message || "Vui lòng thử lại"));
+            console.error("Chi tiết lỗi:", error);
+            alert("Lỗi cập nhật: " + (error.response?.data?.message || "Lỗi Server (Xem Console)"));
         } finally {
             setIsLoading(false);
         }
