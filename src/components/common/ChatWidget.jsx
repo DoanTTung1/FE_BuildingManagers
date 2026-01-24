@@ -1,56 +1,49 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FaCommentDots, FaPaperPlane, FaTimes, FaRobot, FaUser } from 'react-icons/fa';
-import axiosClient from '../../api/axiosClient'; // <--- Import API Client
+import { FaCommentDots, FaPaperPlane, FaTimes, FaRobot } from 'react-icons/fa';
+import axiosClient from '../../api/axiosClient';
 import '../../styles/ChatWidget.css';
 
 const ChatWidget = () => {
     const [isOpen, setIsOpen] = useState(false);
+    // State tin nhắn mẫu ban đầu
     const [messages, setMessages] = useState([
-        { id: 1, text: "Xin chào! Tôi là trợ lý ảo Building Manager. Bạn cần tìm thuê văn phòng ở khu vực nào?", sender: "bot" }
+        { id: 1, text: "Xin chào! 👋\nTôi là AI Building Manager.\nTôi có thể giúp bạn tìm văn phòng theo Giá hoặc Khu vực.", sender: "bot" }
     ]);
     const [inputText, setInputText] = useState("");
     const [isTyping, setIsTyping] = useState(false);
     const messagesEndRef = useRef(null);
 
-    // Tự động cuộn xuống tin nhắn mới nhất
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
     useEffect(() => {
         scrollToBottom();
-    }, [messages, isOpen]);
+    }, [messages, isOpen, isTyping]);
 
-    // Xử lý gửi tin nhắn
     const handleSend = async () => {
         if (!inputText.trim()) return;
 
-        // 1. Hiển thị tin nhắn của User ngay lập tức
         const userMsg = { id: Date.now(), text: inputText, sender: "user" };
         setMessages(prev => [...prev, userMsg]);
         setInputText("");
-        setIsTyping(true); // Hiện hiệu ứng "Bot đang nhập..."
+        setIsTyping(true);
 
         try {
-            // 2. GỌI API BACKEND (Kết nối thật)
-            // Lưu ý: Backend trả về String response trực tiếp
             const res = await axiosClient.post('/api/chat', { message: userMsg.text });
-
-            // 3. Hiển thị phản hồi từ Server
-            const botResponse = typeof res === 'string' ? res : res.data;
+            const botResponse = typeof res === 'string' ? res : res.data; // Xử lý tùy format trả về
             const botMsg = { id: Date.now() + 1, text: botResponse, sender: "bot" };
-
             setMessages(prev => [...prev, botMsg]);
         } catch (error) {
             console.error("Chat error:", error);
             const errorMsg = {
                 id: Date.now() + 1,
-                text: "Hệ thống đang bảo trì, vui lòng gọi hotline 0912.345.678.",
+                text: "⚠️ Hệ thống đang quá tải, vui lòng thử lại sau.",
                 sender: "bot"
             };
             setMessages(prev => [...prev, errorMsg]);
         } finally {
-            setIsTyping(false); // Tắt hiệu ứng nhập
+            setIsTyping(false);
         }
     };
 
@@ -60,41 +53,53 @@ const ChatWidget = () => {
 
     return (
         <div className="chat-widget-wrapper">
-            {/* Nút tròn nổi */}
+            {/* Toggle Button */}
             {!isOpen && (
                 <button className="chat-toggle-btn" onClick={() => setIsOpen(true)}>
                     <FaCommentDots />
                 </button>
             )}
 
-            {/* Cửa sổ Chat */}
+            {/* Chat Window */}
             {isOpen && (
                 <div className="chat-window">
+                    {/* Header hiện đại với Status Online */}
                     <div className="chat-header">
                         <div className="header-info">
-                            <FaRobot className="bot-avatar-icon" />
-                            <span>Trợ Lý Ảo AI</span>
+                            <div className="bot-avatar-icon">
+                                <FaRobot />
+                            </div>
+                            <div className="header-text">
+                                <h3>Trợ Lý AI</h3>
+                                <span>● Đang hoạt động</span>
+                            </div>
                         </div>
                         <button className="close-btn" onClick={() => setIsOpen(false)}>
                             <FaTimes />
                         </button>
                     </div>
 
+                    {/* Chat Body */}
                     <div className="chat-body">
                         {messages.map((msg) => (
                             <div key={msg.id} className={`message-item ${msg.sender}`}>
-                                {msg.sender === 'bot' && <div className="avatar small"><FaRobot /></div>}
-                                <div className="message-bubble" style={{ whiteSpace: 'pre-line' }}>
-                                    {/* pre-line giúp hiển thị xuống dòng \n từ backend */}
+                                {msg.sender === 'bot' && (
+                                    <div className="avatar small">
+                                        <FaRobot />
+                                    </div>
+                                )}
+                                <div className="message-bubble">
                                     {msg.text}
                                 </div>
-                                {msg.sender === 'user' && <div className="avatar small user"><FaUser /></div>}
                             </div>
                         ))}
 
+                        {/* Hiệu ứng Typing 3 chấm mượt mà */}
                         {isTyping && (
                             <div className="message-item bot">
-                                <div className="avatar small"><FaRobot /></div>
+                                <div className="avatar small">
+                                    <FaRobot />
+                                </div>
                                 <div className="typing-indicator">
                                     <span></span><span></span><span></span>
                                 </div>
@@ -103,16 +108,18 @@ const ChatWidget = () => {
                         <div ref={messagesEndRef} />
                     </div>
 
+                    {/* Footer Input */}
                     <div className="chat-footer">
                         <input
                             type="text"
-                            placeholder="Nhập tin nhắn..."
+                            placeholder="Nhập yêu cầu của bạn..."
                             value={inputText}
                             onChange={(e) => setInputText(e.target.value)}
                             onKeyPress={handleKeyPress}
-                            disabled={isTyping} // Chặn nhập khi bot chưa trả lời xong
+                            disabled={isTyping}
+                            autoFocus
                         />
-                        <button onClick={handleSend} disabled={isTyping}>
+                        <button onClick={handleSend} disabled={isTyping || !inputText.trim()}>
                             <FaPaperPlane />
                         </button>
                     </div>
