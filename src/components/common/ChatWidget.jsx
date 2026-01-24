@@ -7,7 +7,7 @@ const ChatWidget = () => {
     const [isOpen, setIsOpen] = useState(false);
     // State tin nhắn mẫu ban đầu
     const [messages, setMessages] = useState([
-        { id: 1, text: "Xin chào! 👋\nTôi là AI Building Manager.\nTôi có thể giúp bạn tìm văn phòng theo Giá hoặc Khu vực.", sender: "bot" }
+        { id: 1, text: "Xin chào! 👋\nTôi là trợ lý ảo của Elite Homes.\nTôi có thể giúp bạn tìm văn phòng theo Giá hoặc Khu vực.", sender: "bot" }
     ]);
     const [inputText, setInputText] = useState("");
     const [isTyping, setIsTyping] = useState(false);
