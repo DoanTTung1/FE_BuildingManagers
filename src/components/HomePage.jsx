@@ -2,33 +2,56 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosClient from '../api/axiosClient';
 import {
-    FaArrowRight, FaBuilding, FaSearch, FaMapMarkerAlt,
-    FaCheckCircle, FaPhoneAlt, FaStar, FaRegCompass,
-    FaCar, FaExpandArrowsAlt, FaHandshake, FaUserTie
+    FaSearch, FaMapMarkerAlt, FaArrowRight, FaBuilding,
+    FaExpandArrowsAlt, FaCar, FaStar, FaCheckCircle, FaPhoneAlt,
+    FaLongArrowAltRight // <--- Import thêm icon này cho đẹp
 } from 'react-icons/fa';
 import '../styles/HomePage.css';
 
-// --- ASSETS & MOCK DATA ---
-const HERO_BG = "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=2070&q=80";
+// --- ASSETS & CONFIG ---
+const HERO_IMAGE = "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=2070&q=80";
 
+// Dữ liệu mới cho phần Accordion (Thêm mô tả và Tag)
+// Dữ liệu Quận khớp với Database (ID là số)
 const POPULAR_DISTRICTS = [
-    { id: 'QUAN_1', name: 'Quận 1', label: 'Trung tâm tài chính', price: '$30 - $60', img: 'https://images.unsplash.com/photo-1555952494-efd681c7e3f9?auto=format&fit=crop&w=600&q=80', count: 120, size: 'span-2' },
-    { id: 'QUAN_3', name: 'Quận 3', label: 'Văn hóa & Ngoại giao', price: '$20 - $45', img: 'https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=600&q=80', count: 85, size: 'span-1' },
-    { id: 'QUAN_2', name: 'Thủ Thiêm', label: 'Khu đô thị mới', price: '$25 - $50', img: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=600&q=80', count: 45, size: 'span-1' },
-    { id: 'QUAN_7', name: 'Quận 7', label: 'Phú Mỹ Hưng', price: '$15 - $35', img: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b91d?auto=format&fit=crop&w=600&q=80', count: 60, size: 'span-2' },
+    {
+        id: 1,  // ID trong DB là số 1
+        name: 'Quận 1',
+        tag: 'Financial Hub',
+        desc: 'Trung tâm tài chính, nơi quy tụ các tập đoàn đa quốc gia và văn phòng hạng A.',
+        img: 'https://images.unsplash.com/photo-1657644096992-62b43ea8ae30?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+        total: '120 Tòa'
+    },
+    {
+        id: 3,  // ID trong DB là số 3
+        name: 'Quận 3',
+        tag: 'Heritage & Culture',
+        desc: 'Sự giao thoa hoàn hảo giữa kiến trúc Pháp cổ điển và không gian hiện đại.',
+        img: 'https://plus.unsplash.com/premium_photo-1680777484547-de735ff024a4?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+        total: '85 Tòa'
+    },
+    {
+        id: 5,  // ID trong DB là số 5 (Bình Thạnh)
+        name: 'Bình Thạnh',
+        tag: 'The Gateway',
+        desc: 'Cửa ngõ phía Đông sầm uất, kết nối nhanh chóng giữa Quận 1 và khu đô thị mới.',
+        img: 'https://plus.unsplash.com/premium_photo-1678903964473-1271ecfb0288?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+        total: '60 Tòa'
+    },
+    {
+        id: 6,  // ID trong DB là số 6 (Phú Nhuận)
+        name: 'Phú Nhuận',
+        tag: 'Airport Connection',
+        desc: 'Vị trí chiến lược kết nối sân bay, môi trường làm việc nhiều cây xanh và yên tĩnh.',
+        img: 'https://images.unsplash.com/photo-1725891025293-16981168203d?q=80&w=628&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+        total: '40 Tòa'
+    },
 ];
 
-const PROCESS_STEPS = [
-    { icon: <FaSearch />, title: "Tìm kiếm & Lọc", desc: "Hệ thống AI gợi ý văn phòng theo nhu cầu." },
-    { icon: <FaUserTie />, title: "Tư vấn & Khảo sát", desc: "Chuyên viên hỗ trợ xem thực tế miễn phí." },
-    { icon: <FaHandshake />, title: "Đàm phán & Ký kết", desc: "Hỗ trợ deal giá tốt hơn thị trường 10%." }
-];
-
-const PARTNERS = [
-    "https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg",
-    "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg",
-    "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg",
-    "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg"
+const FEATURES_LIST = [
+    { title: "Nguồn hàng độc quyền", desc: "Truy cập 500+ sàn văn phòng Off-market chưa công bố." },
+    { title: "Thương lượng giá tốt", desc: "Cam kết deal giá thấp hơn thị trường từ 5-10%." },
+    { title: "Pháp lý minh bạch", desc: "Hỗ trợ rà soát hợp đồng và thủ tục pháp lý miễn phí." }
 ];
 
 const HomePage = () => {
@@ -36,17 +59,13 @@ const HomePage = () => {
     const [featuredBuildings, setFeaturedBuildings] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Advanced Search State
     const [searchKeyword, setSearchKeyword] = useState('');
     const [searchDistrict, setSearchDistrict] = useState('');
-    const [priceRange, setPriceRange] = useState('');
-    const [areaRange, setAreaRange] = useState('');
-
     const [contactPhone, setContactPhone] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const getImageUrl = (imagePath) => {
-        if (!imagePath) return "https://via.placeholder.com/600x400?text=Building+Image";
+        if (!imagePath) return "https://via.placeholder.com/600x400?text=Building";
         if (imagePath.startsWith("http")) return imagePath;
         return `http://localhost:8080/api/buildings/images/${imagePath}`;
     };
@@ -54,12 +73,11 @@ const HomePage = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Gọi API lấy nhiều trường dữ liệu hơn
                 const res = await axiosClient.get('/api/buildings?page=0&size=6&sort=rentPrice,desc');
                 if (res.content) setFeaturedBuildings(res.content);
                 else if (Array.isArray(res)) setFeaturedBuildings(res.slice(0, 6));
             } catch (error) {
-                console.error("Error fetching data:", error);
+                console.error("Lỗi tải dữ liệu:", error);
             } finally {
                 setIsLoading(false);
             }
@@ -70,241 +88,163 @@ const HomePage = () => {
     const handleSearch = () => {
         let query = `/search?`;
         if (searchKeyword) query += `name=${searchKeyword}&`;
-        if (searchDistrict) query += `district=${searchDistrict}&`;
-        if (priceRange) query += `price=${priceRange}&`;
-        if (areaRange) query += `area=${areaRange}`;
+        if (searchDistrict) query += `district=${searchDistrict}`;
         navigate(query);
     };
 
     const handleContact = async () => {
-        if (!contactPhone || contactPhone.length < 9) return alert("Vui lòng nhập SĐT hợp lệ");
+        if (!contactPhone || contactPhone.length < 9) return alert("Vui lòng nhập số điện thoại hợp lệ");
         setIsSubmitting(true);
         try {
-            await axiosClient.post('/api/customers/contact', { fullName: "Guest Homepage", phone: contactPhone, demand: "Yêu cầu báo giá nhanh" });
-            alert("Đã gửi yêu cầu! Chuyên viên sẽ gọi lại trong 5 phút.");
+            await axiosClient.post('/api/customers/contact', {
+                fullName: "Khách từ Trang Chủ",
+                phone: contactPhone,
+                demand: "Yêu cầu tư vấn nhanh"
+            });
+            alert("Đã gửi yêu cầu thành công!");
             setContactPhone('');
-        } catch (e) { alert("Lỗi kết nối server."); }
-        finally { setIsSubmitting(false); }
+        } catch (e) {
+            alert("Có lỗi xảy ra, vui lòng thử lại sau.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
         <div className="home-container">
 
-            {/* 1. HERO SECTION CAO CẤP */}
-            <section className="hero-modern" style={{ backgroundImage: `url(${HERO_BG})` }}>
-                <div className="hero-overlay-gradient"></div>
+            {/* --- 1. HERO SECTION --- */}
+            <section className="hero-modern" style={{ backgroundImage: `url(${HERO_IMAGE})` }}>
+                <div className="hero-overlay"></div>
                 <div className="hero-content">
-                    <span className="hero-tag">#1 Nền tảng cho thuê văn phòng TP.HCM</span>
-                    <h1 className="hero-heading">
-                        Nâng Tầm <span className="text-highlight">Vị Thế Doanh Nghiệp</span>
-                    </h1>
-                    <p className="hero-sub">Hệ thống dữ liệu minh bạch 1,500+ tòa nhà. Cam kết giá thuê tốt nhất thị trường.</p>
+                    <span className="hero-badge">#1 Nền Tảng Cho Thuê Văn Phòng</span>
+                    <h1 className="hero-heading">Nâng Tầm <br /><span className="text-highlight">Vị Thế Doanh Nghiệp</span></h1>
+                    <p className="hero-sub">Kết nối doanh nghiệp với 1,500+ tòa nhà văn phòng hạng A, B, C tại TP.HCM.</p>
 
-                    {/* Advanced Search Box */}
-                    <div className="advanced-search-box">
-                        <div className="search-row top">
-                            <div className="input-group flex-grow">
-                                <FaSearch className="icon" />
-                                <input
-                                    type="text"
-                                    placeholder="Nhập tên tòa nhà, đường..."
-                                    value={searchKeyword}
-                                    onChange={(e) => setSearchKeyword(e.target.value)}
-                                />
-                            </div>
-                            <div className="input-group">
-                                <FaMapMarkerAlt className="icon" />
-                                <select onChange={(e) => setSearchDistrict(e.target.value)}>
-                                    <option value="">Toàn bộ TP.HCM</option>
-                                    <option value="QUAN_1">Quận 1</option>
-                                    <option value="QUAN_3">Quận 3</option>
-                                    <option value="QUAN_2">Thủ Thiêm</option>
-                                    <option value="QUAN_BINH_THANH">Bình Thạnh</option>
-                                    <option value="QUAN_7">Quận 7</option>
-                                </select>
-                            </div>
+                    <div className="search-glass-panel">
+                        <div className="search-field">
+                            <FaSearch className="icon" />
+                            <input type="text" placeholder="Tên tòa nhà, đường..." value={searchKeyword} onChange={(e) => setSearchKeyword(e.target.value)} />
                         </div>
-                        <div className="search-row bottom">
-                            <div className="input-group">
-                                <span className="label">Mức giá ($)</span>
-                                <select onChange={(e) => setPriceRange(e.target.value)}>
-                                    <option value="">Tất cả mức giá</option>
-                                    <option value="0-20">Dưới $20</option>
-                                    <option value="20-40">$20 - $40</option>
-                                    <option value="40-100">Trên $40 (Hạng A)</option>
-                                </select>
-                            </div>
-                            <div className="input-group">
-                                <span className="label">Diện tích (m²)</span>
-                                <select onChange={(e) => setAreaRange(e.target.value)}>
-                                    <option value="">Mọi diện tích</option>
-                                    <option value="0-100">Dưới 100m²</option>
-                                    <option value="100-300">100 - 300m²</option>
-                                    <option value="300-1000">Trên 300m²</option>
-                                </select>
-                            </div>
-                            <button className="btn-search-primary" onClick={handleSearch}>
-                                Tìm Kiếm Ngay
-                            </button>
+                        <div className="divider"></div>
+                        <div className="search-field">
+                            <FaMapMarkerAlt className="icon" />
+                            <select value={searchDistrict} onChange={(e) => setSearchDistrict(e.target.value)}>
+                                <option value="">Tất cả khu vực</option>
+                                <option value="QUAN_1">Quận 1</option>
+                                <option value="QUAN_3">Quận 3</option>
+                                <option value="QUAN_2">Thủ Thiêm</option>
+                                <option value="QUAN_BINH_THANH">Bình Thạnh</option>
+                                <option value="QUAN_7">Quận 7</option>
+                            </select>
                         </div>
+                        <button className="btn-search-glow" onClick={handleSearch}>Khám Phá</button>
+                    </div>
+
+                    <div className="hero-stats">
+                        <div className="stat"><b>1,500+</b><span>Tòa nhà</span></div>
+                        <div className="stat"><b>500+</b><span>Đối tác</span></div>
+                        <div className="stat"><b>98%</b><span>Hài lòng</span></div>
                     </div>
                 </div>
             </section>
 
-            {/* 2. TRUST STRIP (Đối tác) */}
-            <div className="trust-strip">
-                <div className="container">
-                    <p>Được tin tưởng bởi 500+ doanh nghiệp hàng đầu</p>
-                    <div className="logos-grid">
-                        {PARTNERS.map((logo, index) => (
-                            <img key={index} src={logo} alt="Partner Logo" className="partner-logo" />
-                        ))}
-                    </div>
+            {/* --- 2. STRATEGIC LOCATIONS (ACCORDION ULTRA) --- */}
+            {/* Đây là phần bạn muốn làm đẹp hơn */}
+            <section className="section-locations-ultra">
+                <div className="section-header">
+                    <h2>Vị Trí Chiến Lược</h2>
+                    <p style={{ color: 'var(--text-sub)' }}>Khám phá văn phòng tại các khu vực kinh tế trọng điểm</p>
                 </div>
-            </div>
 
-            {/* 3. FEATURED BUILDINGS (Thẻ chi tiết) */}
-            <section className="section-padded bg-light">
-                <div className="container">
-                    <div className="section-header flex-between">
-                        <div>
-                            <span className="sub-title">Lựa chọn tốt nhất</span>
-                            <h2>Văn Phòng Hạng A & B Nổi Bật</h2>
-                        </div>
-                        <button className="btn-outline" onClick={() => navigate('/search')}>Xem tất cả dự án <FaArrowRight /></button>
-                    </div>
+                <div className="accordion-gallery">
+                    {POPULAR_DISTRICTS.map((d, index) => (
+                        <div key={d.id} className="accordion-card" onClick={() => navigate(`/search?district=${d.id}`)}>
+                            {/* Ảnh nền */}
+                            <div className="acc-img" style={{ backgroundImage: `url(${d.img})` }}></div>
+                            <div className="acc-overlay"></div>
 
-                    <div className="cards-grid">
-                        {isLoading ? <div className="loading-spinner"></div> :
-                            featuredBuildings.map(item => (
-                                <div className="property-card" key={item.id} onClick={() => navigate(`/building/${item.id}`)}>
-                                    <div className="card-thumb">
-                                        <img
-                                            src={getImageUrl(item.avatar)}
-                                            alt={item.name}
-                                            onError={(e) => { e.target.onerror = null; e.target.src = "https://via.placeholder.com/500x300?text=Building"; }}
-                                        />
-                                        <div className="badges">
-                                            {/* Logic giả định hạng dựa trên giá */}
-                                            <span className={`badge ${item.rentPrice >= 30 ? 'grade-a' : 'grade-b'}`}>
-                                                {item.rentPrice >= 30 ? 'Hạng A' : 'Hạng B'}
-                                            </span>
-                                            {item.managerName && <span className="badge managed">Managed</span>}
-                                        </div>
-                                        <div className="price-overlay">
-                                            ${item.rentPrice} <small>/m²</small>
-                                        </div>
-                                    </div>
+                            {/* Số thứ tự */}
+                            <div className="acc-index">0{index + 1}</div>
 
-                                    <div className="card-body">
-                                        <h3 title={item.name}>{item.name}</h3>
-                                        <p className="location"><FaMapMarkerAlt /> {item.street}, {item.district}</p>
+                            {/* Nội dung khi đóng (Chữ dọc) */}
+                            <div className="acc-content-collapsed">
+                                <h3>{d.name}</h3>
+                            </div>
 
-                                        <div className="card-specs">
-                                            <div className="spec-item" title="Diện tích sàn">
-                                                <FaExpandArrowsAlt /> <span>{item.floorArea} m²</span>
-                                            </div>
-                                            <div className="spec-item" title="Hướng tòa nhà">
-                                                <FaRegCompass /> <span>{item.direction || 'Đông Nam'}</span>
-                                            </div>
-                                            <div className="spec-item" title="Phí dịch vụ">
-                                                <FaStar /> <span>+${item.serviceFee || '5'} phí DV</span>
-                                            </div>
-                                            <div className="spec-item" title="Chỗ đậu xe">
-                                                <FaCar /> <span>{item.carFees ? 'Có hầm' : 'Liên hệ'}</span>
-                                            </div>
-                                        </div>
-
-                                        <div className="card-footer">
-                                            <div className="manager-info">
-                                                <small>Quản lý bởi:</small>
-                                                <strong>{item.managerName || "Building Management"}</strong>
-                                            </div>
-                                            <button className="btn-view">Chi tiết</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))
-                        }
-                    </div>
-                </div>
-            </section>
-
-            {/* 4. DISTRICTS (Bento Grid nâng cấp) */}
-            <section className="section-padded">
-                <div className="container">
-                    <div className="section-header center">
-                        <span className="sub-title">Khu vực trọng điểm</span>
-                        <h2>Khám Phá Theo Quận</h2>
-                    </div>
-                    <div className="bento-grid">
-                        {POPULAR_DISTRICTS.map((d) => (
-                            <div key={d.id} className={`bento-card ${d.size}`} onClick={() => navigate(`/search?district=${d.id}`)}>
-                                <img src={d.img} alt={d.name} />
-                                <div className="bento-content">
-                                    <div className="bento-top">
-                                        <span className="district-tag">{d.count} Tòa nhà</span>
-                                    </div>
-                                    <div className="bento-bottom">
-                                        <h3>{d.name}</h3>
-                                        <p>{d.label}</p>
-                                        <div className="price-range">Giá TB: {d.price}</div>
-                                    </div>
+                            {/* Nội dung khi mở (Mô tả chi tiết) */}
+                            <div className="acc-content-expanded">
+                                <span className="acc-tag">{d.tag}</span>
+                                <h3>{d.name}</h3>
+                                <p>{d.desc}</p>
+                                <div className="acc-meta">
+                                    <span className="acc-total">{d.total}</span>
+                                    <span className="btn-arrow"><FaLongArrowAltRight /></span>
                                 </div>
                             </div>
-                        ))}
-                    </div>
+                        </div>
+                    ))}
                 </div>
             </section>
 
-            {/* 5. PROCESS (Quy trình) */}
-            <section className="process-section">
-                <div className="container">
-                    <div className="section-header center">
-                        <h2>Quy Trình Thuê Dễ Dàng</h2>
+            {/* --- 3. PREMIUM CARDS --- */}
+            <section className="section-padded bg-gray">
+                <div className="section-header-flex">
+                    <div>
+                        <h2>Tòa Nhà Nổi Bật</h2>
+                        <p style={{ color: 'var(--text-sub)' }}>Lựa chọn hàng đầu của các doanh nghiệp tuần qua</p>
                     </div>
-                    <div className="process-steps">
-                        {PROCESS_STEPS.map((step, index) => (
-                            <div className="step-item" key={index}>
-                                <div className="step-icon">{step.icon}</div>
-                                <h4>{step.title}</h4>
-                                <p>{step.desc}</p>
-                                {index < PROCESS_STEPS.length - 1 && <div className="step-line"></div>}
+                    <button className="btn-link" onClick={() => navigate('/search')}>Xem tất cả <FaArrowRight /></button>
+                </div>
+
+                <div className="cards-grid">
+                    {isLoading ? <p>Đang tải dữ liệu...</p> : featuredBuildings.map(item => (
+                        <div className="premium-card" key={item.id} onClick={() => navigate(`/building/${item.id}`)}>
+                            <div className="card-image">
+                                <img src={getImageUrl(item.avatar || item.image)} alt={item.name} onError={(e) => { e.target.onerror = null; e.target.src = "https://via.placeholder.com/600x400?text=Building"; }} />
+                                <div className="price-tag">${item.rentPrice} <span>/m²</span></div>
+                                <div className="status-tag">Cho thuê</div>
                             </div>
-                        ))}
-                    </div>
+                            <div className="card-details">
+                                <h3 title={item.name}>{item.name}</h3>
+                                <p className="address"><FaMapMarkerAlt style={{ marginRight: '5px', color: 'var(--blue)' }} /> {item.street}, {item.district}</p>
+                                <div className="specs">
+                                    <span><FaExpandArrowsAlt /> {item.floorArea}m²</span>
+                                    <span><FaCar /> {item.carFee ? 'Có hầm' : 'Liên hệ'}</span>
+                                    <span><FaStar /> Hạng A</span>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </section>
 
-            {/* 6. CONTACT CTA */}
-            <section className="cta-modern">
-                <div className="container cta-inner">
-                    <div className="cta-text">
-                        <h2>Bạn cần tư vấn báo giá ngay?</h2>
-                        <p>Để lại số điện thoại, chúng tôi sẽ gửi danh sách văn phòng trống kèm báo giá chi tiết qua Zalo trong 5 phút.</p>
-                        <ul className="benefits">
-                            <li><FaCheckCircle /> Báo giá minh bạch, không chênh lệch</li>
-                            <li><FaCheckCircle /> Hỗ trợ xe đưa đón xem văn phòng</li>
+            {/* --- 4. CTA MESH --- */}
+            <section className="cta-mesh-section">
+                <div className="cta-grid">
+                    <div className="cta-content">
+                        <h2>Giải pháp tìm văn phòng <br /> thông minh & miễn phí</h2>
+                        <ul className="features-list">
+                            {FEATURES_LIST.map((f, i) => (
+                                <li key={i}>
+                                    <div className="check-icon"><FaCheckCircle /></div>
+                                    <div><h4>{f.title}</h4><p>{f.desc}</p></div>
+                                </li>
+                            ))}
                         </ul>
                     </div>
-                    <div className="cta-form">
-                        <div className="input-wrap-lg">
-                            <FaPhoneAlt />
-                            <input
-                                type="text"
-                                placeholder="Nhập số điện thoại của bạn..."
-                                value={contactPhone}
-                                onChange={e => setContactPhone(e.target.value)}
-                            />
-                            <button onClick={handleContact} disabled={isSubmitting}>
-                                {isSubmitting ? "..." : "Gửi Yêu Cầu"}
-                            </button>
+                    <div className="cta-form-card">
+                        <h3>Nhận báo giá ngay</h3>
+                        <p>Để lại số điện thoại, chuyên viên sẽ gửi list văn phòng phù hợp trong 5 phút.</p>
+                        <div className="input-wrap">
+                            <FaPhoneAlt className="input-icon" />
+                            <input type="text" placeholder="Số điện thoại của bạn..." value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} />
                         </div>
-                        <small>Cam kết bảo mật thông tin khách hàng.</small>
+                        <button className="btn-submit-full" onClick={handleContact} disabled={isSubmitting}>{isSubmitting ? "Đang gửi..." : "Gửi Yêu Cầu Tư Vấn"}</button>
+                        <span className="secure-note">🔒 Thông tin được bảo mật 100%</span>
                     </div>
                 </div>
             </section>
-
         </div>
     );
 };
