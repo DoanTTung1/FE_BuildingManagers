@@ -11,6 +11,9 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import AdminLayout from './layouts/AdminLayout';
 
+// Common Components
+import ChatWidget from './components/common/ChatWidget'; // <--- 1. IMPORT CHAT WIDGET
+
 // User Pages
 import HomePage from './components/HomePage';
 import BuildingSearch from './components/BuildingSearch';
@@ -39,6 +42,10 @@ const UserLayout = () => {
       <main style={{ paddingTop: '80px', flex: 1, backgroundColor: '#f8fafd' }}>
         <Outlet />
       </main>
+
+      {/* 2. NHÚNG CHATBOT VÀO ĐÂY (Nó sẽ hiện ở mọi trang User) */}
+      <ChatWidget />
+
       <Footer />
     </div>
   );
@@ -91,10 +98,7 @@ function App() {
             {/* === NHÓM 3: QUẢN TRỊ (ADMIN) === */}
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<Dashboard />} />
-
-              {/* Thêm dòng này để truy cập được bằng link /admin/dashboard */}
               <Route path="dashboard" element={<Dashboard />} />
-
               <Route path="buildings" element={<BuildingManager />} />
               <Route path="building-create" element={<CreateBuilding />} />
               <Route path="building-edit/:id" element={<UpdateBuilding />} />
@@ -112,7 +116,7 @@ function App() {
             } />
           </Routes>
 
-          {/* Modal đăng nhập/đăng ký có thể hiện ra ở bất cứ trang nào */}
+          {/* Modal đăng nhập/đăng ký */}
           <AuthModal />
         </div>
       </AuthProvider>
