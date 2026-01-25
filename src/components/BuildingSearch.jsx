@@ -3,11 +3,11 @@ import axiosClient from '../api/axiosClient';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
     FaSearch, FaMapMarkerAlt, FaFilter, FaArrowRight, FaChevronLeft,
-    FaChevronRight, FaUndo, FaRulerCombined
+    FaChevronRight, FaUndo, FaRulerCombined, FaMoneyBillWave, FaBuilding, FaSortAmountDown
 } from 'react-icons/fa';
 import '../styles/BuildingSearch.css';
 
-// --- COMPONENT SKELETON (Hiệu ứng loading) ---
+// --- COMPONENT SKELETON ---
 const SkeletonCard = () => (
     <div className="building-card skeleton">
         <div className="card-img-wrapper shimmer"></div>
@@ -29,34 +29,32 @@ const BUILDING_TYPES = [
     { code: 'NGUYEN_CAN', name: 'Nguyên căn' }
 ];
 
-// ID phải là SỐ để khớp với Database
 const DISTRICTS = [
-    { id: 1, name: 'Quận 1' },
-    { id: 2, name: 'Quận 2' },
-    { id: 3, name: 'Quận 3' },
-    { id: 4, name: 'Quận 4' },
-    { id: 5, name: 'Quận Bình Thạnh' },
-    { id: 6, name: 'Quận Phú Nhuận' }
+    { id: 1, name: 'Quận 1' }, { id: 2, name: 'Quận 2' },
+    { id: 3, name: 'Quận 3' }, { id: 4, name: 'Quận 4' },
+    { id: 5, name: 'Quận Bình Thạnh' }, { id: 6, name: 'Quận Phú Nhuận' }
 ];
 
-const PRICE_RANGES = [
-    { label: '< $1k', min: '', max: '1000' },
-    { label: '$1k - $3k', min: '1000', max: '3000' },
-    { label: '> $3k', min: '3000', max: '' },
-];
+// Helper format tiền tệ VNĐ
+const formatCurrency = (value) => {
+    if (!value) return 'Liên hệ';
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(value);
+};
 
 const BuildingSearch = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // State lưu trữ bộ lọc (Lưu ý: các giá trị nhập vào từ input HTML đều là chuỗi)
+    // State bộ lọc
     const [formData, setFormData] = useState({
         name: '',
         floorArea: '',
         district: '',
         rentPriceFrom: '',
         rentPriceTo: '',
-        typeCode: []
+        typeCode: [],
+        transactionType: '',
+        sortBy: '' // 🔥 [MỚI] Thêm state sắp xếp
     });
 
     const [buildings, setBuildings] = useState([]);
@@ -65,23 +63,29 @@ const BuildingSearch = () => {
     const [totalPages, setTotalPages] = useState(0);
     const pageSize = 6;
 
-    // --- EFFECT: LẤY DỮ LIỆU TỪ URL KHI LOAD TRANG ---
+    // --- EFFECT: LOAD URL PARAMS ---
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         const districtUrl = params.get('district');
         const nameUrl = params.get('name');
+        const typeUrl = params.get('transactionType');
+        const sortUrl = params.get('sortBy'); // 🔥 Lấy sort từ URL
 
         const initialSearch = {
             ...formData,
             district: districtUrl || formData.district,
-            name: nameUrl || formData.name
+            name: nameUrl || formData.name,
+            transactionType: typeUrl || formData.transactionType,
+            sortBy: sortUrl || formData.sortBy
         };
 
-        if (districtUrl || nameUrl) {
+        if (districtUrl || nameUrl || typeUrl || sortUrl) {
             setFormData(prev => ({
                 ...prev,
                 district: districtUrl || prev.district,
-                name: nameUrl || prev.name
+                name: nameUrl || prev.name,
+                transactionType: typeUrl || prev.transactionType,
+                sortBy: sortUrl || prev.sortBy
             }));
         }
 
@@ -89,40 +93,36 @@ const BuildingSearch = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [location.search]);
 
-    // --- HÀM GỌI API (ĐÃ FIX LOGIC ÉP KIỂU SỐ) ---
+    // --- GỌI API ---
     const fetchBuildings = async (searchParams, page = 1) => {
         setIsLoading(true);
         try {
             const cleanParams = {};
 
-            // 1. FIX QUAN TRỌNG: Ép kiểu District về Number
-            // HTML trả về chuỗi "1", Java cần số 1 (Long)
             if (searchParams.district && searchParams.district !== '') {
                 cleanParams.districtId = Number(searchParams.district);
             }
-
-            // 2. Ép kiểu các trường số khác
             if (searchParams.floorArea) cleanParams.floorArea = Number(searchParams.floorArea);
             if (searchParams.rentPriceFrom) cleanParams.rentPriceFrom = Number(searchParams.rentPriceFrom);
             if (searchParams.rentPriceTo) cleanParams.rentPriceTo = Number(searchParams.rentPriceTo);
-
-            // 3. Trường chuỗi giữ nguyên
             if (searchParams.name) cleanParams.name = searchParams.name;
+            if (searchParams.transactionType) cleanParams.transactionType = searchParams.transactionType;
 
-            // 4. Mảng loại hình
+            // 🔥 [MỚI] Gửi tham số sắp xếp
+            if (searchParams.sortBy) cleanParams.sortBy = searchParams.sortBy;
+
             if (searchParams.typeCode && searchParams.typeCode.length > 0) {
                 cleanParams.typeCode = searchParams.typeCode;
             }
 
-            // 5. Phân trang
             cleanParams.page = page - 1;
             cleanParams.size = pageSize;
 
-            console.log("Params gửi đi API (Đã ép kiểu):", cleanParams);
+            console.log("Searching with:", cleanParams);
 
             const res = await axiosClient.get('/api/buildings', {
                 params: cleanParams,
-                paramsSerializer: { indexes: null } // Giữ format mảng cho Spring Boot
+                paramsSerializer: { indexes: null }
             });
 
             if (res && res.content) {
@@ -149,8 +149,12 @@ const BuildingSearch = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const applyQuickPrice = (min, max) => {
-        setFormData({ ...formData, rentPriceFrom: min, rentPriceTo: max });
+    // 🔥 [MỚI] Xử lý khi chọn Sắp xếp -> Gọi API ngay lập tức
+    const handleSortChange = (e) => {
+        const newSort = e.target.value;
+        const newData = { ...formData, sortBy: newSort };
+        setFormData(newData);
+        fetchBuildings(newData, 1); // Gọi API luôn khi chọn
     };
 
     const handleCheckboxChange = (code) => {
@@ -170,7 +174,8 @@ const BuildingSearch = () => {
     const handleReset = () => {
         const resetData = {
             name: '', floorArea: '', district: '',
-            rentPriceFrom: '', rentPriceTo: '', typeCode: []
+            rentPriceFrom: '', rentPriceTo: '', typeCode: [],
+            transactionType: '', sortBy: ''
         };
         setFormData(resetData);
         navigate('/search', { replace: true });
@@ -189,13 +194,11 @@ const BuildingSearch = () => {
     const getImageUrl = (imagePath) => {
         if (!imagePath) return "https://via.placeholder.com/400x300?text=No+Image";
         if (imagePath.startsWith("http")) return imagePath;
-        return `http://localhost:8080/api/buildings/images/${imagePath}`;
+        return imagePath;
     };
 
-    // 🔥 FIX: Hàm hiển thị địa chỉ đẹp
     const formatAddress = (item) => {
         if (item.address) return item.address;
-        // Ghép chuỗi, lọc bỏ null/undefined
         return [item.street, item.ward, item.district].filter(Boolean).join(', ');
     };
 
@@ -216,26 +219,26 @@ const BuildingSearch = () => {
                         <label className="section-label">Từ khóa</label>
                         <div className="input-group">
                             <FaSearch className="input-icon" />
-                            <input
-                                type="text"
-                                name="name"
-                                placeholder="Tên tòa nhà..."
-                                value={formData.name}
-                                onChange={handleChange}
-                            />
+                            <input type="text" name="name" placeholder="Tên tòa nhà..." value={formData.name} onChange={handleChange} />
                         </div>
+                    </div>
+
+                    {/* BỘ LỌC LOẠI GIAO DỊCH */}
+                    <div className="filter-section">
+                        <label className="section-label">Nhu cầu</label>
+                        <select name="transactionType" value={formData.transactionType} onChange={handleChange} className="modern-select">
+                            <option value="">-- Tất cả --</option>
+                            <option value="RENT">Thuê văn phòng</option>
+                            <option value="SALE">Mua tòa nhà</option>
+                        </select>
+                        <div className="select-arrow"></div>
                     </div>
 
                     <div className="filter-section">
                         <label className="section-label">Khu vực</label>
                         <div className="input-group">
                             <FaMapMarkerAlt className="input-icon" />
-                            <select
-                                name="district"
-                                value={formData.district}
-                                onChange={handleChange}
-                                className="modern-select"
-                            >
+                            <select name="district" value={formData.district} onChange={handleChange} className="modern-select">
                                 <option value="">-- Tất cả Quận --</option>
                                 {DISTRICTS.map(d => (
                                     <option key={d.id} value={d.id}>{d.name}</option>
@@ -245,20 +248,17 @@ const BuildingSearch = () => {
                         </div>
                     </div>
 
+                    {/* BỘ LỌC GIÁ (VNĐ) */}
                     <div className="filter-section">
-                        <label className="section-label">Mức giá ($)</label>
+                        <label className="section-label">Mức giá (VNĐ)</label>
                         <div className="range-group">
-                            <input type="number" name="rentPriceFrom" placeholder="Từ" value={formData.rentPriceFrom} onChange={handleChange} />
+                            <input type="number" name="rentPriceFrom" placeholder="Từ..." value={formData.rentPriceFrom} onChange={handleChange} />
                             <span className="separator">-</span>
-                            <input type="number" name="rentPriceTo" placeholder="Đến" value={formData.rentPriceTo} onChange={handleChange} />
+                            <input type="number" name="rentPriceTo" placeholder="Đến..." value={formData.rentPriceTo} onChange={handleChange} />
                         </div>
-                        <div className="quick-options">
-                            {PRICE_RANGES.map((r, idx) => (
-                                <span key={idx} className="quick-link" onClick={() => applyQuickPrice(r.min, r.max)}>
-                                    {r.label}
-                                </span>
-                            ))}
-                        </div>
+                        <small style={{ color: '#666', fontSize: '0.8rem', marginTop: '5px', display: 'block' }}>
+                            Nhập số tiền đầy đủ (VD: 10000000)
+                        </small>
                     </div>
 
                     <div className="filter-section">
@@ -294,52 +294,89 @@ const BuildingSearch = () => {
                 {/* --- RIGHT PANEL: KẾT QUẢ --- */}
                 <div className="results-area">
                     <div className="results-header">
-                        <h2>Văn Phòng Cho Thuê</h2>
-                        <span className="result-count">Trang <b>{currentPage}</b> / {totalPages || 1}</span>
+                        <div className="header-left">
+                            <h2>
+                                {formData.transactionType === 'SALE' ? 'Tòa Nhà Đang Bán' :
+                                    formData.transactionType === 'RENT' ? 'Văn Phòng Cho Thuê' :
+                                        'Tất Cả Tòa Nhà'}
+                            </h2>
+                            <span className="result-count">Trang <b>{currentPage}</b> / {totalPages || 1}</span>
+                        </div>
+
+                        {/* 🔥 [MỚI] DROPDOWN SẮP XẾP */}
+                        <div className="header-right">
+                            <div className="sort-box">
+                                <FaSortAmountDown className="sort-icon" />
+                                <select
+                                    name="sortBy"
+                                    value={formData.sortBy}
+                                    onChange={handleSortChange}
+                                    className="sort-select"
+                                >
+                                    <option value="">Sắp xếp: Mặc định</option>
+                                    <option value="price_asc">Giá: Thấp đến Cao</option>
+                                    <option value="price_desc">Giá: Cao đến Thấp</option>
+                                    <option value="newest">Mới nhất</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
 
                     <div className="building-grid">
                         {isLoading ? (
                             [...Array(6)].map((_, index) => <SkeletonCard key={index} />)
                         ) : buildings.length > 0 ? (
-                            buildings.map((item) => (
-                                <div key={item.id} className="building-card" onClick={() => handleViewDetail(item.id)}>
-                                    <div className="card-image">
-                                        <img
-                                            src={getImageUrl(item.avatar || item.image)}
-                                            alt={item.name}
-                                            onError={(e) => { e.target.onerror = null; e.target.src = "https://via.placeholder.com/400x300?text=Building"; }}
-                                        />
-                                        <span className="status-badge">Cho thuê</span>
-                                        <div className="overlay-btn">
-                                            <button>Xem Chi Tiết <FaArrowRight /></button>
-                                        </div>
-                                    </div>
+                            buildings.map((item) => {
+                                const isSale = item.transactionType === 'SALE';
+                                return (
+                                    <div key={item.id} className="building-card" onClick={() => handleViewDetail(item.id)}>
+                                        <div className="card-image">
+                                            <img
+                                                src={getImageUrl(item.avatar || item.image)}
+                                                alt={item.name}
+                                                onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/600x400?text=No+Image"; }}
+                                            />
+                                            <span className={`status-badge ${isSale ? 'sale' : 'rent'}`}
+                                                style={{ backgroundColor: isSale ? '#f97316' : '#10b981' }}>
+                                                {isSale ? 'Đang Bán' : 'Cho Thuê'}
+                                            </span>
 
-                                    <div className="card-info">
-                                        <h3 title={item.name}>{item.name}</h3>
-
-                                        {/* Hiển thị địa chỉ đã fix */}
-                                        <p className="address">
-                                            <FaMapMarkerAlt /> {formatAddress(item)}
-                                        </p>
-
-                                        <div className="card-meta">
-                                            <div className="meta-item">
-                                                <span className="label">Giá thuê</span>
-                                                <span className="value price">${item.rentPrice}<small>/m²</small></span>
-                                            </div>
-                                            <div className="divider"></div>
-                                            <div className="meta-item">
-                                                <span className="label">Diện tích</span>
-                                                <span className="value">{item.floorArea || 0} m²</span>
+                                            <div className="overlay-btn">
+                                                <button>Xem Chi Tiết <FaArrowRight /></button>
                                             </div>
                                         </div>
+
+                                        <div className="card-info">
+                                            <h3 title={item.name}>{item.name}</h3>
+
+                                            <p className="address">
+                                                <FaMapMarkerAlt /> {formatAddress(item)}
+                                            </p>
+
+                                            <div className="card-meta">
+                                                <div className="meta-item">
+                                                    <span className="label">
+                                                        <FaMoneyBillWave /> {isSale ? 'Giá bán' : 'Giá thuê'}
+                                                    </span>
+                                                    <span className="value price" style={{ color: isSale ? '#ea580c' : '#0f2557' }}>
+                                                        {formatCurrency(item.rentPrice)}
+                                                    </span>
+                                                </div>
+                                                <div className="divider"></div>
+                                                <div className="meta-item">
+                                                    <span className="label">
+                                                        <FaRulerCombined /> Diện tích
+                                                    </span>
+                                                    <span className="value">{item.floorArea || 0} m²</span>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            ))
+                                );
+                            })
                         ) : (
                             <div className="no-results">
+                                <FaBuilding size={50} color="#ccc" style={{ marginBottom: '15px' }} />
                                 <p>Không tìm thấy kết quả nào phù hợp.</p>
                                 <button onClick={handleReset}>Xóa bộ lọc & Thử lại</button>
                             </div>

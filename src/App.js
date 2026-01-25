@@ -12,7 +12,7 @@ import Footer from './components/Footer';
 import AdminLayout from './layouts/AdminLayout';
 
 // Common Components
-import ChatWidget from './components/common/ChatWidget'; // <--- 1. IMPORT CHAT WIDGET
+import ChatWidget from './components/common/ChatWidget';
 
 // User Pages
 import HomePage from './components/HomePage';
@@ -20,6 +20,7 @@ import BuildingSearch from './components/BuildingSearch';
 import BuildingDetail from './components/BuildingDetail';
 import CreateBuilding from './components/CreateBuilding';
 import UserProfile from './pages/UserProfile';
+import ConsignmentPage from './pages/Consignment/ConsignmentPage'; // <--- 1. IMPORT TRANG KÝ GỬI
 
 // Admin Pages
 import BuildingManager from './pages/admin/BuildingManager';
@@ -28,6 +29,7 @@ import LoginPage from './pages/admin/LoginPage';
 import CreateStaff from './pages/admin/CreateStaff';
 import Dashboard from './pages/admin/Dashboard';
 import UpdateBuilding from './pages/admin/UpdateBuilding';
+import ConsignmentManager from './pages/admin/ConsignmentManager';
 // Styles
 import './styles/App.css';
 
@@ -43,7 +45,7 @@ const UserLayout = () => {
         <Outlet />
       </main>
 
-      {/* 2. NHÚNG CHATBOT VÀO ĐÂY (Nó sẽ hiện ở mọi trang User) */}
+      {/* Chatbot hiện ở mọi trang User */}
       <ChatWidget />
 
       <Footer />
@@ -90,6 +92,9 @@ function App() {
               <Route path="/building/:id" element={<BuildingDetail />} />
               <Route path="/post-building" element={<CreateBuilding />} />
               <Route path="/profile" element={<UserProfile />} />
+
+              {/* 2. ROUTE CHO TRANG KÝ GỬI */}
+              <Route path="/ky-gui" element={<ConsignmentPage />} />
             </Route>
 
             {/* === NHÓM 2: TRANG LOGIN RIÊNG (ADMIN/STAFF) === */}
@@ -104,6 +109,7 @@ function App() {
               <Route path="building-edit/:id" element={<UpdateBuilding />} />
               <Route path="users" element={<UserManager />} />
               <Route path="users/create" element={<CreateStaff />} />
+              <Route path="consignments" element={<ConsignmentManager />} />
             </Route>
 
             {/* === 404 NOT FOUND === */}

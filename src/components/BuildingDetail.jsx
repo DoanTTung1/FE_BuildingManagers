@@ -4,35 +4,32 @@ import axiosClient from '../api/axiosClient';
 import {
     FaMapMarkerAlt, FaPhoneAlt, FaCheckCircle,
     FaCar, FaBolt, FaShieldAlt, FaExpandArrowsAlt, FaClock,
-    FaBuilding, FaUniversity, FaLayerGroup,
-    FaWind, FaMotorcycle, FaWater, FaFileContract, FaMoneyBillWave, FaUserTie, FaImages
+    FaBuilding, FaLayerGroup,
+    FaWind, FaMotorcycle, FaWater, FaFileContract, FaMoneyBillWave, FaUserTie
 } from 'react-icons/fa';
 import '../styles/BuildingDetail.css';
 
-// --- Helper functions để format dữ liệu ---
+// --- Helper functions ---
 const formatCurrency = (value) => {
     if (value === null || value === undefined) return 'Liên hệ';
-    // Format theo USD. Nếu muốn VND thì đổi currency: 'VND' và 'vi-VN'
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(value);
+    // Đổi sang VNĐ
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
 };
 
 const formatNumber = (value) => {
     if (!value) return '0';
-    return new Intl.NumberFormat('en-US').format(value);
+    return new Intl.NumberFormat('de-DE').format(value); // Format kiểu 1.000 (Việt Nam)
 };
-// ------------------------------------------
+// ------------------------
 
 const BuildingDetail = () => {
     const { id } = useParams();
-    const navigate = useNavigate();
+    // const navigate = useNavigate(); // Chưa dùng tới
 
-    // State Data
     const [building, setBuilding] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-    // State để hứng ảnh chính đang được chọn
     const [selectedImage, setSelectedImage] = useState(null);
 
-    // State Form Liên Hệ
     const [contactForm, setContactForm] = useState({ fullName: '', phone: '', content: '' });
     const [isSending, setIsSending] = useState(false);
 
@@ -41,11 +38,17 @@ const BuildingDetail = () => {
             try {
                 const res = await axiosClient.get(`/api/buildings/${id}`);
                 setBuilding(res);
-                // Mặc định chọn ảnh đại diện làm ảnh chính khi mới tải
                 setSelectedImage(res.image);
+                
+                // Set nội dung mặc định cho form liên hệ
+                const action = res.transactionType === 'SALE' ? 'mua' : 'thuê';
+                setContactForm(prev => ({
+                    ...prev,
+                    content: `Tôi quan tâm đến tòa nhà ${res.name} (Mã: ${res.id}). Vui lòng tư vấn thêm về giá ${action}.`
+                }));
+
             } catch (error) {
                 console.error("Lỗi lấy chi tiết:", error);
-                // Có thể navigate về trang 404 hoặc thông báo lỗi tốt hơn
             } finally {
                 setIsLoading(false);
             }
@@ -61,7 +64,7 @@ const BuildingDetail = () => {
             await axiosClient.post('/api/customers/contact', {
                 fullName: contactForm.fullName,
                 phone: contactForm.phone,
-                demand: `Quan tâm ID ${id}: ${contactForm.content}`
+                demand: `Khách quan tâm ID ${id} [${building.transactionType}]: ${contactForm.content}`
             });
             alert("Đã gửi thành công! Chúng tôi sẽ liên hệ sớm.");
             setContactForm({ fullName: '', phone: '', content: '' });
@@ -72,19 +75,17 @@ const BuildingDetail = () => {
         }
     };
 
-    // Xử lý ảnh hiển thị an toàn (placeholder nếu ảnh lỗi hoặc null)
     const getSafeImageUrl = (url) => {
         return (url && url.startsWith("http")) ? url : "https://placehold.co/800x500?text=No+Image+Available";
     };
 
-    // Gộp ảnh đại diện và danh sách ảnh chi tiết để hiển thị gallery
-    // Sử dụng Set để đảm bảo không trùng ảnh đại diện nếu nó đã có trong imageList
     const galleryImages = building ? [...new Set([building.image, ...(building.imageList || [])].filter(Boolean))] : [];
-
 
     if (isLoading) return <div className="loading-container">Đang tải dữ liệu tòa nhà...</div>;
     if (!building) return <div className="error-container">Không tìm thấy thông tin tòa nhà này.</div>;
 
+    // 🔥 CHECK XEM LÀ MUA HAY THUÊ
+    const isSale = building.transactionType === 'SALE';
 
     return (
         <div className="detail-page-wrapper">
@@ -95,7 +96,7 @@ const BuildingDetail = () => {
                 </div>
 
                 <div className="detail-container">
-                    {/* --- CỘT TRÁI: THÔNG TIN CHI TIẾT (70%) --- */}
+                    {/* --- CỘT TRÁI: THÔNG TIN CHI TIẾT --- */}
                     <div className="main-content">
 
                         {/* 1. HEADER INFO */}
@@ -110,9 +111,8 @@ const BuildingDetail = () => {
                             </div>
                         </div>
 
-                        {/* 2. IMAGE HERO & GALLERY (Đã nâng cấp) */}
+                        {/* 2. HERO IMAGE */}
                         <div className="hero-image-section" style={{ marginBottom: '30px' }}>
-                            {/* Ảnh chính */}
                             <div className="hero-image-box">
                                 <img
                                     src={getSafeImageUrl(selectedImage)}
@@ -120,10 +120,13 @@ const BuildingDetail = () => {
                                     className="hero-img"
                                     onError={(e) => { e.target.src = "https://placehold.co/800x500?text=Image+Error" }}
                                 />
-                                <span className="status-label">Đang cho thuê</span>
+                                {/* 🔥 NHÃN TRẠNG THÁI MUA/BÁN */}
+                                <span className={`status-label ${isSale ? 'label-sale' : 'label-rent'}`} 
+                                      style={{ backgroundColor: isSale ? '#f97316' : '#10b981' }}>
+                                    {isSale ? '🔥 Đang Bán' : '✨ Cho Thuê'}
+                                </span>
                             </div>
 
-                            {/* Danh sách ảnh thumbnails */}
                             {galleryImages.length > 1 && (
                                 <div className="thumbnails-list" style={{ display: 'flex', gap: '10px', marginTop: '10px', overflowX: 'auto', paddingBottom: '5px' }}>
                                     {galleryImages.map((imgUrl, index) => (
@@ -135,7 +138,6 @@ const BuildingDetail = () => {
                                             style={{
                                                 width: '100px', height: '70px', objectFit: 'cover', borderRadius: '6px', cursor: 'pointer',
                                                 border: selectedImage === imgUrl ? '2px solid #0f2557' : '2px solid transparent',
-                                                transition: 'all 0.2s'
                                             }}
                                         />
                                     ))}
@@ -143,8 +145,7 @@ const BuildingDetail = () => {
                             )}
                         </div>
 
-
-                        {/* 3. TỔNG QUAN (HIGHLIGHTS) */}
+                        {/* 3. TỔNG QUAN */}
                         <div className="section-box">
                             <h3 className="sec-title">Tổng quan tòa nhà</h3>
                             <div className="highlights-grid">
@@ -166,62 +167,55 @@ const BuildingDetail = () => {
                                 </div>
                             </div>
 
-                            {/* Hiển thị Diện tích trống */}
-                            {building.rentAreaResult && (
+                            {/* Chỉ hiện diện tích trống nếu là THUÊ */}
+                            {!isSale && building.rentAreaResult && (
                                 <div style={{ marginTop: '20px', background: '#ecfdf5', padding: '15px', borderRadius: '8px', border: '1px solid #a7f3d0' }}>
                                     <strong style={{ color: '#047857', display: 'block', marginBottom: '5px' }}>✨ Diện tích đang trống:</strong>
                                     <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#065f46' }}>
-                                        {building.rentAreaResult} m²
+                                        {building.rentAreaResult}
                                     </span>
                                 </div>
                             )}
 
                             <div className="description-text" style={{ marginTop: '20px', whiteSpace: 'pre-line' }}>
-                                {building.note || "Vui lòng liên hệ với ban quản lý để biết thêm chi tiết về tòa nhà này."}
+                                {building.note || "Vui lòng liên hệ với ban quản lý để biết thêm chi tiết."}
                             </div>
                         </div>
 
-                        {/* 4. BẢNG PHÍ DỊCH VỤ */}
+                        {/* 4. BẢNG GIÁ & PHÍ (LOGIC ẨN/HIỆN) */}
                         <div className="section-box">
-                            <h3 className="sec-title">Chi phí & Dịch vụ</h3>
+                            <h3 className="sec-title">{isSale ? 'Thông tin giá bán' : 'Chi phí & Dịch vụ'}</h3>
                             <table className="rent-table">
                                 <tbody>
                                     <tr>
-                                        <th><FaMoneyBillWave /> Giá thuê</th>
-                                        {/* Sử dụng hàm formatCurrency */}
-                                        <td className="text-price">{formatCurrency(building.rentPrice)}<small>/m²</small> <span style={{ fontSize: '0.8rem', color: '#666', fontWeight: 'normal' }}>({building.rentPriceDescription || 'Chưa VAT'})</span></td>
+                                        <th><FaMoneyBillWave /> {isSale ? 'Giá bán' : 'Giá thuê'}</th>
+                                        <td className="text-price">
+                                            {formatCurrency(building.rentPrice)}
+                                            {!isSale && <small>/tháng</small>}
+                                            <span style={{ fontSize: '0.8rem', color: '#666', fontWeight: 'normal', marginLeft: '5px' }}>
+                                                ({building.rentPriceDescription || 'Chưa bao gồm VAT'})
+                                            </span>
+                                        </td>
                                     </tr>
-                                    <tr>
-                                        <th><FaShieldAlt /> Phí dịch vụ/Quản lý</th>
-                                        <td>{building.serviceFee || 'Liên hệ'}</td>
-                                    </tr>
-                                    <tr>
-                                        <th><FaCar /> Phí gửi ô tô</th>
-                                        <td>{building.carFee || 'Liên hệ'}</td>
-                                    </tr>
-                                    <tr>
-                                        <th><FaMotorcycle /> Phí gửi xe máy</th>
-                                        <td>{building.motorbikeFee || 'Liên hệ'}</td>
-                                    </tr>
-                                    <tr>
-                                        <th><FaClock /> Phí ngoài giờ</th>
-                                        <td>{building.overtimeFee || 'Thỏa thuận'}</td>
-                                    </tr>
-                                    <tr>
-                                        <th><FaBolt /> Tiền điện</th>
-                                        <td>{building.electricityFee || 'Theo giá nhà nước'}</td>
-                                    </tr>
-                                    <tr>
-                                        <th><FaWater /> Tiền nước</th>
-                                        <td>{building.waterFee || 'Miễn phí / Theo khối'}</td>
-                                    </tr>
+                                    
+                                    {/* 🔥 NẾU LÀ THUÊ MỚI HIỆN CÁC PHÍ NÀY */}
+                                    {!isSale && (
+                                        <>
+                                            <tr><th><FaShieldAlt /> Phí quản lý</th><td>{building.serviceFee || 'Liên hệ'}</td></tr>
+                                            <tr><th><FaCar /> Phí gửi ô tô</th><td>{building.carFee || 'Liên hệ'}</td></tr>
+                                            <tr><th><FaMotorcycle /> Phí gửi xe máy</th><td>{building.motorbikeFee || 'Liên hệ'}</td></tr>
+                                            <tr><th><FaClock /> Phí ngoài giờ</th><td>{building.overtimeFee || 'Thỏa thuận'}</td></tr>
+                                            <tr><th><FaBolt /> Tiền điện</th><td>{building.electricityFee || 'Theo giá nhà nước'}</td></tr>
+                                            <tr><th><FaWater /> Tiền nước</th><td>{building.waterFee || 'Miễn phí / Theo khối'}</td></tr>
+                                        </>
+                                    )}
                                 </tbody>
                             </table>
                         </div>
 
-                        {/* 5. ĐIỀU KIỆN THUÊ */}
+                        {/* 5. ĐIỀU KIỆN */}
                         <div className="section-box">
-                            <h3 className="sec-title">Điều kiện thuê</h3>
+                            <h3 className="sec-title">Điều kiện giao dịch</h3>
                             <div className="specs-grid">
                                 <ul>
                                     <li>
@@ -233,26 +227,28 @@ const BuildingDetail = () => {
                                         <span><b>Thanh toán:</b> {building.payment || 'Thỏa thuận'}</span>
                                     </li>
                                 </ul>
-                                <ul>
-                                    <li>
-                                        <FaClock className="check" />
-                                        <span><b>Thời hạn thuê:</b> {building.rentTime || 'Thỏa thuận'}</span>
-                                    </li>
-                                    <li>
-                                        <FaCheckCircle className="check" />
-                                        <span><b>Thời gian trang trí:</b> {building.decorationTime || 'Thỏa thuận'}</span>
-                                    </li>
-                                </ul>
+                                {/* 🔥 Chỉ hiện thời hạn thuê nếu là RENT */}
+                                {!isSale && (
+                                    <ul>
+                                        <li>
+                                            <FaClock className="check" />
+                                            <span><b>Thời hạn thuê:</b> {building.rentTime || 'Thỏa thuận'}</span>
+                                        </li>
+                                        <li>
+                                            <FaCheckCircle className="check" />
+                                            <span><b>TG Trang trí:</b> {building.decorationTime || 'Thỏa thuận'}</span>
+                                        </li>
+                                    </ul>
+                                )}
                             </div>
                         </div>
 
                         {/* 6. BẢN ĐỒ */}
                         {building.linkOfBuilding && (
                             <div className="section-box">
-                                <h3 className="sec-title">Vị trí trên bản đồ</h3>
-                                {/* Nếu có iframe bản đồ thì nhúng vào đây, tạm thời dùng link */}
-                                <div style={{ width: '100%', height: '250px', background: '#f3f4f6', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px dashed #ccc' }}>
-                                    <a href={building.linkOfBuilding} target="_blank" rel="noreferrer" style={{ color: '#0f2557', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <h3 className="sec-title">Vị trí</h3>
+                                <div style={{ width: '100%', padding: '20px', background: '#f3f4f6', borderRadius: '8px', textAlign: 'center', border: '1px dashed #ccc' }}>
+                                    <a href={building.linkOfBuilding} target="_blank" rel="noreferrer" style={{ color: '#0f2557', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                                         <FaMapMarkerAlt /> Xem vị trí thực tế trên Google Maps ↗
                                     </a>
                                 </div>
@@ -260,65 +256,44 @@ const BuildingDetail = () => {
                         )}
                     </div>
 
-                    {/* --- CỘT PHẢI: SIDEBAR (30%) --- */}
+                    {/* --- CỘT PHẢI: SIDEBAR --- */}
                     <div className="sidebar">
                         <div className="sticky-card">
                             <div className="cost-breakdown">
-                                <h4>Thông tin giá thuê</h4>
+                                <h4>{isSale ? 'Giá bán niêm yết' : 'Thông tin giá thuê'}</h4>
                                 <div className="price-display">
-                                    <span className="p-label">Giá niêm yết:</span>
-                                    {/* Sử dụng hàm formatCurrency */}
-                                    <span className="p-value">{formatCurrency(building.rentPrice)}<small>/m²</small></span>
+                                    <span className="p-label">{isSale ? 'Tổng giá:' : 'Giá thuê:'}</span>
+                                    <span className="p-value" style={{ color: isSale ? '#d46b08' : '#0f2557' }}>
+                                        {formatCurrency(building.rentPrice)}
+                                    </span>
                                 </div>
-                                <p className="note-text">{building.rentPriceDescription || 'Giá có thể thay đổi tùy thời điểm và diện tích thuê.'}</p>
+                                <p className="note-text">{building.rentPriceDescription || 'Giá có thể thương lượng.'}</p>
                             </div>
 
                             <div className="agent-box">
-                                <div className="agent-icon">
-                                    <FaUserTie />
-                                </div>
+                                <div className="agent-icon"><FaUserTie /></div>
                                 <div>
-                                    <span className="sub">Quản lý tòa nhà: </span>
+                                    <span className="sub">Liên hệ quản lý: </span>
                                     <strong>{building.managerName || 'Hotline BQL'}</strong>
                                 </div>
                             </div>
 
-                            {/* Kiểm tra nếu có số điện thoại thì mới hiện nút gọi */}
                             {building.managerPhoneNumber ? (
                                 <a href={`tel:${building.managerPhoneNumber}`} className="btn-call-action">
                                     <FaPhoneAlt /> {building.managerPhoneNumber}
                                 </a>
                             ) : (
-                                <button className="btn-call-action disabled" disabled>
-                                    <FaPhoneAlt /> Đang cập nhật SĐT
-                                </button>
+                                <button className="btn-call-action disabled" disabled><FaPhoneAlt /> Đang cập nhật SĐT</button>
                             )}
 
-
                             <form className="mini-contact-form" onSubmit={handleSendContact}>
-                                <h5>Yêu cầu báo giá & Tư vấn</h5>
-                                <input
-                                    type="text" placeholder="Họ tên của bạn *"
-                                    value={contactForm.fullName}
-                                    onChange={e => setContactForm({ ...contactForm, fullName: e.target.value })}
-                                    required
-                                />
-                                <input
-                                    type="tel" placeholder="Số điện thoại liên hệ *"
-                                    value={contactForm.phone}
-                                    onChange={e => setContactForm({ ...contactForm, phone: e.target.value })}
-                                    required
-                                />
-                                <textarea
-                                    placeholder="Ví dụ: Tôi cần thuê văn phòng khoảng 150m2, cho khoảng 20 nhân sự làm việc..."
-                                    value={contactForm.content}
-                                    onChange={e => setContactForm({ ...contactForm, content: e.target.value })}
-                                    rows="4"
-                                ></textarea>
+                                <h5>{isSale ? 'Liên hệ mua tòa nhà' : 'Yêu cầu báo giá & Tư vấn'}</h5>
+                                <input type="text" placeholder="Họ tên của bạn *" value={contactForm.fullName} onChange={e => setContactForm({ ...contactForm, fullName: e.target.value })} required />
+                                <input type="tel" placeholder="Số điện thoại liên hệ *" value={contactForm.phone} onChange={e => setContactForm({ ...contactForm, phone: e.target.value })} required />
+                                <textarea placeholder="Nội dung lời nhắn..." value={contactForm.content} onChange={e => setContactForm({ ...contactForm, content: e.target.value })} rows="4"></textarea>
                                 <button type="submit" disabled={isSending}>
                                     {isSending ? 'Đang gửi yêu cầu...' : 'Gửi Yêu Cầu Ngay'}
                                 </button>
-                                <p style={{ fontSize: '0.8rem', color: '#777', marginTop: '10px', textAlign: 'center' }}>Chúng tôi cam kết bảo mật thông tin của bạn.</p>
                             </form>
                         </div>
                     </div>

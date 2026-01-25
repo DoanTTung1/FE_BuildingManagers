@@ -42,7 +42,8 @@ const UpdateBuilding = () => {
         electricityFee: '', deposit: '', payment: '',
         rentTime: '', decorationTime: '', brokerageFee: 0,
         note: '', managerName: '', managerPhoneNumber: '',
-        rentArea: '', typeCode: []
+        rentArea: '', typeCode: [],
+        transactionType: 'RENT' // 🔥 THÊM MỚI: Mặc định là Cho Thuê
     });
 
     useEffect(() => {
@@ -53,11 +54,12 @@ const UpdateBuilding = () => {
                     ...res,
                     districtId: res.districtId || '',
                     typeCode: res.typeCode || [],
-                    // Đảm bảo các trường số không bị null để tránh warning React
                     numberOfBasement: res.numberOfBasement || 0,
                     floorArea: res.floorArea || 0,
                     rentPrice: res.rentPrice || 0,
-                    brokerageFee: res.brokerageFee || 0
+                    brokerageFee: res.brokerageFee || 0,
+                    // 🔥 THÊM MỚI: Lấy transactionType từ API (nếu null thì default RENT)
+                    transactionType: res.transactionType || 'RENT'
                 });
                 if (res.image) setPreviewAvatarUrl(res.image);
                 if (res.imageList) setPreviewAlbumUrls(res.imageList);
@@ -89,21 +91,11 @@ const UpdateBuilding = () => {
     };
 
     const handleRemoveAlbumImage = (index) => {
-        // Xóa khỏi mảng file raw (nếu là ảnh mới)
-        // Lưu ý: Logic này đơn giản hóa, thực tế cần check index kỹ hơn nếu trộn ảnh cũ/mới
-        // Ở đây ta xóa visual preview là chính
         setPreviewAlbumUrls(prev => {
             const urlToRemove = prev[index];
             if (urlToRemove.startsWith('blob:')) URL.revokeObjectURL(urlToRemove);
-
-            // Nếu là ảnh blob (mới), cũng cần xóa khỏi rawAlbumFiles
-            // Tuy nhiên để đơn giản, ta cứ giữ raw và lọc lúc submit hoặc upload hết
-            // (Cách tối ưu hơn là dùng object {file, url} nhưng code sẽ dài dòng hơn)
             return prev.filter((_, i) => i !== index);
         });
-
-        // Đồng bộ xóa khỏi mảng raw nếu đó là ảnh mới thêm vào
-        // (Đây là logic nâng cao, ở mức cơ bản bạn có thể bỏ qua dòng này nếu thấy phức tạp)
     };
 
     const uploadSingleFile = async (file) => {
@@ -118,7 +110,7 @@ const UpdateBuilding = () => {
         e.preventDefault();
         setIsLoading(true);
         try {
-            // 1. Upload Avatar (nếu có chọn mới)
+            // 1. Upload Avatar
             let finalAvatarUrl = previewAvatarUrl;
             if (rawAvatarFile) {
                 finalAvatarUrl = await uploadSingleFile(rawAvatarFile);
@@ -132,23 +124,18 @@ const UpdateBuilding = () => {
                 finalImageList = [...finalImageList, ...newUploadedUrls];
             }
 
-            // 3. XỬ LÝ DỮ LIỆU AN TOÀN TRƯỚC KHI GỬI (QUAN TRỌNG) 
-            // Logic: Nếu formData.districtId không có, thử tìm trong formData.district.id
             const safeDistrictId = formData.districtId || formData.district?.id;
 
             const payload = {
-                // Chỉ lấy những trường cần thiết, không dùng ...formData để tránh rác
                 name: formData.name,
                 street: formData.street,
                 ward: formData.ward,
-                districtId: Number(safeDistrictId), // <-- Bắt buộc ép về số
-
+                districtId: Number(safeDistrictId),
                 structure: formData.structure,
                 numberOfBasement: Number(formData.numberOfBasement),
                 floorArea: Number(formData.floorArea),
                 direction: formData.direction,
                 level: formData.level,
-
                 rentPrice: Number(formData.rentPrice),
                 rentPriceDescription: formData.rentPriceDescription,
                 serviceFee: formData.serviceFee,
@@ -157,25 +144,24 @@ const UpdateBuilding = () => {
                 overtimeFee: formData.overtimeFee,
                 waterFee: formData.waterFee,
                 electricityFee: formData.electricityFee,
-
                 deposit: formData.deposit,
                 payment: formData.payment,
                 rentTime: formData.rentTime,
                 decorationTime: formData.decorationTime,
                 brokerageFee: Number(formData.brokerageFee),
-
                 note: formData.note,
                 managerName: formData.managerName,
                 managerPhoneNumber: formData.managerPhoneNumber,
                 rentArea: formData.rentArea,
-                typeCode: formData.typeCode, // Mảng code (List<String>)
+                typeCode: formData.typeCode,
 
-                // Hình ảnh
+                // 🔥 THÊM MỚI: Gửi transactionType đi
+                transactionType: formData.transactionType,
+
                 image: finalAvatarUrl,
                 imageList: finalImageList
             };
 
-            // Log ra để kiểm tra nếu còn lỗi
             console.log("Payload gửi đi:", payload);
 
             await axiosClient.put(`/api/buildings/${id}`, payload);
@@ -225,11 +211,46 @@ const UpdateBuilding = () => {
                         </div>
                     </div>
 
-                    {/* KHỐI 2: GIÁ & PHÍ (Đầy đủ mọi loại phí) */}
+                    {/* KHỐI 2: GIÁ & PHÍ (Đã bổ sung Mua/Bán) */}
                     <div className="form-section">
-                        <h3 className="section-title"><FaDollarSign /> Giá thuê & Chi phí</h3>
+                        <h3 className="section-title"><FaDollarSign /> Giá & Loại Giao Dịch</h3>
                         <div className="form-grid">
-                            <div className="form-group"><label>Giá thuê ($)</label><input type="number" name="rentPrice" value={formData.rentPrice} onChange={handleChange} /></div>
+
+                            {/* 🔥 THÊM MỚI: CHỌN LOẠI GIAO DỊCH */}
+                            <div className="form-group full-width">
+                                <label>Hình thức giao dịch <span style={{ color: 'red' }}>*</span></label>
+                                <div style={{ display: 'flex', gap: '30px', marginTop: '10px' }}>
+                                    <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', gap: '8px' }}>
+                                        <input
+                                            type="radio"
+                                            name="transactionType"
+                                            value="RENT"
+                                            checked={formData.transactionType === 'RENT'}
+                                            onChange={handleChange}
+                                            style={{ width: '18px', height: '18px' }}
+                                        />
+                                        <span style={{ fontWeight: 600 }}>🏢 Cho Thuê</span>
+                                    </label>
+                                    <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', gap: '8px' }}>
+                                        <input
+                                            type="radio"
+                                            name="transactionType"
+                                            value="SALE"
+                                            checked={formData.transactionType === 'SALE'}
+                                            onChange={handleChange}
+                                            style={{ width: '18px', height: '18px' }}
+                                        />
+                                        <span style={{ fontWeight: 600, color: '#d46b08' }}>💰 Mua Bán</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            {/* 🔥 SỬA: Label thay đổi theo loại giao dịch */}
+                            <div className="form-group">
+                                <label>{formData.transactionType === 'SALE' ? 'Giá bán (Tỷ VNĐ)' : 'Giá thuê ($/Tháng)'}</label>
+                                <input type="number" name="rentPrice" value={formData.rentPrice} onChange={handleChange} />
+                            </div>
+
                             <div className="form-group"><label>Mô tả giá</label><input type="text" name="rentPriceDescription" value={formData.rentPriceDescription} onChange={handleChange} /></div>
                             <div className="form-group"><label>Phí dịch vụ</label><input type="text" name="serviceFee" value={formData.serviceFee} onChange={handleChange} /></div>
                             <div className="form-group"><label>Phí ô tô</label><input type="text" name="carFee" value={formData.carFee} onChange={handleChange} /></div>

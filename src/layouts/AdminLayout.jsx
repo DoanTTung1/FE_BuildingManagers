@@ -1,7 +1,10 @@
 import React from 'react';
 import { Outlet, NavLink, useNavigate, Navigate } from 'react-router-dom';
-// Thêm FaTachometerAlt (biểu tượng đồng hồ đo) cho Dashboard, FaHome cho trang chủ khách
-import { FaBuilding, FaUsers, FaSignOutAlt, FaChartPie, FaTachometerAlt, FaHome } from 'react-icons/fa';
+// Thêm FaClipboardList cho icon Ký gửi
+import {
+    FaBuilding, FaUsers, FaSignOutAlt, FaChartPie,
+    FaTachometerAlt, FaHome, FaClipboardList
+} from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import ForbiddenPage from '../pages/admin/ForbiddenPage';
 import '../styles/Admin.css';
@@ -23,12 +26,10 @@ const AdminLayout = () => {
     // 3. LOGIC CHẶN CỬA (Render có điều kiện)
     // ============================================================
 
-    // Nếu chưa đăng nhập -> Đá về Login
     if (!token) {
         return <Navigate to="/login" replace />;
     }
 
-    // Nếu đã đăng nhập nhưng KHÔNG CÓ QUYỀN -> Hiện trang báo lỗi 403
     if (!isAuthorized) {
         return <ForbiddenPage />;
     }
@@ -54,8 +55,7 @@ const AdminLayout = () => {
                 </div>
 
                 <ul className="sidebar-menu">
-                    {/* --- MỤC MỚI: DASHBOARD (TỔNG QUAN) --- */}
-                    {/* Dùng props 'end' để không bị active khi vào các trang con khác */}
+                    {/* --- MỤC TỔNG QUAN --- */}
                     <li>
                         <NavLink to="/admin" end className={({ isActive }) => isActive ? 'active' : ''}>
                             <FaTachometerAlt /> <span>Tổng quan</span>
@@ -66,6 +66,13 @@ const AdminLayout = () => {
                     <li>
                         <NavLink to="/admin/buildings" className={({ isActive }) => isActive ? 'active' : ''}>
                             <FaBuilding /> <span>Quản lý Tòa nhà</span>
+                        </NavLink>
+                    </li>
+
+                    {/* --- MỤC MỚI: QUẢN LÝ KÝ GỬI (Cho cả Admin & Staff) --- */}
+                    <li>
+                        <NavLink to="/admin/consignments" className={({ isActive }) => isActive ? 'active' : ''}>
+                            <FaClipboardList /> <span>Quản lý Ký gửi</span>
                         </NavLink>
                     </li>
 

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axiosClient from '../api/axiosClient';
 import { useAuth } from '../context/AuthContext';
 import {
-    FaBuilding, FaDollarSign, FaImage, FaCheck, FaUserTie,
+    FaBuilding, FaMoneyBillWave, FaImage, FaCheck, FaUserTie,
     FaListUl, FaSpinner, FaTimes, FaCloudUploadAlt, FaCheckCircle, FaArrowRight
 } from 'react-icons/fa';
 import '../styles/CreateBuilding.css';
@@ -41,7 +41,8 @@ const CreateBuilding = () => {
         rentTime: '', decorationTime: '', brokerageFee: 0.0,
         note: '', linkOfBuilding: '', map: '',
         managerName: '', managerPhoneNumber: '',
-        rentArea: '', typeCode: []
+        rentArea: '', typeCode: [],
+        transactionType: 'RENT' // Mặc định là Cho Thuê
     });
 
     useEffect(() => {
@@ -92,20 +93,23 @@ const CreateBuilding = () => {
         if (!file) return "";
         const uploadData = new FormData();
         uploadData.append('file', file);
-        // Lưu ý: Endpoint upload phải trả về String (URL ảnh)
         const res = await axiosClient.post('/api/upload/image', uploadData, {
             headers: { 'Content-Type': 'multipart/form-data' }
         });
-        // Giả sử API trả về res.data là đường dẫn ảnh
         return res;
+    };
+
+    // Hàm định dạng tiền tệ VNĐ hiển thị cho đẹp lúc nhập (Optional)
+    const formatCurrency = (value) => {
+        if (!value) return '';
+        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // 1. Validation Frontend cơ bản
         if (!formData.name || !formData.districtId || !formData.rentPrice) {
-            alert("Vui lòng điền: Tên, Quận, Giá thuê!");
+            alert("Vui lòng điền: Tên, Quận, Giá tiền!");
             return;
         }
         if (formData.typeCode.length === 0) {
@@ -132,27 +136,23 @@ const CreateBuilding = () => {
 
             setLoadingMessage("Đang lưu thông tin...");
 
-            // --- BƯỚC 2: MAP DỮ LIỆU SANG JAVA DTO (FIX LỖI 400) ---
+            // --- BƯỚC 2: MAP DỮ LIỆU ---
             const finalPayload = {
-                // Các trường String (Giữ nguyên)
-                id: null, // Thêm mới thì ID là null
+                id: null,
                 name: formData.name,
                 street: formData.street,
                 ward: formData.ward,
-
-                // Java Long -> Cần ép kiểu Number
                 districtId: Number(formData.districtId),
-
                 structure: formData.structure,
-
-                // Java Integer -> Cần ép kiểu Number
                 numberOfBasement: Number(formData.numberOfBasement),
                 floorArea: Number(formData.floorArea),
                 rentPrice: Number(formData.rentPrice),
-
                 direction: formData.direction,
                 level: formData.level,
-                rentPriceDescription: formData.rentPriceDescription,
+
+                // Tự động tạo mô tả giá (VD: 20.000.000 VNĐ) nếu người dùng để trống
+                rentPriceDescription: formData.rentPriceDescription || formatCurrency(formData.rentPrice),
+
                 serviceFee: formData.serviceFee,
                 carFee: formData.carFee,
                 motorbikeFee: formData.motorbikeFee,
@@ -163,25 +163,20 @@ const CreateBuilding = () => {
                 payment: formData.payment,
                 rentTime: formData.rentTime,
                 decorationTime: formData.decorationTime,
-
-                // Java BigDecimal -> Cần ép kiểu Number (hoặc String số)
                 brokerageFee: Number(formData.brokerageFee),
-
                 note: formData.note,
                 linkOfBuilding: formData.linkOfBuilding,
                 map: formData.map,
                 managerName: formData.managerName,
                 managerPhoneNumber: formData.managerPhoneNumber,
-
-                // Trường đặc biệt
-                rentArea: formData.rentArea, // Java String (Service tự cắt chuỗi)
-                typeCode: formData.typeCode, // Java List<String>
-
-                avatar: finalAvatarUrl,      // Java String
-                imageList: finalImageList    // Java List<String>
+                rentArea: formData.rentArea,
+                typeCode: formData.typeCode,
+                transactionType: formData.transactionType,
+                avatar: finalAvatarUrl,
+                imageList: finalImageList
             };
 
-            console.log("Payload gửi đi:", finalPayload); // F12 để kiểm tra
+            console.log("Payload gửi đi:", finalPayload);
 
             await axiosClient.post('/api/buildings', finalPayload);
 
@@ -190,9 +185,8 @@ const CreateBuilding = () => {
 
         } catch (error) {
             console.error("Lỗi:", error);
-            // Hiển thị lỗi chi tiết từ Backend trả về
             const errorMsg = error.response?.data?.message || JSON.stringify(error.response?.data) || "Lỗi không xác định";
-            alert(`Lỗi Server (400/500): ${errorMsg}`);
+            alert(`Lỗi Server: ${errorMsg}`);
             setIsLoading(false);
         }
     };
@@ -229,7 +223,7 @@ const CreateBuilding = () => {
                         <div className="form-grid">
                             <div className="form-group full-width">
                                 <label>Tên tòa nhà *</label>
-                                <input type="text" name="name" value={formData.name} onChange={handleChange} required />
+                                <input type="text" name="name" value={formData.name} onChange={handleChange} required placeholder="VD: Tòa nhà Bitexco..." />
                             </div>
                             <div className="form-group"><label>Đường</label><input type="text" name="street" value={formData.street} onChange={handleChange} /></div>
                             <div className="form-group"><label>Phường</label><input type="text" name="ward" value={formData.ward} onChange={handleChange} /></div>
@@ -248,13 +242,48 @@ const CreateBuilding = () => {
                         </div>
                     </div>
 
-                    {/* GIÁ THUÊ */}
+                    {/* GIÁ THUÊ & GIAO DỊCH (Đã thống nhất VNĐ) */}
                     <div className="form-section">
-                        <h3 className="section-title"><FaDollarSign /> Giá thuê & Diện tích</h3>
+                        <h3 className="section-title"><FaMoneyBillWave /> Giá & Giao Dịch (VNĐ)</h3>
                         <div className="form-grid">
-                            <div className="form-group full-width"><label>Diện tích thuê (VD: 100, 200)</label><input type="text" name="rentArea" value={formData.rentArea} onChange={handleChange} /></div>
-                            <div className="form-group"><label>Giá thuê *</label><input type="number" name="rentPrice" value={formData.rentPrice} onChange={handleChange} required /></div>
-                            <div className="form-group"><label>Mô tả giá</label><input type="text" name="rentPriceDescription" value={formData.rentPriceDescription} onChange={handleChange} /></div>
+
+                            <div className="form-group full-width">
+                                <label>Hình thức giao dịch <span style={{ color: 'red' }}>*</span></label>
+                                <div style={{ display: 'flex', gap: '30px', marginTop: '10px' }}>
+                                    <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', gap: '8px' }}>
+                                        <input type="radio" name="transactionType" value="RENT" checked={formData.transactionType === 'RENT'} onChange={handleChange} style={{ width: '18px', height: '18px' }} />
+                                        <span style={{ fontWeight: 600 }}>🏢 Cho Thuê</span>
+                                    </label>
+                                    <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', gap: '8px' }}>
+                                        <input type="radio" name="transactionType" value="SALE" checked={formData.transactionType === 'SALE'} onChange={handleChange} style={{ width: '18px', height: '18px' }} />
+                                        <span style={{ fontWeight: 600, color: '#d46b08' }}>💰 Mua Bán</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            {/* 🔥 THỐNG NHẤT VNĐ */}
+                            <div className="form-group">
+                                <label>
+                                    {formData.transactionType === 'SALE' ? 'Giá bán (VNĐ) *' : 'Giá thuê (VNĐ/Tháng) *'}
+                                </label>
+                                <input
+                                    type="number"
+                                    name="rentPrice"
+                                    value={formData.rentPrice}
+                                    onChange={handleChange}
+                                    required
+                                    placeholder="Nhập số tiền (VD: 20000000)"
+                                />
+                                {/* Hiển thị số tiền format cho dễ nhìn bên dưới */}
+                                {formData.rentPrice > 0 && (
+                                    <small style={{ color: '#2563eb', fontWeight: 600, marginTop: '5px', display: 'block' }}>
+                                        {formatCurrency(formData.rentPrice)}
+                                    </small>
+                                )}
+                            </div>
+
+                            <div className="form-group"><label>Diện tích thuê (VD: 100, 200)</label><input type="text" name="rentArea" value={formData.rentArea} onChange={handleChange} /></div>
+                            <div className="form-group"><label>Mô tả giá (Tùy chọn)</label><input type="text" name="rentPriceDescription" value={formData.rentPriceDescription} onChange={handleChange} placeholder="VD: 20 triệu/tháng (chưa VAT)" /></div>
                             <div className="form-group"><label>Phí dịch vụ</label><input type="text" name="serviceFee" value={formData.serviceFee} onChange={handleChange} /></div>
                             <div className="form-group"><label>Phí môi giới</label><input type="number" name="brokerageFee" value={formData.brokerageFee} onChange={handleChange} /></div>
                         </div>
@@ -336,6 +365,8 @@ const CreateBuilding = () => {
                         <div className="form-grid">
                             <div className="form-group"><label>Tên quản lý</label><input type="text" name="managerName" value={formData.managerName} onChange={handleChange} /></div>
                             <div className="form-group"><label>SĐT quản lý</label><input type="text" name="managerPhoneNumber" value={formData.managerPhoneNumber} onChange={handleChange} /></div>
+                            <div className="form-group full-width"><label>Link tòa nhà</label><input type="text" name="linkOfBuilding" value={formData.linkOfBuilding} onChange={handleChange} /></div>
+                            <div className="form-group full-width"><label>Map (Embed)</label><input type="text" name="map" value={formData.map} onChange={handleChange} /></div>
                             <div className="form-group full-width"><label>Ghi chú</label><textarea name="note" value={formData.note} onChange={handleChange} rows="3"></textarea></div>
                         </div>
                     </div>

@@ -2,48 +2,62 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosClient from '../api/axiosClient';
 import {
-    FaSearch, FaMapMarkerAlt, FaArrowRight, FaBuilding,
+    FaSearch, FaMapMarkerAlt, FaArrowRight,
     FaExpandArrowsAlt, FaCar, FaStar, FaCheckCircle, FaPhoneAlt,
-    FaLongArrowAltRight // <--- Import thêm icon này cho đẹp
+    FaLongArrowAltRight, FaSpinner // Thêm icon loading
 } from 'react-icons/fa';
 import '../styles/HomePage.css';
 
 // --- ASSETS & CONFIG ---
 const HERO_IMAGE = "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=2070&q=80";
 
-// Dữ liệu mới cho phần Accordion (Thêm mô tả và Tag)
-// Dữ liệu Quận khớp với Database (ID là số)
+// --- CẤU HÌNH DANH SÁCH QUẬN CHO TÌM KIẾM ---
+// LƯU Ý QUAN TRỌNG: Hãy kiểm tra Backend của bạn nhận 'value' là SỐ (1, 2) hay CHỮ (QUAN_1).
+// Nếu Backend tìm theo ID -> để value là số. Nếu tìm theo Enum -> để value là chữ.
+const DISTRICT_OPTIONS = [
+    { value: '', label: 'Tất cả khu vực' },
+    { value: 1, label: 'Quận 1' },           // value là số 1
+    { value: 2, label: 'Quận 2 (Thủ Thiêm)' },
+    { value: 3, label: 'Quận 3' },
+    { value: 4, label: 'Quận 4' },
+    { value: 5, label: 'Bình Thạnh' },       // Giả sử Bình Thạnh là ID 5
+    { value: 6, label: 'Phú Nhuận' },        // Giả sử Phú Nhuận là ID 6
+    { value: 7, label: 'Quận 7' },
+    { value: 10, label: 'Quận 10' },
+];
+
+// Dữ liệu hiển thị Accordion (Trang trí)
 const POPULAR_DISTRICTS = [
     {
-        id: 1,  // ID trong DB là số 1
+        id: 'QUAN_1', // Để trùng với value search để click vào là tìm được ngay
         name: 'Quận 1',
         tag: 'Financial Hub',
         desc: 'Trung tâm tài chính, nơi quy tụ các tập đoàn đa quốc gia và văn phòng hạng A.',
-        img: 'https://images.unsplash.com/photo-1657644096992-62b43ea8ae30?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+        img: 'https://images.unsplash.com/photo-1657644096992-62b43ea8ae30?q=80&w=687&auto=format&fit=crop',
         total: '120 Tòa'
     },
     {
-        id: 3,  // ID trong DB là số 3
+        id: 'QUAN_3',
         name: 'Quận 3',
         tag: 'Heritage & Culture',
         desc: 'Sự giao thoa hoàn hảo giữa kiến trúc Pháp cổ điển và không gian hiện đại.',
-        img: 'https://plus.unsplash.com/premium_photo-1680777484547-de735ff024a4?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+        img: 'https://plus.unsplash.com/premium_photo-1680777484547-de735ff024a4?q=80&w=687&auto=format&fit=crop',
         total: '85 Tòa'
     },
     {
-        id: 5,  // ID trong DB là số 5 (Bình Thạnh)
+        id: 'QUAN_BINH_THANH',
         name: 'Bình Thạnh',
         tag: 'The Gateway',
         desc: 'Cửa ngõ phía Đông sầm uất, kết nối nhanh chóng giữa Quận 1 và khu đô thị mới.',
-        img: 'https://plus.unsplash.com/premium_photo-1678903964473-1271ecfb0288?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+        img: 'https://plus.unsplash.com/premium_photo-1678903964473-1271ecfb0288?q=80&w=687&auto=format&fit=crop',
         total: '60 Tòa'
     },
     {
-        id: 6,  // ID trong DB là số 6 (Phú Nhuận)
+        id: 'QUAN_PHU_NHUAN',
         name: 'Phú Nhuận',
         tag: 'Airport Connection',
         desc: 'Vị trí chiến lược kết nối sân bay, môi trường làm việc nhiều cây xanh và yên tĩnh.',
-        img: 'https://images.unsplash.com/photo-1725891025293-16981168203d?q=80&w=628&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+        img: 'https://images.unsplash.com/photo-1725891025293-16981168203d?q=80&w=628&auto=format&fit=crop',
         total: '40 Tòa'
     },
 ];
@@ -59,20 +73,26 @@ const HomePage = () => {
     const [featuredBuildings, setFeaturedBuildings] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
+    // State cho Search
     const [searchKeyword, setSearchKeyword] = useState('');
     const [searchDistrict, setSearchDistrict] = useState('');
+
+    // State cho Contact Form
     const [contactPhone, setContactPhone] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // Helper: Xử lý ảnh
     const getImageUrl = (imagePath) => {
         if (!imagePath) return "https://via.placeholder.com/600x400?text=Building";
         if (imagePath.startsWith("http")) return imagePath;
         return `http://localhost:8080/api/buildings/images/${imagePath}`;
     };
 
+    // 1. Fetch Data Tòa nhà nổi bật
     useEffect(() => {
         const fetchData = async () => {
             try {
+                // Thêm sort=rentPrice,desc để lấy tòa nhà giá cao (VIP) hoặc tùy logic
                 const res = await axiosClient.get('/api/buildings?page=0&size=6&sort=rentPrice,desc');
                 if (res.content) setFeaturedBuildings(res.content);
                 else if (Array.isArray(res)) setFeaturedBuildings(res.slice(0, 6));
@@ -85,13 +105,30 @@ const HomePage = () => {
         fetchData();
     }, []);
 
+    // 2. Logic Search (ĐÃ SỬA CHUẨN)
     const handleSearch = () => {
-        let query = `/search?`;
-        if (searchKeyword) query += `name=${searchKeyword}&`;
-        if (searchDistrict) query += `district=${searchDistrict}`;
-        navigate(query);
+        const params = new URLSearchParams();
+
+        // Chỉ thêm tham số nếu có giá trị
+        if (searchKeyword.trim()) {
+            params.append('name', searchKeyword.trim());
+        }
+        if (searchDistrict) {
+            params.append('district', searchDistrict);
+        }
+
+        // Điều hướng: /search?name=abc&district=QUAN_1
+        navigate(`/search?${params.toString()}`);
     };
 
+    // UX: Cho phép nhấn Enter để tìm
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            handleSearch();
+        }
+    };
+
+    // 3. Logic Gửi liên hệ
     const handleContact = async () => {
         if (!contactPhone || contactPhone.length < 9) return alert("Vui lòng nhập số điện thoại hợp lệ");
         setIsSubmitting(true);
@@ -99,9 +136,9 @@ const HomePage = () => {
             await axiosClient.post('/api/customers/contact', {
                 fullName: "Khách từ Trang Chủ",
                 phone: contactPhone,
-                demand: "Yêu cầu tư vấn nhanh"
+                demand: "Yêu cầu tư vấn nhanh - CTA HomePage"
             });
-            alert("Đã gửi yêu cầu thành công!");
+            alert("Đã gửi yêu cầu thành công! Chúng tôi sẽ gọi lại ngay.");
             setContactPhone('');
         } catch (e) {
             alert("Có lỗi xảy ra, vui lòng thử lại sau.");
@@ -121,24 +158,34 @@ const HomePage = () => {
                     <h1 className="hero-heading">Nâng Tầm <br /><span className="text-highlight">Vị Thế Doanh Nghiệp</span></h1>
                     <p className="hero-sub">Kết nối doanh nghiệp với 1,500+ tòa nhà văn phòng hạng A, B, C tại TP.HCM.</p>
 
+                    {/* SEARCH BOX ĐÃ SỬA */}
                     <div className="search-glass-panel">
                         <div className="search-field">
                             <FaSearch className="icon" />
-                            <input type="text" placeholder="Tên tòa nhà, đường..." value={searchKeyword} onChange={(e) => setSearchKeyword(e.target.value)} />
+                            <input
+                                type="text"
+                                placeholder="Tên tòa nhà, đường..."
+                                value={searchKeyword}
+                                onChange={(e) => setSearchKeyword(e.target.value)}
+                                onKeyDown={handleKeyDown} /* Thêm sự kiện Enter */
+                            />
                         </div>
                         <div className="divider"></div>
                         <div className="search-field">
                             <FaMapMarkerAlt className="icon" />
-                            <select value={searchDistrict} onChange={(e) => setSearchDistrict(e.target.value)}>
-                                <option value="">Tất cả khu vực</option>
-                                <option value="QUAN_1">Quận 1</option>
-                                <option value="QUAN_3">Quận 3</option>
-                                <option value="QUAN_2">Thủ Thiêm</option>
-                                <option value="QUAN_BINH_THANH">Bình Thạnh</option>
-                                <option value="QUAN_7">Quận 7</option>
+                            <select
+                                value={searchDistrict}
+                                onChange={(e) => setSearchDistrict(e.target.value)}
+                                className="custom-select"
+                            >
+                                {DISTRICT_OPTIONS.map((opt, idx) => (
+                                    <option key={idx} value={opt.value}>{opt.label}</option>
+                                ))}
                             </select>
                         </div>
-                        <button className="btn-search-glow" onClick={handleSearch}>Khám Phá</button>
+                        <button className="btn-search-glow" onClick={handleSearch}>
+                            Khám Phá
+                        </button>
                     </div>
 
                     <div className="hero-stats">
@@ -149,8 +196,7 @@ const HomePage = () => {
                 </div>
             </section>
 
-            {/* --- 2. STRATEGIC LOCATIONS (ACCORDION ULTRA) --- */}
-            {/* Đây là phần bạn muốn làm đẹp hơn */}
+            {/* --- 2. STRATEGIC LOCATIONS (ACCORDION) --- */}
             <section className="section-locations-ultra">
                 <div className="section-header">
                     <h2>Vị Trí Chiến Lược</h2>
@@ -159,20 +205,15 @@ const HomePage = () => {
 
                 <div className="accordion-gallery">
                     {POPULAR_DISTRICTS.map((d, index) => (
-                        <div key={d.id} className="accordion-card" onClick={() => navigate(`/search?district=${d.id}`)}>
-                            {/* Ảnh nền */}
+                        <div key={index} className="accordion-card" onClick={() => navigate(`/search?district=${d.id}`)}>
                             <div className="acc-img" style={{ backgroundImage: `url(${d.img})` }}></div>
                             <div className="acc-overlay"></div>
-
-                            {/* Số thứ tự */}
                             <div className="acc-index">0{index + 1}</div>
 
-                            {/* Nội dung khi đóng (Chữ dọc) */}
                             <div className="acc-content-collapsed">
                                 <h3>{d.name}</h3>
                             </div>
 
-                            {/* Nội dung khi mở (Mô tả chi tiết) */}
                             <div className="acc-content-expanded">
                                 <span className="acc-tag">{d.tag}</span>
                                 <h3>{d.name}</h3>
@@ -198,16 +239,27 @@ const HomePage = () => {
                 </div>
 
                 <div className="cards-grid">
-                    {isLoading ? <p>Đang tải dữ liệu...</p> : featuredBuildings.map(item => (
+                    {isLoading ? (
+                        <div className="loading-state">
+                            <FaSpinner className="spinner-icon" /> Đang tải danh sách...
+                        </div>
+                    ) : featuredBuildings.map(item => (
                         <div className="premium-card" key={item.id} onClick={() => navigate(`/building/${item.id}`)}>
                             <div className="card-image">
-                                <img src={getImageUrl(item.avatar || item.image)} alt={item.name} onError={(e) => { e.target.onerror = null; e.target.src = "https://via.placeholder.com/600x400?text=Building"; }} />
+                                <img
+                                    src={getImageUrl(item.avatar || item.image)}
+                                    alt={item.name}
+                                    onError={(e) => { e.target.onerror = null; e.target.src = "https://via.placeholder.com/600x400?text=Building"; }}
+                                />
                                 <div className="price-tag">${item.rentPrice} <span>/m²</span></div>
                                 <div className="status-tag">Cho thuê</div>
                             </div>
                             <div className="card-details">
                                 <h3 title={item.name}>{item.name}</h3>
-                                <p className="address"><FaMapMarkerAlt style={{ marginRight: '5px', color: 'var(--blue)' }} /> {item.street}, {item.district}</p>
+                                <p className="address">
+                                    <FaMapMarkerAlt style={{ marginRight: '5px', color: 'var(--blue-brand)' }} />
+                                    {item.street}, {item.district}
+                                </p>
                                 <div className="specs">
                                     <span><FaExpandArrowsAlt /> {item.floorArea}m²</span>
                                     <span><FaCar /> {item.carFee ? 'Có hầm' : 'Liên hệ'}</span>
@@ -238,9 +290,18 @@ const HomePage = () => {
                         <p>Để lại số điện thoại, chuyên viên sẽ gửi list văn phòng phù hợp trong 5 phút.</p>
                         <div className="input-wrap">
                             <FaPhoneAlt className="input-icon" />
-                            <input type="text" placeholder="Số điện thoại của bạn..." value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} />
+                            <input
+                                type="text"
+                                placeholder="Số điện thoại của bạn..."
+                                value={contactPhone}
+                                onChange={(e) => setContactPhone(e.target.value)}
+                            />
                         </div>
-                        <button className="btn-submit-full" onClick={handleContact} disabled={isSubmitting}>{isSubmitting ? "Đang gửi..." : "Gửi Yêu Cầu Tư Vấn"}</button>
+                        <button className="btn-submit-full" onClick={handleContact} disabled={isSubmitting}>
+                            {isSubmitting ? (
+                                <span><FaSpinner className="spinner-icon" /> Đang gửi...</span>
+                            ) : "Gửi Yêu Cầu Tư Vấn"}
+                        </button>
                         <span className="secure-note">🔒 Thông tin được bảo mật 100%</span>
                     </div>
                 </div>

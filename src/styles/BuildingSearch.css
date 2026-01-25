@@ -651,3 +651,217 @@ body {
         background-position: 1000px 0;
     }
 }
+
+/* --- 1. Cấu trúc Header Kết Quả (Chia trái phải) --- */
+.results-header {
+    display: flex;
+    justify-content: space-between;
+    /* Đẩy tiêu đề sang trái, nút sort sang phải */
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e5e7eb;
+    flex-wrap: wrap;
+    /* Để responsive trên mobile không bị vỡ */
+    gap: 15px;
+}
+
+/* Phần bên trái: Tiêu đề + Số trang */
+.header-left {
+    display: flex;
+    flex-direction: column;
+}
+
+.header-left h2 {
+    font-size: 1.5rem;
+    color: #111827;
+    margin: 0;
+    font-weight: 700;
+}
+
+.result-count {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin-top: 5px;
+}
+
+/* --- 2. Style cho Hộp Sắp Xếp (Dropdown) --- */
+.header-right .sort-box {
+    display: flex;
+    align-items: center;
+    background-color: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 8px 15px;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* Hiệu ứng khi di chuột vào */
+.header-right .sort-box:hover {
+    border-color: #3b82f6;
+    /* Màu xanh khi hover */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.sort-icon {
+    color: #6b7280;
+    margin-right: 10px;
+    font-size: 1rem;
+}
+
+.sort-select {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 0.95rem;
+    color: #374151;
+    font-weight: 500;
+    cursor: pointer;
+    min-width: 160px;
+    /* Độ rộng tối thiểu để chữ không bị nhảy */
+
+    /* Tùy chỉnh mũi tên dropdown cho đẹp hơn (Optional) */
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0px center;
+    background-size: 10px;
+    padding-right: 20px;
+}
+
+/* Responsive cho Mobile */
+@media (max-width: 768px) {
+    .results-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .header-right {
+        width: 100%;
+    }
+
+    .header-right .sort-box {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .sort-select {
+        width: 100%;
+    }
+}
+
+/* --- Style cho Dropdown (Select) "Nhu cầu" & "Khu vực" --- */
+
+.modern-select {
+    width: 100%;
+    /* Chiếm hết chiều rộng sidebar */
+    padding: 12px 15px;
+    padding-right: 40px;
+    /* Chừa chỗ cho mũi tên */
+    font-size: 0.95rem;
+    color: #374151;
+    /* Màu chữ xám đậm */
+    background-color: #ffffff;
+    border: 1px solid #d1d5db;
+    /* Viền xám nhạt */
+    border-radius: 8px;
+    /* Bo góc */
+    outline: none;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+
+    /* Ẩn mũi tên mặc định xấu xí của trình duyệt */
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    /* Thêm mũi tên Custom bằng SVG */
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%236b7280%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    /* Căn phải */
+    background-size: 12px;
+}
+
+/* Hiệu ứng khi di chuột vào */
+.modern-select:hover {
+    border-color: #9ca3af;
+    background-color: #f9fafb;
+}
+
+/* Hiệu ứng khi bấm vào (Focus) */
+.modern-select:focus {
+    border-color: #3b82f6;
+    /* Màu xanh dương */
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    /* Phát sáng nhẹ */
+}
+
+/* Màu sắc cho các Option bên trong (Tùy trình duyệt hỗ trợ) */
+.modern-select option {
+    padding: 10px;
+    font-size: 1rem;
+}
+
+/* Căn chỉnh lại icon trong Input Group nếu dùng chung */
+.input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* Nếu select nằm trong input-group (như phần Quận), chỉnh lại padding trái để không đè icon */
+.input-group .modern-select {
+    padding-left: 40px;
+    /* Chừa chỗ cho icon bên trái */
+}
+
+.input-icon {
+    position: absolute;
+    left: 12px;
+    color: #9ca3af;
+    z-index: 10;
+    pointer-events: none;
+    /* Để bấm xuyên qua icon được */
+}
+
+
+
+/* --- Tùy chỉnh danh sách Option khi sổ xuống --- */
+
+/* 1. Tăng khoảng cách và kích thước chữ cho dễ đọc */
+.modern-select option {
+    padding: 15px 10px;
+    /* Tăng padding để dòng không bị dính chùm */
+    font-size: 15px;
+    background-color: #ffffff;
+    color: #1f2937;
+    min-height: 40px;
+    /* Ép chiều cao tối thiểu cho mỗi dòng */
+    cursor: pointer;
+}
+
+/* 2. Đổi màu khi hover (Chỉ hoạt động trên một số trình duyệt như Chrome Windows) */
+.modern-select option:checked,
+.modern-select option:hover {
+    background-color: #e0f2fe !important;
+    /* Màu xanh nhạt khi chọn */
+    color: #0369a1 !important;
+    /* Chữ xanh đậm */
+    font-weight: 600;
+}
+
+/* 3. Fix lỗi icon đè lên chữ khi mở menu trên một số màn hình */
+select.modern-select {
+    text-overflow: ellipsis;
+    /* Nếu chữ dài quá thì hiện dấu ... */
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+/* --- (Tùy chọn) Ẩn dấu check mặc định xấu xí trên Windows --- */
+.modern-select::-ms-expand {
+    display: none;
+}
