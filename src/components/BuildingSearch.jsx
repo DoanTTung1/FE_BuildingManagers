@@ -228,8 +228,8 @@ const BuildingSearch = () => {
                         <label className="section-label">Nhu cầu</label>
                         <select name="transactionType" value={formData.transactionType} onChange={handleChange} className="modern-select">
                             <option value="">-- Tất cả --</option>
-                            <option value="RENT">Thuê văn phòng</option>
-                            <option value="SALE">Mua tòa nhà</option>
+                            <option value="RENT">Thuê Tòa Nhà</option>
+                            <option value="SALE">Mua Tòa Nhà</option>
                         </select>
                         <div className="select-arrow"></div>
                     </div>

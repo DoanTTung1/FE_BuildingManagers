@@ -2,9 +2,8 @@
    1. VARIABLES & RESET
    ========================================= */
 :root {
-    --primary-blue: #2563eb;
-    /* Xanh thương hiệu */
-    --primary-dark: #1e40af;
+    --primary-blue: #001529;   /* Đổi sang Navy đậm */
+    --primary-dark: #163c68;   /* Đổi sang Navy sáng hơn khi hover */
     /* Xanh đậm khi hover */
     --accent-gold: #fbbf24;
     /* Vàng điểm nhấn */
@@ -666,4 +665,29 @@ select {
         width: 100%;
         justify-content: center;
     }
+}
+/* Bao quanh nút để tạo khối căn giữa */
+.consign-success-container .btn-primary {
+    display: flex;         /* Dùng flex để căn giữa icon nếu có */
+    align-items: center;
+    justify-content: center;
+    margin: 30px auto 0;   /* Căn giữa khối theo chiều ngang */
+    width: fit-content;    /* Nút vừa vặn với nội dung chữ */
+    
+    /* Màu Navy Premium */
+    background-color: #001529 !important; /* Dùng !important để ghi đè màu xanh dương ở trên */
+    color: #ffffff;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 50px;   /* Bo tròn kiểu viên thuốc cho giống các nút khác của bạn */
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 21, 41, 0.2);
+}
+
+.consign-success-container .btn-primary:hover {
+    background-color: #163c68 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 21, 41, 0.3);
 }
