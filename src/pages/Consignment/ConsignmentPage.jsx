@@ -26,15 +26,33 @@ const ConsignmentPage = () => {
         onSubmit: async (values) => {
             setIsSubmitting(true);
             try {
+                // --- [BƯỚC SỬA QUAN TRỌNG ĐỂ KHỚP BE] ---
                 const payload = {
                     ...values,
-                    // Nếu khách không nhập tổng diện tích, tự tính tạm
-                    totalArea: values.totalArea || (values.numberOfFloors * values.floorArea)
+                    // 1. Ép về Integer cho các trường số nguyên
+                    numberOfFloors: values.numberOfFloors ? parseInt(values.numberOfFloors, 10) : null,
+                    floorArea: values.floorArea ? parseInt(values.floorArea, 10) : null,
+                    
+                    // 2. Ép về kiểu số thực (BigDecimal bên Java) cho expectedPrice
+                    expectedPrice: values.expectedPrice ? parseFloat(values.expectedPrice) : null,
+                    
+                    // 3. Xử lý logic diện tích tổng (Đảm bảo là kiểu Integer)
+                    totalArea: values.totalArea 
+                        ? parseInt(values.totalArea, 10) 
+                        : (parseInt(values.numberOfFloors || 0, 10) * parseInt(values.floorArea || 0, 10)),
+
+                    // 4. Đảm bảo các chuỗi rỗng chuyển thành null để tránh lỗi Validation @Email hoặc @NotBlank
+                    customerEmail: values.customerEmail || null,
+                    ward: values.ward || null,
+                    description: values.description || null,
+                    imageUrls: values.imageUrls || null
                 };
+
                 await axiosClient.post('/api/consignments', payload);
                 setIsSuccess(true);
             } catch (error) {
-                alert("Rất tiếc, hệ thống đang bận: " + (error.response?.data?.message || "Vui lòng thử lại sau"));
+                // Hiển thị thông báo lỗi chi tiết từ Server để bạn dễ kiểm soát
+                alert("Lỗi: " + (error.response?.data?.message || "Vui lòng kiểm tra lại định dạng số và các trường bắt buộc"));
             } finally {
                 setIsSubmitting(false);
             }
@@ -87,7 +105,7 @@ const ConsignmentPage = () => {
                 {/* --- CỘT TRÁI: STORYTELLING (Kể chuyện) --- */}
                 <div className="consign-sidebar">
                     <div className="sidebar-content">
-                        <span className="badge-premium">Dành cho chủ nhà</span>
+                        <span className="badge-premium">Ký gửi nhanh – hiệu quả – an tâm</span>
                         <h1>Tối ưu hóa <br /> <span className="text-highlight">Giá trị tài sản</span></h1>
                         <p className="sidebar-desc">
                             Đừng để bất động sản của bạn "ngủ quên". Hãy để chúng tôi kết nối bạn với hàng ngàn doanh nghiệp đang tìm kiếm văn phòng ngay hôm nay.
