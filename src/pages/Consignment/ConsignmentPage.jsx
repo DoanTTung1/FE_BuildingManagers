@@ -105,7 +105,7 @@ const ConsignmentPage = () => {
                 {/* --- CỘT TRÁI: STORYTELLING (Kể chuyện) --- */}
                 <div className="consign-sidebar">
                     <div className="sidebar-content">
-                        <span className="badge-premium">Ký gửi nhanh – hiệu quả – an tâm</span>
+                        <span className="badge-premium">KÝ GỬI NHANH – HIỆU QUẢ – AN TÂM</span>
                         <h1>Tối ưu hóa <br /> <span className="text-highlight">Giá trị tài sản</span></h1>
                         <p className="sidebar-desc">
                             Đừng để bất động sản của bạn "ngủ quên". Hãy để chúng tôi kết nối bạn với hàng ngàn doanh nghiệp đang tìm kiếm văn phòng ngay hôm nay.
