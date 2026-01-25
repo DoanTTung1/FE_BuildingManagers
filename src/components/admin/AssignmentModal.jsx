@@ -1,70 +1,95 @@
 import React, { useState, useEffect } from 'react';
 import axiosClient from '../../api/axiosClient';
 
+// QUAN TRỌNG: Import file CSS riêng của Modal
+import './AssignmentModal.css';
+
 const AssignmentModal = ({ buildingId, onClose }) => {
     const [staffs, setStaffs] = useState([]);
-    const [selectedStaffs, setSelectedStaffs] = useState([]);
+    const [loading, setLoading] = useState(false);
 
-    // 1. Tải danh sách nhân viên (STAFF)
+    // 1. Tải dữ liệu
     useEffect(() => {
         const fetchStaffs = async () => {
+            setLoading(true);
             try {
-                const res = await axiosClient.get('/api/users/staffs');
-                setStaffs(res);
+                const res = await axiosClient.get(`/api/buildings/${buildingId}/staffs`);
+                setStaffs(Array.isArray(res) ? res : (res.data || []));
             } catch (error) {
-                console.error("Lỗi tải staff:", error);
+                console.error("Lỗi tải danh sách:", error);
+            } finally {
+                setLoading(false);
             }
         };
-        fetchStaffs();
-        // TODO: Nếu muốn hiện các staff ĐÃ được giao trước đó, cần thêm 1 API getAssignedStaffs(buildingId)
-    }, []);
+        if (buildingId) fetchStaffs();
+    }, [buildingId]);
 
-    // 2. Xử lý check/uncheck
-    const handleCheckboxChange = (staffId) => {
-        setSelectedStaffs(prev => {
-            if (prev.includes(staffId)) {
-                return prev.filter(id => id !== staffId);
-            } else {
-                return [...prev, staffId];
+    // 2. Xử lý click chọn
+    const handleToggle = (staffId) => {
+        setStaffs(prev => prev.map(staff => {
+            if (staff.id === staffId) {
+                return { ...staff, checked: staff.checked === 'checked' ? '' : 'checked' };
             }
-        });
+            return staff;
+        }));
     };
 
-    // 3. Gửi API giao việc
+    // 3. Gửi API
     const handleSubmit = async () => {
         try {
-            // BE yêu cầu: List<Long> staffIds
-            await axiosClient.post(`/api/buildings/${buildingId}/assignment`, selectedStaffs);
-            alert("Giao tòa nhà thành công!");
+            const selectedIds = staffs
+                .filter(staff => staff.checked === 'checked')
+                .map(staff => staff.id);
+            await axiosClient.post(`/api/buildings/${buildingId}/assignment`, selectedIds);
+            alert("Giao việc thành công!");
             onClose();
         } catch (error) {
-            console.error(error);
-            alert("Lỗi khi giao việc!");
+            alert("Có lỗi xảy ra, vui lòng thử lại.");
         }
     };
 
     return (
         <div className="modal-overlay">
             <div className="modal-content">
-                <h3>Giao Tòa Nhà Cho Nhân Viên</h3>
-                <p>Chọn nhân viên quản lý cho tòa nhà ID: <b>{buildingId}</b></p>
-
-                <div style={{ maxHeight: '300px', overflowY: 'auto', marginTop: '15px', border: '1px solid #eee', padding: '10px' }}>
-                    {staffs.length > 0 ? staffs.map(staff => (
-                        <div key={staff.id} style={{ padding: '8px', borderBottom: '1px solid #f1f1f1', display: 'flex', gap: '10px' }}>
-                            <input
-                                type="checkbox"
-                                checked={selectedStaffs.includes(staff.id)}
-                                onChange={() => handleCheckboxChange(staff.id)}
-                            />
-                            <span>{staff.fullName} ({staff.userName})</span>
-                        </div>
-                    )) : <p>Không có nhân viên nào.</p>}
+                {/* Header */}
+                <div className="modal-header">
+                    <h3>Phân Công Nhân Viên</h3>
+                    <p>Tòa nhà ID: <b>{buildingId}</b></p>
                 </div>
 
+                {/* Danh sách nhân viên */}
+                <div className="staff-list-wrapper">
+                    {loading ? (
+                        <div style={{ textAlign: 'center', padding: '20px', color: '#999' }}>Đang tải...</div>
+                    ) : (
+                        staffs.length > 0 ? staffs.map(staff => {
+                            const isChecked = staff.checked === 'checked';
+                            return (
+                                <div
+                                    key={staff.id}
+                                    className={`staff-item ${isChecked ? 'active' : ''}`}
+                                    onClick={() => handleToggle(staff.id)}
+                                >
+                                    <input
+                                        type="checkbox"
+                                        className="custom-checkbox"
+                                        checked={isChecked}
+                                        readOnly
+                                    />
+                                    <div className="staff-info">
+                                        <span className="staff-name">{staff.fullName || staff.username}</span>
+                                        <span className="staff-code">Mã NV: {staff.id}</span>
+                                    </div>
+                                </div>
+                            );
+                        }) : <div style={{ textAlign: 'center', padding: '20px', color: '#999' }}>Chưa có nhân viên nào.</div>
+                    )}
+                </div>
+
+                {/* Footer Buttons */}
                 <div className="modal-actions">
-                    <button className="btn-action btn-delete" onClick={onClose}>Hủy</button>
-                    <button className="btn-add" onClick={handleSubmit}>Xác Nhận</button>
+                    <button className="btn-modal btn-cancel" onClick={onClose}>Hủy bỏ</button>
+                    <button className="btn-modal btn-confirm" onClick={handleSubmit}>Xác Nhận</button>
                 </div>
             </div>
         </div>

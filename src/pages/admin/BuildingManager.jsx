@@ -28,6 +28,8 @@ const BuildingManager = () => {
     const [filterDistrict, setFilterDistrict] = useState(undefined);
     const [filterStatus, setFilterStatus] = useState(1);
     const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+    
+    // State quản lý việc mở Modal Giao việc
     const [assignmentBuildingId, setAssignmentBuildingId] = useState(null);
 
     useEffect(() => { fetchStats(); }, []);
@@ -63,11 +65,8 @@ const BuildingManager = () => {
         setFilterStatus(1);
     };
 
-    // --- [LOGIC MỚI] XỬ LÝ XÓA NHIỀU THÔNG MINH ---
     const handleDeleteMultiple = () => {
         if (selectedRowKeys.length === 0) return;
-
-        // Kiểm tra đang ở thùng rác hay không
         const isTrash = filterStatus === 0;
 
         Modal.confirm({
@@ -82,25 +81,15 @@ const BuildingManager = () => {
             cancelText: 'Hủy',
             onOk: async () => {
                 try {
-                    // Tạo danh sách promise xóa
                     const deletePromises = selectedRowKeys.map(id => {
-                        if (isTrash) {
-                            // Nếu ở thùng rác -> Gọi API xóa cứng
-                            return axiosClient.delete(`/api/buildings/hard/${id}`);
-                        } else {
-                            // Nếu ở ngoài -> Gọi API xóa mềm
-                            return axiosClient.delete(`/api/buildings/${id}`);
-                        }
+                        if (isTrash) return axiosClient.delete(`/api/buildings/hard/${id}`);
+                        else return axiosClient.delete(`/api/buildings/${id}`);
                     });
-
                     await Promise.all(deletePromises);
-                    
                     message.success(isTrash ? "Đã xóa vĩnh viễn!" : "Đã chuyển vào thùng rác!");
                     fetchBuildings(); 
                     fetchStats();
-                } catch (e) { 
-                    message.error("Lỗi xóa dữ liệu!"); 
-                }
+                } catch (e) { message.error("Lỗi xóa dữ liệu!"); }
             }
         });
     };
@@ -159,7 +148,11 @@ const BuildingManager = () => {
                     {filterStatus === 2 && <Tooltip title="Duyệt"><button className="btn-act ok" onClick={() => confirmAction('APPROVE', r.id)}><CheckCircleOutlined /></button></Tooltip>}
                     {filterStatus !== 0 && (
                         <>
-                            <Tooltip title="Giao việc"><button className="btn-act" onClick={() => setAssignmentBuildingId(r.id)}><UsergroupAddOutlined /></button></Tooltip>
+                            <Tooltip title="Giao việc">
+                                <button className="btn-act" onClick={() => setAssignmentBuildingId(r.id)}>
+                                    <UsergroupAddOutlined />
+                                </button>
+                            </Tooltip>
                             <Tooltip title="Sửa"><button className="btn-act" onClick={() => navigate(`/admin/building-edit/${r.id}`)}><EditOutlined /></button></Tooltip>
                             <Tooltip title="Xóa"><button className="btn-act del" onClick={() => confirmAction('DELETE', r.id)}><DeleteOutlined /></button></Tooltip>
                         </>
@@ -183,7 +176,6 @@ const BuildingManager = () => {
                     <p>Hệ thống quản lý dữ liệu tập trung.</p>
                 </div>
                 <Space>
-                    {/* --- [NÚT XÓA NHIỀU: ĐỔI TEXT THEO TRẠNG THÁI] --- */}
                     {selectedRowKeys.length > 0 && (
                         <Button danger size="large" onClick={handleDeleteMultiple} style={{borderRadius: 8}}>
                             {filterStatus === 0 
@@ -248,7 +240,13 @@ const BuildingManager = () => {
                 />
             </div>
             
-            {assignmentBuildingId && <AssignmentModal buildingId={assignmentBuildingId} onClose={() => setAssignmentBuildingId(null)} />}
+            {/* --- FIX LỖI: CHỈ HIỂN THỊ KHI CÓ ID --- */}
+            {assignmentBuildingId && (
+                <AssignmentModal 
+                    buildingId={assignmentBuildingId} 
+                    onClose={() => setAssignmentBuildingId(null)} 
+                />
+            )}
         </div>
     );
 };

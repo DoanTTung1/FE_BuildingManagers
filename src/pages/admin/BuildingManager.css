@@ -5,16 +5,15 @@
     --primary: #001529;       /* NAVY ĐẬM */
     --primary-light: #163c68; /* Navy sáng */
     --accent: #1890ff;        /* Xanh dương */
-    --ring-color: rgba(24, 144, 255, 0.2); /* Màu vòng sáng khi bấm vào */
+    --ring-color: rgba(24, 144, 255, 0.2);
     
     --bg-body: #f0f2f5;
     --bg-white: #ffffff;
     
     --text-heading: #001529;
     --text-sub: #595959;
-    --border: #d9d9d9;        /* Viền xám chuẩn Antd để tiệp màu */
+    --border: #d9d9d9;
     
-    /* BÓNG ĐỔ */
     --shadow-card: 0 10px 30px -10px rgba(0, 21, 41, 0.08);
     --shadow-hover: 0 20px 40px -10px rgba(0, 21, 41, 0.12);
     --shadow-btn: 0 4px 12px rgba(0, 21, 41, 0.2); 
@@ -34,9 +33,8 @@
 .page-title h1 { font-size: 26px; font-weight: 800; color: var(--text-heading); margin: 0; letter-spacing: -0.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 .page-title p { color: var(--text-sub); margin: 4px 0 0 0; font-size: 14px; }
 
-/* --- [FIX 1] BỔ SUNG CLASS CŨ ĐỂ NÚT KHÔNG MẤT CSS --- */
 .btn-navy, 
-.btn-primary-gradient { /* <--- Thêm dòng này để hỗ trợ cả tên cũ */
+.btn-primary-gradient { 
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
     color: #fff !important; border: none; height: 44px; padding: 0 24px;
     font-weight: 600; border-radius: 10px;
@@ -70,7 +68,7 @@
 }
 
 /* ====================================================================
-   3. FILTER BAR (FIX VIỀN VỪA KHÍT - PERFECT FIT)
+   3. FILTER BAR
    ==================================================================== */
 .filter-bar {
     background: var(--bg-white); padding: 16px 20px; border-radius: 16px;
@@ -78,48 +76,33 @@
     display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 24px;
 }
 
-/* Reset Style */
 .clean-select .ant-select-selector,
 .clean-input,
 .ant-input-affix-wrapper {
-    height: 42px !important;
-    border-radius: 10px !important;
+    height: 42px !important; border-radius: 10px !important;
     border: 1px solid var(--border) !important;
-    box-shadow: none !important; 
-    background-color: #fafafa !important;
-    outline: none !important;
-    transition: all 0.2s ease-in-out;
+    box-shadow: none !important; background-color: #fafafa !important;
+    outline: none !important; transition: all 0.2s ease-in-out;
 }
 
-/* --- [FIX 2] HIỆU ỨNG VIỀN "RING" ÔM SÁT --- */
-/* Khi Hover */
 .clean-select:hover .ant-select-selector,
 .clean-input:hover, 
 .ant-input-affix-wrapper:hover {
-    border-color: var(--accent) !important;
-    background-color: #fff !important;
-    z-index: 1;
+    border-color: var(--accent) !important; background-color: #fff !important; z-index: 1;
 }
 
-/* Khi Focus (Bấm vào) - Dùng Shadow đồng tâm 0px 0px */
 .clean-select.ant-select-focused .ant-select-selector,
 .clean-select.ant-select-open .ant-select-selector,
 .clean-input:focus,
 .ant-input-affix-wrapper:focus,
 .ant-input-affix-wrapper-focused {
-    border-color: var(--accent) !important;
-    background-color: #fff !important;
-    /* FIX Ở ĐÂY: Shadow tỏa đều từ tâm, không bị lệch */
-    box-shadow: 0 0 0 3px var(--ring-color) !important; 
-    outline: none !important;
-    z-index: 2;
+    border-color: var(--accent) !important; background-color: #fff !important;
+    box-shadow: 0 0 0 3px var(--ring-color) !important; outline: none !important; z-index: 2;
 }
 
-/* Căn chữ trái */
 .clean-input input { text-align: left !important; }
 .ant-input-affix-wrapper input { height: 100% !important; }
 
-/* Nút Reset */
 .btn-reset {
     width: 42px; height: 42px; border-radius: 10px; border: 1px solid var(--border); background: #fff;
     color: var(--text-sub); cursor: pointer; display: flex; align-items: center; justify-content: center;

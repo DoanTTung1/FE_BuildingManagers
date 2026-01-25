@@ -829,39 +829,3 @@ body {
 
 
 
-/* --- Tùy chỉnh danh sách Option khi sổ xuống --- */
-
-/* 1. Tăng khoảng cách và kích thước chữ cho dễ đọc */
-.modern-select option {
-    padding: 15px 10px;
-    /* Tăng padding để dòng không bị dính chùm */
-    font-size: 15px;
-    background-color: #ffffff;
-    color: #1f2937;
-    min-height: 40px;
-    /* Ép chiều cao tối thiểu cho mỗi dòng */
-    cursor: pointer;
-}
-
-/* 2. Đổi màu khi hover (Chỉ hoạt động trên một số trình duyệt như Chrome Windows) */
-.modern-select option:checked,
-.modern-select option:hover {
-    background-color: #e0f2fe !important;
-    /* Màu xanh nhạt khi chọn */
-    color: #0369a1 !important;
-    /* Chữ xanh đậm */
-    font-weight: 600;
-}
-
-/* 3. Fix lỗi icon đè lên chữ khi mở menu trên một số màn hình */
-select.modern-select {
-    text-overflow: ellipsis;
-    /* Nếu chữ dài quá thì hiện dấu ... */
-    white-space: nowrap;
-    overflow: hidden;
-}
-
-/* --- (Tùy chọn) Ẩn dấu check mặc định xấu xí trên Windows --- */
-.modern-select::-ms-expand {
-    display: none;
-}

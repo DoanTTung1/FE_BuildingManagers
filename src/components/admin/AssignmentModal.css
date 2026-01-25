@@ -1,0 +1,198 @@
+/* ==========================================================
+   ASSIGNMENT MODAL - MODERN & SLEEK (ĐÃ FIX KHOẢNG CÁCH HEADER)
+   ========================================================== */
+
+:root {
+    --navy-primary: #001529;
+    --navy-hover: #163c68;
+    --navy-bg-light: #f0f5ff;
+    --text-main: #1f1f1f;
+    --text-sub: #8c8c8c;
+    --border-color: #e5e7eb;
+    --bg-item: #f9fafb;
+}
+
+/* 1. Màn hình nền mờ */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    animation: fadeIn 0.25s ease-out;
+}
+
+/* 2. Hộp Modal */
+.modal-content {
+    background: #ffffff;
+    width: 440px;
+    max-width: 90vw;
+    border-radius: 16px;
+    box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0;
+    transform-origin: center center;
+    animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --- [FIX QUAN TRỌNG] HEADER --- */
+.modal-header {
+    padding: 24px 24px 16px 24px; /* Tăng padding trên dưới */
+    background-color: #fff;
+    border-bottom: 1px solid var(--border-color);
+    
+    /* Dùng Flex column + Gap để tách dòng chữ ra */
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* Khoảng cách giữa Tiêu đề và ID là 8px */
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: var(--navy-primary);
+    font-size: 20px; /* Font to hơn chút cho rõ */
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+}
+
+.modal-header p {
+    margin: 0;
+    color: var(--text-sub);
+    font-size: 14px;
+    line-height: 1.5;
+}
+.modal-header b { color: var(--navy-primary); }
+
+/* 3. Danh sách nhân viên */
+.staff-list-wrapper {
+    padding: 16px;
+    max-height: 380px;
+    overflow-y: auto;
+    background-color: #fff;
+    
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+
+.staff-list-wrapper::-webkit-scrollbar { width: 6px; }
+.staff-list-wrapper::-webkit-scrollbar-track { background: transparent; }
+.staff-list-wrapper::-webkit-scrollbar-thumb { 
+    background-color: #cbd5e1; 
+    border-radius: 10px; 
+    border: 2px solid #fff;
+}
+
+/* Từng dòng nhân viên */
+.staff-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    background: var(--bg-item);
+    border: 1px solid transparent;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.staff-item:hover {
+    background-color: #fff;
+    border-color: #d1d5db;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.staff-item.active {
+    background-color: var(--navy-bg-light);
+    border-color: var(--navy-primary);
+    box-shadow: 0 0 0 1px var(--navy-primary) inset;
+}
+
+.staff-item:last-child { margin-bottom: 0; }
+
+/* Checkbox */
+.custom-checkbox {
+    width: 18px; height: 18px;
+    margin-right: 14px;
+    accent-color: var(--navy-primary);
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+.staff-item.active .custom-checkbox { transform: scale(1.1); }
+
+.staff-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.staff-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-main);
+    line-height: 1.2;
+}
+.staff-item.active .staff-name { color: var(--navy-primary); }
+
+.staff-code {
+    font-size: 11px;
+    color: var(--text-sub);
+    margin-top: 2px;
+}
+
+/* 4. Footer Buttons */
+.modal-actions {
+    padding: 16px 24px;
+    background-color: #fff;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.btn-modal {
+    height: 40px;
+    padding: 0 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex; align-items: center; justify-content: center;
+}
+
+.btn-cancel {
+    background: #fff;
+    border: 1px solid #d9d9d9;
+    color: var(--text-sub);
+}
+.btn-cancel:hover {
+    color: var(--navy-primary);
+    border-color: var(--navy-primary);
+    background-color: #f9fafb;
+}
+
+.btn-confirm {
+    background: linear-gradient(135deg, var(--navy-primary) 0%, var(--navy-hover) 100%);
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(0, 21, 41, 0.15);
+}
+.btn-confirm:hover {
+    box-shadow: 0 6px 15px rgba(0, 21, 41, 0.25);
+    transform: translateY(-1px);
+}
+.btn-confirm:active { transform: translateY(0); }
+
+/* Animations */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes popIn { 
+    from { opacity: 0; transform: scale(0.95) translateY(10px); } 
+    to { opacity: 1; transform: scale(1) translateY(0); } 
+}
