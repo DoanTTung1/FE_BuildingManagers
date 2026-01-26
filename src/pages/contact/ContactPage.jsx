@@ -87,7 +87,9 @@ const ContactPage = () => {
                             <div className="success-message">
                                 <h3>🎉 Đã gửi thành công!</h3>
                                 <p>Cảm ơn bạn đã liên hệ. Chúng tôi sẽ phản hồi sớm nhất.</p>
-                                <button onClick={() => setIsSubmitted(false)} style={{ marginTop: 15, padding: '8px 16px', cursor: 'pointer' }}>Gửi tin khác</button>
+                                <button onClick={() => setIsSubmitted(false)} className="btn-retry">
+                                    Gửi tin khác
+                                </button>
                             </div>
                         ) : (
                             <form onSubmit={handleSubmit}>
