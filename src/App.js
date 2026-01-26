@@ -30,6 +30,16 @@ import CreateStaff from './pages/admin/CreateStaff';
 import Dashboard from './pages/admin/Dashboard';
 import UpdateBuilding from './pages/admin/UpdateBuilding';
 import ConsignmentManager from './pages/admin/ConsignmentManager';
+import ContactManager from './pages/admin/ContactManager';
+
+// News Pages
+import NewsPage from './pages/news/NewsPage';
+import NewsDetail from './pages/news/NewsDetail';
+
+// Contact Page
+import ContactPage from './pages/contact/ContactPage';
+
+
 // Styles
 import './styles/App.css';
 
@@ -92,6 +102,16 @@ function App() {
               <Route path="/building/:id" element={<BuildingDetail />} />
               <Route path="/post-building" element={<CreateBuilding />} />
               <Route path="/profile" element={<UserProfile />} />
+
+              {/* 1. ROUTE CHO TRANG TIN TỨC */}
+              <Route path="/news" element={<NewsPage />} />
+              <Route path="/news/:id" element={<NewsDetail />} />
+
+              {/* 3. ROUTE CHO TRANG LIÊN HỆ */}
+              <Route path="/contact" element={<ContactPage />} />
+
+              {/* 4. ROUTE CHO TRANG QUẢN LÝ LIÊN HỆ (ADMIN) */}
+              <Route path="/admin/contacts" element={<ContactManager />} />
 
               {/* 2. ROUTE CHO TRANG KÝ GỬI */}
               <Route path="/ky-gui" element={<ConsignmentPage />} />

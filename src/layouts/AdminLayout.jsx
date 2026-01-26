@@ -1,9 +1,9 @@
 import React from 'react';
 import { Outlet, NavLink, useNavigate, Navigate } from 'react-router-dom';
-// Thêm FaClipboardList cho icon Ký gửi
+// Thêm FaEnvelope cho icon Liên hệ
 import {
     FaBuilding, FaUsers, FaSignOutAlt, FaChartPie,
-    FaTachometerAlt, FaHome, FaClipboardList
+    FaTachometerAlt, FaHome, FaClipboardList, FaEnvelope
 } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import ForbiddenPage from '../pages/admin/ForbiddenPage';
@@ -69,14 +69,21 @@ const AdminLayout = () => {
                         </NavLink>
                     </li>
 
-                    {/* --- MỤC MỚI: QUẢN LÝ KÝ GỬI (Cho cả Admin & Staff) --- */}
+                    {/* --- QUẢN LÝ KÝ GỬI --- */}
                     <li>
                         <NavLink to="/admin/consignments" className={({ isActive }) => isActive ? 'active' : ''}>
                             <FaClipboardList /> <span>Quản lý Ký gửi</span>
                         </NavLink>
                     </li>
 
-                    {/* Menu User chỉ hiện cho Admin */}
+                    {/* --- [MỚI] QUẢN LÝ LIÊN HỆ --- */}
+                    <li>
+                        <NavLink to="/admin/contacts" className={({ isActive }) => isActive ? 'active' : ''}>
+                            <FaEnvelope /> <span>Hộp thư Liên hệ</span>
+                        </NavLink>
+                    </li>
+
+                    {/* --- QUẢN LÝ USER (Chỉ Admin) --- */}
                     {isAdmin && (
                         <li>
                             <NavLink to="/admin/users" className={({ isActive }) => isActive ? 'active' : ''}>
