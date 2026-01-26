@@ -320,3 +320,89 @@
         padding: 20px;
     }
 }
+
+/* --- CSS BỔ SUNG CHO GOOGLE LOGIN & DIVIDER --- */
+
+/* 2. Căn giữa nút Google */
+.google-login-center {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-top: 5px;
+    /* Hiệu ứng nảy nhẹ khi xuất hiện */
+    animation: modalPopUp 0.5s ease-out;
+}
+
+/* 3. Tinh chỉnh lại hiệu ứng Quên mật khẩu */
+.forgot-pass {
+    display: block;
+    width: fit-content;
+    margin: 20px auto 0;
+    padding: 5px 10px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.forgot-pass:hover {
+    background: #fef2f2;
+    color: var(--am-red);
+}
+
+/* 4. Đảm bảo nút Google không bị méo trên Mobile */
+@media (max-width: 480px) {
+    .google-login-center iframe {
+        width: 100% !important;
+    }
+}
+
+/* Custom nút Google cho chuyên nghiệp */
+.google-login-center {
+    display: flex;
+    justify-content: center;
+    margin: 10px 0;
+    transition: transform 0.2s;
+}
+
+.google-login-center:hover {
+    transform: scale(1.02);
+}
+
+/* Giao diện Quên mật khẩu */
+.forgot-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--am-navy);
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.forgot-desc {
+    font-size: 0.9rem;
+    color: var(--am-text-light);
+    text-align: center;
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+
+.back-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--am-navy);
+    cursor: pointer;
+    z-index: 21;
+    transition: 0.3s;
+}
+
+.back-btn:hover {
+    color: var(--am-red);
+    transform: translateX(-5px);
+}
+
+/* Hiệu ứng Fade In cho mượt */
+.fade-in {
+    animation: fadeInAlert 0.4s ease;
+}

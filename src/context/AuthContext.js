@@ -17,62 +17,70 @@ export const AuthProvider = ({ children }) => {
         }
     }, []);
 
-    // --- 1. HÀM ĐĂNG NHẬP ---
+    // Hàm dùng chung để lưu User và Token
+    const saveAuthData = (res) => {
+        if (res && res.token) {
+            localStorage.setItem('token', res.token);
+            const userInfo = {
+                id: res.id,
+                username: res.username,
+                fullName: res.fullName || res.username,
+                email: res.email,
+                phone: res.phone,
+                avatar: res.avatar,
+                roles: res.roles || [],
+                phoneVerified: res.phoneVerified
+            };
+            localStorage.setItem('user', JSON.stringify(userInfo));
+            setUser(userInfo);
+            setIsModalOpen(false);
+            return true;
+        }
+        return false;
+    };
+
     const login = async (formData) => {
         try {
             const res = await authApi.login(formData);
-            if (res && res.token) {
-                localStorage.setItem('token', res.token);
-                const userInfo = {
-                    id: res.id,
-                    username: res.username,
-                    fullName: res.fullName || res.username,
-                    email: res.email,
-                    phone: res.phone,
-                    avatar: res.avatar,
-                    roles: res.roles || [],
-                    phoneVerified: res.phoneVerified
-                };
-                localStorage.setItem('user', JSON.stringify(userInfo));
-                setUser(userInfo);
-                setIsModalOpen(false);
+            if (saveAuthData(res)) {
                 return { success: true, ...res };
             }
         } catch (error) {
-            return {
-                success: false,
-                message: error.response?.data || "Sai tài khoản hoặc mật khẩu!"
-            };
+            return { success: false, message: error.response?.data || "Sai tài khoản hoặc mật khẩu!" };
         }
     };
 
-    // --- 2. HÀM ĐĂNG KÝ (BỔ SUNG ĐỂ HẾT LỖI) ---
     const register = async (formData) => {
         try {
             const res = await authApi.register(formData);
-
-            // Nếu đăng ký xong Backend trả về token luôn (Auto login)
-            if (res && res.token) {
-                localStorage.setItem('token', res.token);
-                const userInfo = {
-                    id: res.id,
-                    username: res.username,
-                    fullName: res.fullName,
-                    email: res.email,
-                    phone: res.phone,
-                    roles: res.roles || ["USER"],
-                    phoneVerified: false // Mới đăng ký nên chưa verify
-                };
-                localStorage.setItem('user', JSON.stringify(userInfo));
-                setUser(userInfo);
-            }
+            saveAuthData(res);
             return { success: true, ...res };
         } catch (error) {
-            console.error("Register Error:", error);
-            return {
-                success: false,
-                message: error.response?.data || "Đăng ký thất bại!"
-            };
+            return { success: false, message: error.response?.data || "Đăng ký thất bại!" };
+        }
+    };
+
+    // --- 3. BỔ SUNG: ĐĂNG NHẬP GOOGLE ---
+    const loginWithGoogle = async (googleToken) => {
+        try {
+            // Gửi token của Google xuống BE
+            const res = await authApi.loginWithGoogle(googleToken);
+            if (saveAuthData(res)) {
+                return { success: true, ...res };
+            }
+        } catch (error) {
+            return { success: false, message: error.response?.data || "Đăng nhập Google thất bại!" };
+        }
+    };
+
+    // --- 4. BỔ SUNG: QUÊN MẬT KHẨU ---
+    const forgotPassword = async (email) => {
+        try {
+            // Gọi API quên mật khẩu đã viết ở BE
+            await authApi.forgotPassword(email);
+            return { success: true };
+        } catch (error) {
+            return { success: false, message: error.response?.data || "Gửi yêu cầu thất bại!" };
         }
     };
 
@@ -82,17 +90,14 @@ export const AuthProvider = ({ children }) => {
         navigate('/');
     };
 
-    const updateUser = (newUserData) => {
-        setUser(newUserData);
-        localStorage.setItem('user', JSON.stringify(newUserData));
-    };
-
     return (
         <AuthContext.Provider value={{
             user,
-            setUser: updateUser,
+            setUser,
             login,
-            register, // <-- Giờ dòng này sẽ hết lỗi vì đã có hàm ở trên
+            register,
+            loginWithGoogle, // Bổ sung để AuthModal gọi được
+            forgotPassword,  // Bổ sung để AuthModal gọi được
             logout,
             isModalOpen,
             openModal: () => setIsModalOpen(true),

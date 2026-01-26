@@ -23,6 +23,22 @@ const authApi = {
     verifyOtp: (data) => {
         // data truyền vào: { username, otp }
         return axiosClient.post('/api/auth/verify-otp', data);
+    },
+
+    // ==========================================
+    // --- BỔ SUNG MỚI ĐỂ KHỚP VỚI BACKEND ---
+    // ==========================================
+
+    // 5. Quên mật khẩu
+    forgotPassword: (email) => {
+        // Truyền email qua Query Parameter
+        return axiosClient.post(`/api/auth/forgot-password?email=${email}`);
+    },
+
+    // 6. Đăng nhập Google
+    loginWithGoogle: (token) => {
+        // Gửi Body JSON: { "token": "..." }
+        return axiosClient.post('/api/auth/google', { token });
     }
 };
 
