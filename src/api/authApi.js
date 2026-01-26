@@ -31,10 +31,10 @@ const authApi = {
 
     // 5. Quên mật khẩu
     forgotPassword: (email) => {
-        // Truyền email qua Query Parameter
-        return axiosClient.post(`/api/auth/forgot-password?email=${email}`);
+        return axiosClient.post('/api/auth/forgot-password', {}, {
+            params: { email: email.trim() }
+        });
     },
-
     // 6. Đăng nhập Google
     loginWithGoogle: (token) => {
         // Gửi Body JSON: { "token": "..." }

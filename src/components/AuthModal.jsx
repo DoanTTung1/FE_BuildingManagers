@@ -91,13 +91,19 @@ const AuthModal = () => {
 
         setIsLoading(true);
         try {
+            // Gọi hàm forgotPassword từ AuthContext
             const res = await forgotPassword(formData.email);
-            if (res.success) {
-                toast.success("Mật khẩu mới đã được gửi vào Email!");
-                setIsForgotPassView(false);
+
+            // SỬA: Kiểm tra res.success vì Backend đã trả về field này
+            if (res && res.success) {
+                toast.success(res.message || "Mật khẩu mới đã được gửi vào Email!");
+                setIsForgotPassView(false); // Quay lại màn hình đăng nhập
+            } else {
+                // Hiển thị lỗi cụ thể từ Backend (ví dụ: Email không tồn tại)
+                toast.error(res.message || "Gửi yêu cầu thất bại!");
             }
         } catch (error) {
-            toast.error("Lỗi khi gửi yêu cầu!");
+            toast.error("Lỗi kết nối đến máy chủ!");
         } finally {
             setIsLoading(false);
         }
@@ -180,6 +186,11 @@ const AuthModal = () => {
                                         <GoogleLogin
                                             onSuccess={handleGoogleSuccess}
                                             onError={() => toast.error("Đăng nhập Google thất bại")}
+                                            theme="outline"      // Hoặc "filled_blue" để nổi bật hơn
+                                            shape="pill"         // Bo tròn để giống các ô Input bạn đang dùng
+                                            size="large"         // Cho nút to, dễ bấm
+                                            text="signin_with"   // Hiển thị chữ "Đăng nhập với Google"
+                                            width="380"          // Độ rộng (px) để nó lấp đầy modal, cân đối với nút Submit
                                         />
                                     </div>
                                     {/* --- ĐƯA QUÊN MẬT KHẨU XUỐNG DƯỚI CÙNG --- */}
