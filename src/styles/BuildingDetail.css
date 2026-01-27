@@ -1,16 +1,20 @@
 :root {
-    --navy: #0f172a;               /* giữ nguyên navy chính */
+    --navy: #0f172a;
+    /* giữ nguyên navy chính */
     --navy-light: #1e293b;
-    --accent: #f43f5e;             /* coral ấm – mới, trendy cho sale/price/icon chính */
-    --accent-rent: #0ea5e9;        /* xanh dương teal nhẹ – cho thuê, tươi mới */
-    --accent-check: #14b8a6;       /* teal xanh lá – cho check icon, hiện đại */
+    --accent: #f43f5e;
+    /* coral ấm – mới, trendy cho sale/price/icon chính */
+    --accent-rent: #0ea5e9;
+    /* xanh dương teal nhẹ – cho thuê, tươi mới */
+    --accent-check: #14b8a6;
+    /* teal xanh lá – cho check icon, hiện đại */
     --gray: #64748b;
     --light: #f8fafc;
     --white: #ffffff;
     --border: #e2e8f0;
     --radius: 12px;
-    --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
-    --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
 * {
@@ -142,7 +146,7 @@
     font-weight: 700;
     font-size: clamp(0.8rem, 2.2vw, 0.92rem);
     color: white;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .status-label.sale {
@@ -341,7 +345,8 @@
     background: #ffffff;
     border-color: var(--accent);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(244, 63, 94, 0.12); /* glow hồng nhẹ theo accent */
+    box-shadow: 0 4px 12px rgba(244, 63, 94, 0.12);
+    /* glow hồng nhẹ theo accent */
 }
 
 .conditions .check {
@@ -461,6 +466,7 @@
     .detail-container {
         grid-template-columns: 1fr;
     }
+
     .sticky-sidebar {
         position: static;
     }
@@ -470,23 +476,104 @@
     .header-badges {
         gap: 0.8rem;
     }
+
     .badge {
         padding: 0.4rem 0.9rem;
         font-size: 0.85rem;
     }
+
     .highlights {
         grid-template-columns: 1fr 1fr;
     }
+
     .conditions {
         grid-template-columns: 1fr;
         gap: 12px;
     }
+
     .info-table th {
         width: 40%;
     }
+
     .info-table th,
     .info-table td {
         padding: 12px 10px;
         font-size: 0.9rem;
     }
+}
+
+/* --- Style cho phần ẩn số điện thoại --- */
+.phone-wrapper {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.call-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 12px;
+    background-color: #0f172a;
+    /* Màu tối mặc định */
+    color: white;
+    font-weight: 600;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s;
+    border: none;
+    cursor: pointer;
+    gap: 10px;
+}
+
+.call-btn:hover {
+    background-color: #1e293b;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Style cho nút khi đang bị ẩn (màu xám nhạt) */
+.call-btn.blur-btn {
+    background-color: #f1f5f9;
+    color: #334155;
+    border: 1px solid #e2e8f0;
+    position: relative;
+}
+
+.call-btn.blur-btn:hover {
+    background-color: #e2e8f0;
+}
+
+/* Badge "Hiện số" màu xanh nhỏ bên cạnh */
+.reveal-text {
+    font-size: 0.85rem;
+    background: #e0f2fe;
+    color: #0284c7;
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+    /* Đẩy sang phải */
+}
+
+/* Dòng chữ gợi ý bên dưới */
+.auth-hint {
+    font-size: 0.8rem;
+    color: #ef4444;
+    /* Màu đỏ nhẹ để gây chú ý */
+    margin-top: 8px;
+    font-style: italic;
+}
+
+/* Nút bị vô hiệu hóa (khi không có SĐT) */
+.call-btn.disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    pointer-events: none;
 }
