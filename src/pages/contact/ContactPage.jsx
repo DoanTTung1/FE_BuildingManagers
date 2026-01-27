@@ -1,20 +1,35 @@
-import React, { useState } from 'react';
-import { FaPhoneAlt, FaEnvelope, FaMapMarkerAlt, FaPaperPlane, FaFacebookF, FaYoutube, FaLinkedinIn } from 'react-icons/fa';
-import contactApi from '../../api/contactApi'; // Import API
+import React, { useState, useEffect } from 'react';
+import { FaPhoneAlt, FaEnvelope, FaMapMarkerAlt, FaPaperPlane, FaFacebookF, FaYoutube, FaLinkedinIn, FaSpinner } from 'react-icons/fa';
+import axiosClient from '../../api/axiosClient'; // Dùng trực tiếp axiosClient hoặc qua contactApi đều được
+import { useAuth } from '../../context/AuthContext'; // 1. Import Auth để tự điền form
+import toast from 'react-hot-toast'; // Dùng toast cho đẹp thay vì alert
 import './Contact.css';
 
 const ContactPage = () => {
-    // State quản lý form
+    const { user } = useAuth(); // Lấy user hiện tại
+
     const [formData, setFormData] = useState({
         name: '',
         email: '',
         phone: '',
-        subject: 'buy', // Mặc định giá trị đầu tiên của select
+        subject: 'buy',
         message: ''
     });
 
     const [isSubmitted, setIsSubmitted] = useState(false);
-    const [isLoading, setIsLoading] = useState(false); // Thêm state Loading
+    const [isLoading, setIsLoading] = useState(false);
+
+    // 2. Tự động điền thông tin nếu đã đăng nhập
+    useEffect(() => {
+        if (user) {
+            setFormData(prev => ({
+                ...prev,
+                name: user.fullName || '',
+                email: user.email || '',
+                phone: user.phone || ''
+            }));
+        }
+    }, [user]);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -22,24 +37,48 @@ const ContactPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setIsLoading(true); // Bắt đầu loading
+        setIsLoading(true);
+
+        // --- SỬA ĐOẠN NÀY ĐỂ KHỚP VỚI BACKEND MỚI ---
+        const payload = {
+            name: formData.name,       // Backend cần 'name', không phải 'fullName'
+            email: formData.email,
+            phone: formData.phone,
+            subject: formData.subject, // Backend cần tách riêng 'subject'
+            message: formData.message  // Backend cần tách riêng 'message'
+        };
 
         try {
-            // Gọi API thật
-            await contactApi.sendContact(formData);
+            // Sửa đường dẫn API thành /api/contacts
+            await axiosClient.post('/api/contacts', payload);
 
-            // Thành công
             setIsSubmitted(true);
-            setFormData({ name: '', email: '', phone: '', subject: 'buy', message: '' }); // Reset form
+            toast.success("Gửi liên hệ thành công!");
 
-            // Tự động tắt thông báo sau 5s để người dùng có thể gửi tiếp
-            setTimeout(() => setIsSubmitted(false), 5000);
-
+            // Reset form
+            if (!user) {
+                setFormData({ name: '', email: '', phone: '', subject: 'buy', message: '' });
+            } else {
+                setFormData(prev => ({ ...prev, subject: 'buy', message: '' }));
+            }
         } catch (error) {
             console.error("Lỗi gửi liên hệ:", error);
-            alert("Gửi thất bại! Vui lòng kiểm tra kết nối mạng và thử lại.");
+            const msg = error.response?.data || "Gửi thất bại, vui lòng thử lại.";
+            // Lưu ý: Backend trả về chuỗi text trực tiếp (ResponseEntity.badRequest().body("Lỗi...")) 
+            // nên dùng error.response.data thay vì error.response.data.message
+            toast.error(typeof msg === 'string' ? msg : "Có lỗi xảy ra");
         } finally {
-            setIsLoading(false); // Kết thúc loading
+            setIsLoading(false);
+        }
+    };
+
+    // Helper để lấy tên chủ đề hiển thị đẹp hơn trong DB
+    const getSubjectLabel = (val) => {
+        switch (val) {
+            case 'buy': return 'MUA NHÀ';
+            case 'rent': return 'THUÊ VĂN PHÒNG';
+            case 'consign': return 'KÝ GỬI';
+            default: return 'KHÁC';
         }
     };
 
@@ -84,8 +123,8 @@ const ContactPage = () => {
                         <p>Để lại thông tin, chuyên viên tư vấn sẽ liên hệ lại trong vòng 15 phút.</p>
 
                         {isSubmitted ? (
-                            <div className="success-message">
-                                <h3>🎉 Đã gửi thành công!</h3>
+                            <div className="success-message fade-in">
+                                <h3 style={{ color: '#10b981' }}>🎉 Đã gửi thành công!</h3>
                                 <p>Cảm ơn bạn đã liên hệ. Chúng tôi sẽ phản hồi sớm nhất.</p>
                                 <button onClick={() => setIsSubmitted(false)} className="btn-retry">
                                     Gửi tin khác
@@ -140,7 +179,11 @@ const ContactPage = () => {
                                 </div>
 
                                 <button type="submit" className="btn-submit-contact" disabled={isLoading}>
-                                    {isLoading ? 'Đang gửi...' : <><FaPaperPlane /> Gửi Yêu Cầu</>}
+                                    {isLoading ? (
+                                        <span><FaSpinner className="spinner-icon" /> Đang gửi...</span>
+                                    ) : (
+                                        <><FaPaperPlane /> Gửi Yêu Cầu</>
+                                    )}
                                 </button>
                             </form>
                         )}
@@ -149,10 +192,11 @@ const ContactPage = () => {
                     {/* RIGHT: MAP & SIDEBAR */}
                     <div className="contact-sidebar">
                         <div className="map-frame">
+                            {/* 4. Link Google Map CHUẨN cho Bitexco */}
                             <iframe
-                                title="Google Map"
-                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.517826541572!2d106.70134531533414!3d10.771595262228355!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752f40a3b49e59%3A0xa1bd14e483a602db!2sBitexco%20Financial%20Tower!5e0!3m2!1sen!2s!4v1645432654321!5m2!1sen!2s"
-                                width="100%" height="350" style={{ border: 0 }} allowFullScreen="" loading="lazy"
+                                title="Google Map Bitexco"
+                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.522858695079!2d106.70196431165155!3d10.77121015926527!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752f46c6460023%3A0x69022630045155a5!2sBitexco%20Financial%20Tower!5e0!3m2!1sen!2s!4v1714580000000!5m2!1sen!2s"
+                                width="100%" height="350" style={{ border: 0, borderRadius: '12px' }} allowFullScreen="" loading="lazy"
                             ></iframe>
                         </div>
 
@@ -168,7 +212,7 @@ const ContactPage = () => {
                         <div className="social-connect">
                             <h3>Kết nối mạng xã hội</h3>
                             <div className="social-icons">
-                                <a href="https://www.facebook.com/oanthanhtung.790997/" className="sc-icon fb"><FaFacebookF /></a>
+                                <a href="https://www.facebook.com/oanthanhtung.790997/" className="sc-icon fb" target="_blank" rel="noreferrer"><FaFacebookF /></a>
                                 <a href="#" className="sc-icon yt"><FaYoutube /></a>
                                 <a href="#" className="sc-icon in"><FaLinkedinIn /></a>
                             </div>
