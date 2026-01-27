@@ -4,7 +4,7 @@ import axiosClient from '../api/axiosClient';
 import { useAuth } from '../context/AuthContext';
 import {
     FaBuilding, FaMoneyBillWave, FaImage, FaCheck, FaUserTie,
-    FaListUl, FaSpinner, FaTimes, FaCloudUploadAlt, FaCheckCircle, FaArrowRight
+    FaListUl, FaSpinner, FaTimes, FaCloudUploadAlt, FaCheckCircle, FaArrowRight, FaExclamationTriangle
 } from 'react-icons/fa';
 import '../styles/CreateBuilding.css';
 
@@ -25,6 +25,7 @@ const CreateBuilding = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const [showSuccess, setShowSuccess] = useState(false);
+    const [errorMessage, setErrorMessage] = useState(''); // State lưu lỗi từ BE
 
     const [rawAvatarFile, setRawAvatarFile] = useState(null);
     const [rawAlbumFiles, setRawAlbumFiles] = useState([]);
@@ -42,7 +43,7 @@ const CreateBuilding = () => {
         note: '', linkOfBuilding: '', map: '',
         managerName: '', managerPhoneNumber: '',
         rentArea: '', typeCode: [],
-        transactionType: 'RENT' // Mặc định là Cho Thuê
+        transactionType: 'RENT'
     });
 
     useEffect(() => {
@@ -52,7 +53,10 @@ const CreateBuilding = () => {
         };
     }, [previewAvatarUrl, previewAlbumUrls]);
 
-    const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+    const handleChange = (e) => {
+        setErrorMessage(''); // Xóa lỗi khi người dùng nhập lại
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
 
     const handleTypeChange = (code) => {
         let updatedTypes = [...formData.typeCode];
@@ -93,27 +97,40 @@ const CreateBuilding = () => {
         if (!file) return "";
         const uploadData = new FormData();
         uploadData.append('file', file);
-        const res = await axiosClient.post('/api/upload/image', uploadData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-        });
-        return res;
+        try {
+            const res = await axiosClient.post('/api/upload/image', uploadData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            // Kiểm tra cấu trúc trả về của API upload (giả sử trả về string url hoặc object)
+            return res.data || res;
+        } catch (err) {
+            console.error("Upload failed", err);
+            return "";
+        }
     };
 
-    // Hàm định dạng tiền tệ VNĐ hiển thị cho đẹp lúc nhập (Optional)
     const formatCurrency = (value) => {
         if (!value) return '';
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
     };
 
+    // Hàm tiện ích để parse số an toàn (tránh NaN)
+    const safeParseNumber = (val) => {
+        if (val === '' || val === null || val === undefined) return null;
+        const parsed = Number(val);
+        return isNaN(parsed) ? 0 : parsed;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setErrorMessage('');
 
         if (!formData.name || !formData.districtId || !formData.rentPrice) {
-            alert("Vui lòng điền: Tên, Quận, Giá tiền!");
+            setErrorMessage("Vui lòng điền các trường bắt buộc: Tên, Quận, Giá tiền!");
             return;
         }
         if (formData.typeCode.length === 0) {
-            alert("Vui lòng chọn ít nhất 1 loại tòa nhà!");
+            setErrorMessage("Vui lòng chọn ít nhất 1 loại tòa nhà!");
             return;
         }
 
@@ -136,23 +153,23 @@ const CreateBuilding = () => {
 
             setLoadingMessage("Đang lưu thông tin...");
 
-            // --- BƯỚC 2: MAP DỮ LIỆU ---
+            // --- BƯỚC 2: MAP DỮ LIỆU (FIX LỖI TẠI ĐÂY) ---
             const finalPayload = {
                 id: null,
                 name: formData.name,
                 street: formData.street,
                 ward: formData.ward,
-                districtId: Number(formData.districtId),
+                // Ép kiểu an toàn cho Long
+                districtId: safeParseNumber(formData.districtId),
+
                 structure: formData.structure,
-                numberOfBasement: Number(formData.numberOfBasement),
-                floorArea: Number(formData.floorArea),
-                rentPrice: Number(formData.rentPrice),
+                numberOfBasement: safeParseNumber(formData.numberOfBasement),
+                floorArea: safeParseNumber(formData.floorArea),
+                rentPrice: safeParseNumber(formData.rentPrice),
                 direction: formData.direction,
                 level: formData.level,
 
-                // Tự động tạo mô tả giá (VD: 20.000.000 VNĐ) nếu người dùng để trống
                 rentPriceDescription: formData.rentPriceDescription || formatCurrency(formData.rentPrice),
-
                 serviceFee: formData.serviceFee,
                 carFee: formData.carFee,
                 motorbikeFee: formData.motorbikeFee,
@@ -163,7 +180,10 @@ const CreateBuilding = () => {
                 payment: formData.payment,
                 rentTime: formData.rentTime,
                 decorationTime: formData.decorationTime,
-                brokerageFee: Number(formData.brokerageFee),
+
+                // BigDecimal backend nhận số OK
+                brokerageFee: safeParseNumber(formData.brokerageFee),
+
                 note: formData.note,
                 linkOfBuilding: formData.linkOfBuilding,
                 map: formData.map,
@@ -172,11 +192,13 @@ const CreateBuilding = () => {
                 rentArea: formData.rentArea,
                 typeCode: formData.typeCode,
                 transactionType: formData.transactionType,
-                avatar: finalAvatarUrl,
+
+                // --- QUAN TRỌNG: Đổi 'avatar' thành 'image' để khớp DTO ---
+                image: finalAvatarUrl,
                 imageList: finalImageList
             };
 
-            console.log("Payload gửi đi:", finalPayload);
+            console.log("Payload chuẩn gửi đi:", finalPayload);
 
             await axiosClient.post('/api/buildings', finalPayload);
 
@@ -185,9 +207,34 @@ const CreateBuilding = () => {
 
         } catch (error) {
             console.error("Lỗi:", error);
-            const errorMsg = error.response?.data?.message || JSON.stringify(error.response?.data) || "Lỗi không xác định";
-            alert(`Lỗi Server: ${errorMsg}`);
             setIsLoading(false);
+
+            // Xử lý hiển thị lỗi chi tiết từ Backend
+            let msg = "Đã xảy ra lỗi không xác định.";
+            if (error.response) {
+                // Nếu BE trả về 400 Bad Request
+                if (error.response.status === 400) {
+                    msg = "Dữ liệu không hợp lệ (400). Vui lòng kiểm tra lại các trường nhập.";
+                    // Nếu BE trả về message cụ thể (VD: Validation string)
+                    if (error.response.data && error.response.data.message) {
+                        msg = error.response.data.message;
+                    }
+                    // Nếu là lỗi mặc định của Spring Boot
+                    if (error.response.data && error.response.data.error) {
+                        msg += ` (${error.response.data.error})`;
+                    }
+                } else {
+                    msg = error.response.data?.message || `Lỗi Server (${error.response.status})`;
+                }
+            } else if (error.request) {
+                msg = "Không thể kết nối đến Server.";
+            } else {
+                msg = error.message;
+            }
+
+            setErrorMessage(msg);
+            // Scroll lên đầu để user thấy lỗi
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
 
@@ -216,6 +263,19 @@ const CreateBuilding = () => {
                     <p>Nhập thông tin chi tiết & hình ảnh</p>
                 </div>
 
+                {/* --- KHU VỰC HIỂN THỊ LỖI --- */}
+                {errorMessage && (
+                    <div className="error-banner" style={{
+                        backgroundColor: '#fee2e2', color: '#b91c1c',
+                        padding: '15px', borderRadius: '8px', marginBottom: '20px',
+                        display: 'flex', alignItems: 'center', gap: '10px',
+                        border: '1px solid #f87171'
+                    }}>
+                        <FaExclamationTriangle size={20} />
+                        <span>{errorMessage}</span>
+                    </div>
+                )}
+
                 <form className="create-form" onSubmit={handleSubmit}>
                     {/* THÔNG TIN CHUNG */}
                     <div className="form-section">
@@ -242,11 +302,10 @@ const CreateBuilding = () => {
                         </div>
                     </div>
 
-                    {/* GIÁ THUÊ & GIAO DỊCH (Đã thống nhất VNĐ) */}
+                    {/* GIÁ THUÊ & GIAO DỊCH */}
                     <div className="form-section">
                         <h3 className="section-title"><FaMoneyBillWave /> Giá & Giao Dịch (VNĐ)</h3>
                         <div className="form-grid">
-
                             <div className="form-group full-width">
                                 <label>Hình thức giao dịch <span style={{ color: 'red' }}>*</span></label>
                                 <div style={{ display: 'flex', gap: '30px', marginTop: '10px' }}>
@@ -261,20 +320,9 @@ const CreateBuilding = () => {
                                 </div>
                             </div>
 
-                            {/* 🔥 THỐNG NHẤT VNĐ */}
                             <div className="form-group">
-                                <label>
-                                    {formData.transactionType === 'SALE' ? 'Giá bán (VNĐ) *' : 'Giá thuê (VNĐ/Tháng) *'}
-                                </label>
-                                <input
-                                    type="number"
-                                    name="rentPrice"
-                                    value={formData.rentPrice}
-                                    onChange={handleChange}
-                                    required
-                                    placeholder="Nhập số tiền (VD: 20000000)"
-                                />
-                                {/* Hiển thị số tiền format cho dễ nhìn bên dưới */}
+                                <label>{formData.transactionType === 'SALE' ? 'Giá bán (VNĐ) *' : 'Giá thuê (VNĐ/Tháng) *'}</label>
+                                <input type="number" name="rentPrice" value={formData.rentPrice} onChange={handleChange} required />
                                 {formData.rentPrice > 0 && (
                                     <small style={{ color: '#2563eb', fontWeight: 600, marginTop: '5px', display: 'block' }}>
                                         {formatCurrency(formData.rentPrice)}
@@ -283,13 +331,13 @@ const CreateBuilding = () => {
                             </div>
 
                             <div className="form-group"><label>Diện tích thuê (VD: 100, 200)</label><input type="text" name="rentArea" value={formData.rentArea} onChange={handleChange} /></div>
-                            <div className="form-group"><label>Mô tả giá (Tùy chọn)</label><input type="text" name="rentPriceDescription" value={formData.rentPriceDescription} onChange={handleChange} placeholder="VD: 20 triệu/tháng (chưa VAT)" /></div>
+                            <div className="form-group"><label>Mô tả giá (Tùy chọn)</label><input type="text" name="rentPriceDescription" value={formData.rentPriceDescription} onChange={handleChange} /></div>
                             <div className="form-group"><label>Phí dịch vụ</label><input type="text" name="serviceFee" value={formData.serviceFee} onChange={handleChange} /></div>
                             <div className="form-group"><label>Phí môi giới</label><input type="number" name="brokerageFee" value={formData.brokerageFee} onChange={handleChange} /></div>
                         </div>
                     </div>
 
-                    {/* PHÍ & ĐIỀU KIỆN */}
+                    {/* PHÍ & ĐIỀU KIỆN - GIỮ NGUYÊN NHƯ CŨ */}
                     <div className="form-section">
                         <h3 className="section-title"><FaListUl /> Phí & Điều kiện</h3>
                         <div className="form-grid">
@@ -304,10 +352,9 @@ const CreateBuilding = () => {
                         </div>
                     </div>
 
-                    {/* HÌNH ẢNH & LOẠI */}
+                    {/* HÌNH ẢNH & LOẠI - GIỮ NGUYÊN LOGIC, CHỈ THÊM ERROR VIEW NẾU CẦN */}
                     <div className="form-section">
                         <h3 className="section-title"><FaImage /> Hình ảnh & Loại</h3>
-
                         <div className="form-group full-width">
                             <label>Loại tòa nhà *</label>
                             <div className="checkbox-group">

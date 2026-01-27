@@ -18,37 +18,44 @@ const LoginPage = () => {
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
-        // Khi người dùng bắt đầu gõ lại thì ẩn lỗi đi cho đỡ rối
+        // Khi người dùng gõ lại, ẩn lỗi ngay lập tức để trải nghiệm tốt hơn
         if (errorMsg) setErrorMsg('');
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setErrorMsg(''); // Reset lỗi cũ
 
-        // 1. Reset thông báo lỗi cũ
-        setErrorMsg('');
-
-        // 2. KIỂM TRA ĐẦU VÀO (VALIDATION)
-        // Dùng .trim() để loại bỏ dấu cách thừa, tránh trường hợp người dùng chỉ nhập dấu cách
         const user = formData.username.trim();
         const pass = formData.password.trim();
 
+        // --- 1. VALIDATION CHI TIẾT (KIỂM TRA ĐẦU VÀO) ---
+
+        // Trường hợp 1: Bỏ trống cả hai
         if (!user && !pass) {
-            setErrorMsg("⚠️ Vui lòng nhập Tên đăng nhập và Mật khẩu!");
-            return; // Dừng ngay, không gửi gì lên server
+            setErrorMsg("⚠️ Vui lòng nhập đầy đủ Tên đăng nhập và Mật khẩu.");
+            return;
         }
 
+        // Trường hợp 2: Chỉ bỏ trống tên đăng nhập
         if (!user) {
-            setErrorMsg("⚠️ Bạn chưa nhập Tên đăng nhập!");
+            setErrorMsg("⚠️ Tên đăng nhập không được để trống. Vui lòng nhập lại.");
             return;
         }
 
+        // Trường hợp 3: Chỉ bỏ trống mật khẩu
         if (!pass) {
-            setErrorMsg("⚠️ Bạn chưa nhập Mật khẩu!");
+            setErrorMsg("⚠️ Mật khẩu không được để trống. Vui lòng nhập lại.");
             return;
         }
 
-        // 3. Nếu đã nhập đủ thì mới bắt đầu Loading và gọi API
+        // Trường hợp 4 (Tùy chọn): Mật khẩu quá ngắn (nếu muốn chặn trước khi gửi lên server)
+        // if (pass.length < 3) {
+        //     setErrorMsg("⚠️ Mật khẩu quá ngắn. Vui lòng kiểm tra lại.");
+        //     return;
+        // }
+
+        // --- 2. GỬI DỮ LIỆU LÊN SERVER ---
         setIsLoading(true);
 
         try {
@@ -57,10 +64,10 @@ const LoginPage = () => {
             if (res.success) {
                 const roles = res.roles || [];
 
-                // Kiểm tra tài khoản rỗng quyền
+                // Kiểm tra tài khoản không có quyền
                 if (roles.length === 0) {
                     setIsLoading(false);
-                    setErrorMsg("⚠️ Cảnh báo: Tài khoản này chưa được cấp quyền!");
+                    setErrorMsg("⛔ Tài khoản này chưa được phân quyền. Vui lòng liên hệ Admin.");
                     return;
                 }
 
@@ -71,24 +78,34 @@ const LoginPage = () => {
                 });
 
                 if (hasAccess) {
-                    // === ĐÚNG: VÀO ADMIN ===
+                    // === ĐĂNG NHẬP THÀNH CÔNG ===
                     if (res.token) localStorage.setItem('token', res.token);
                     localStorage.setItem('roles', JSON.stringify(roles));
                     navigate('/admin/buildings');
                 } else {
-                    // === SAI QUYỀN: BÁO LỖI & ĐỨNG YÊN ===
+                    // === ĐÚNG PASS NHƯNG KHÔNG ĐỦ QUYỀN VÀO TRANG NÀY ===
                     setIsLoading(false);
-                    setErrorMsg("⛔ Bạn không có quyền truy cập vào trang Quản Trị!");
+                    setErrorMsg("⛔ Bạn không có quyền truy cập vào trang Quản Trị.");
                 }
             } else {
-                // === SAI TÀI KHOẢN / MẬT KHẨU ===
+                // === XỬ LÝ LỖI TỪ SERVER TRẢ VỀ ===
                 setIsLoading(false);
-                setErrorMsg(res.message || "❌ Tài khoản hoặc mật khẩu không đúng.");
+
+                // Đôi khi server trả về tiếng Anh (Bad credentials), ta dịch sang tiếng Việt cho thân thiện
+                let serverMessage = res.message || "";
+                if (serverMessage === "Bad credentials" || serverMessage.includes("incorrect")) {
+                    setErrorMsg("❌ Tên đăng nhập hoặc mật khẩu không chính xác.");
+                } else if (serverMessage.includes("lock") || serverMessage.includes("disabled")) {
+                    setErrorMsg("⛔ Tài khoản của bạn đã bị khóa hoặc vô hiệu hóa.");
+                } else {
+                    // Nếu lỗi khác, hiển thị nguyên văn hoặc thông báo chung
+                    setErrorMsg(serverMessage || "❌ Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.");
+                }
             }
         } catch (error) {
             console.error(error);
             setIsLoading(false);
-            setErrorMsg("Lỗi kết nối Server. Vui lòng thử lại sau.");
+            setErrorMsg("🌐 Lỗi kết nối đến máy chủ. Vui lòng kiểm tra mạng và thử lại.");
         }
     };
 
@@ -100,16 +117,21 @@ const LoginPage = () => {
                     <p>Hệ thống quản lý tòa nhà</p>
                 </div>
 
-                {/* Phần hiển thị lỗi */}
+                {/* Hiển thị lỗi nổi bật hơn */}
                 {errorMsg && (
                     <div className="error-msg" style={{
-                        fontWeight: 'bold',
-                        textAlign: 'center',
-                        color: '#d9534f',
-                        backgroundColor: '#f9d6d5',
-                        padding: '10px',
-                        borderRadius: '4px',
-                        marginBottom: '15px'
+                        fontWeight: '500', // Đậm vừa phải
+                        textAlign: 'left', // Căn trái cho dễ đọc nếu nội dung dài
+                        color: '#721c24',
+                        backgroundColor: '#f8d7da',
+                        borderColor: '#f5c6cb',
+                        padding: '12px 15px',
+                        borderRadius: '6px',
+                        marginBottom: '20px',
+                        fontSize: '14px',
+                        border: '1px solid transparent',
+                        display: 'flex',
+                        alignItems: 'center'
                     }}>
                         {errorMsg}
                     </div>
@@ -121,7 +143,6 @@ const LoginPage = () => {
                             type="text"
                             name="username"
                             placeholder="Tên đăng nhập"
-                            // Đã bỏ 'required' để dùng validate JS tùy chỉnh
                             autoFocus
                             value={formData.username}
                             onChange={handleChange}
@@ -134,7 +155,6 @@ const LoginPage = () => {
                             type="password"
                             name="password"
                             placeholder="Mật khẩu"
-                            // Đã bỏ 'required' để dùng validate JS tùy chỉnh
                             value={formData.password}
                             onChange={handleChange}
                         />
