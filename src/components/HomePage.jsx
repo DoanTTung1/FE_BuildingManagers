@@ -13,19 +13,19 @@ const HERO_IMAGE = "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab
 
 const DISTRICT_OPTIONS = [
     { value: '', label: 'Tất cả khu vực' },
-    { value: 'QUAN_1', label: 'Quận 1' },
-    { value: 'QUAN_2', label: 'Quận 2 (Thủ Thiêm)' },
-    { value: 'QUAN_3', label: 'Quận 3' },
-    { value: 'QUAN_4', label: 'Quận 4' },
-    { value: 'QUAN_BINH_THANH', label: 'Bình Thạnh' },
-    { value: 'QUAN_PHU_NHUAN', label: 'Phú Nhuận' },
-    { value: 'QUAN_7', label: 'Quận 7' },
-    { value: 'QUAN_10', label: 'Quận 10' },
+    { value: 1, label: 'Quận 1' },
+    { value: 2, label: 'Quận 2 (Thủ Thiêm)' },
+    { value: 3, label: 'Quận 3' },
+    { value: 4, label: 'Quận 4' },
+    { value: 5, label: 'Bình Thạnh' },   // Kiểm tra lại DB xem có phải ID 5 không
+    { value: 6, label: 'Phú Nhuận' },    // Kiểm tra lại DB xem có phải ID 6 không
+    { value: 7, label: 'Quận 7' },
+    { value: 10, label: 'Quận 10' },
 ];
 
 const POPULAR_DISTRICTS = [
     {
-        id: 'QUAN_1',
+        id: '1',
         name: 'Quận 1',
         tag: 'Financial Hub',
         desc: 'Trung tâm tài chính, nơi quy tụ các tập đoàn đa quốc gia.',
@@ -33,7 +33,7 @@ const POPULAR_DISTRICTS = [
         total: '120 Tòa'
     },
     {
-        id: 'QUAN_3',
+        id: '3',
         name: 'Quận 3',
         tag: 'Heritage & Culture',
         desc: 'Giao thoa giữa kiến trúc Pháp cổ điển và không gian hiện đại.',
@@ -41,7 +41,7 @@ const POPULAR_DISTRICTS = [
         total: '85 Tòa'
     },
     {
-        id: 'QUAN_BINH_THANH',
+        id: '5',
         name: 'Bình Thạnh',
         tag: 'The Gateway',
         desc: 'Cửa ngõ phía Đông sầm uất, kết nối nhanh chóng.',
@@ -49,7 +49,7 @@ const POPULAR_DISTRICTS = [
         total: '60 Tòa'
     },
     {
-        id: 'QUAN_PHU_NHUAN',
+        id: '6',
         name: 'Phú Nhuận',
         tag: 'Airport Connection',
         desc: 'Vị trí chiến lược kết nối sân bay, nhiều cây xanh.',
