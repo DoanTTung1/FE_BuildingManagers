@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosClient from '../api/axiosClient';
+import { useAuth } from '../context/AuthContext'; // Thêm AuthContext để tự điền form
+import toast from 'react-hot-toast'; // Import Toast
 import {
     FaSearch, FaMapMarkerAlt, FaArrowRight,
     FaExpandArrowsAlt, FaCar, FaStar, FaCheckCircle, FaPhoneAlt, FaEnvelope,
@@ -17,8 +19,8 @@ const DISTRICT_OPTIONS = [
     { value: 2, label: 'Quận 2 (Thủ Thiêm)' },
     { value: 3, label: 'Quận 3' },
     { value: 4, label: 'Quận 4' },
-    { value: 5, label: 'Bình Thạnh' },   // Kiểm tra lại DB xem có phải ID 5 không
-    { value: 6, label: 'Phú Nhuận' },    // Kiểm tra lại DB xem có phải ID 6 không
+    { value: 5, label: 'Bình Thạnh' },
+    { value: 6, label: 'Phú Nhuận' },
     { value: 7, label: 'Quận 7' },
     { value: 10, label: 'Quận 10' },
 ];
@@ -66,6 +68,8 @@ const FEATURES_LIST = [
 
 const HomePage = () => {
     const navigate = useNavigate();
+    const { user } = useAuth(); // Lấy thông tin user đăng nhập
+
     const [featuredBuildings, setFeaturedBuildings] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -73,9 +77,10 @@ const HomePage = () => {
     const [searchKeyword, setSearchKeyword] = useState('');
     const [searchDistrict, setSearchDistrict] = useState('');
 
-    // State cho Contact Form (Đã thêm Email)
+    // State cho Contact Form
     const [contactPhone, setContactPhone] = useState('');
-    const [contactEmail, setContactEmail] = useState(''); // <--- MỚI THÊM
+    const [contactEmail, setContactEmail] = useState('');
+    const [contactName, setContactName] = useState(''); // Thêm tên
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const getImageUrl = (imagePath) => {
@@ -83,6 +88,15 @@ const HomePage = () => {
         if (imagePath.startsWith("http")) return imagePath;
         return `http://localhost:8080/api/buildings/images/${imagePath}`;
     };
+
+    // Tự động điền form nếu đã đăng nhập
+    useEffect(() => {
+        if (user) {
+            setContactName(user.fullName || '');
+            setContactEmail(user.email || '');
+            setContactPhone(user.phone || '');
+        }
+    }, [user]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -110,34 +124,56 @@ const HomePage = () => {
         if (e.key === 'Enter') handleSearch();
     };
 
-    // --- LOGIC GỬI LIÊN HỆ ĐÃ CẬP NHẬT ---
+    // --- LOGIC GỬI LIÊN HỆ ĐÃ SỬA ---
     const handleContact = async () => {
-        // Validate cơ bản
+        // Validate
         if (!contactEmail || !contactEmail.includes('@')) {
-            alert("Vui lòng nhập Email hợp lệ!");
+            toast.error("Vui lòng nhập Email hợp lệ!");
             return;
         }
         if (!contactPhone || contactPhone.length < 9) {
-            alert("Vui lòng nhập số điện thoại hợp lệ!");
+            toast.error("Vui lòng nhập số điện thoại hợp lệ!");
             return;
         }
 
         setIsSubmitting(true);
-        try {
-            await axiosClient.post('/api/customers/contact', {
-                fullName: "Khách từ Trang Chủ",
-                phone: contactPhone,
-                email: contactEmail, // <--- Gửi email thật lên Server
-                demand: "Yêu cầu tư vấn nhanh - CTA HomePage"
-            });
-            alert("Đã gửi yêu cầu thành công! Chúng tôi sẽ phản hồi qua Email/SĐT sớm nhất.");
 
-            // Reset form
-            setContactPhone('');
-            setContactEmail('');
+        // Chuẩn bị payload chuẩn Backend
+        const payload = {
+            name: contactName || "Khách từ HomePage",
+            email: contactEmail,
+            phone: contactPhone,
+            subject: "homepage_quote", // Đánh dấu nguồn từ trang chủ
+            message: "Yêu cầu tư vấn báo giá nhanh (Form CTA)"
+        };
+
+        try {
+            await axiosClient.post('/api/contacts', payload);
+
+            // Thông báo đẹp
+            toast.success("Gửi yêu cầu thành công!\nChuyên viên sẽ liên hệ lại trong 5 phút.", {
+                duration: 5000,
+                style: {
+                    border: '1px solid #10b981',
+                    padding: '16px',
+                    color: '#064e3b',
+                    background: '#ecfdf5',
+                },
+                iconTheme: {
+                    primary: '#10b981',
+                    secondary: '#FFFAEE',
+                },
+            });
+
+            // Reset form (Nếu chưa đăng nhập)
+            if (!user) {
+                setContactName('');
+                setContactPhone('');
+                setContactEmail('');
+            }
         } catch (e) {
             console.error(e);
-            alert("Có lỗi xảy ra, vui lòng thử lại sau.");
+            toast.error("Gửi thất bại! Vui lòng thử lại sau.");
         } finally {
             setIsSubmitting(false);
         }
@@ -258,7 +294,7 @@ const HomePage = () => {
                 </div>
             </section>
 
-            {/* --- 4. CTA FORM (ĐÃ SỬA: THÊM INPUT EMAIL) --- */}
+            {/* --- 4. CTA FORM (ĐÃ SỬA: ĐỒNG BỘ BACKEND & TOAST) --- */}
             <section className="cta-mesh-section">
                 <div className="cta-grid">
                     <div className="cta-content">
@@ -276,7 +312,7 @@ const HomePage = () => {
                         <h3>Nhận báo giá ngay</h3>
                         <p>Để lại thông tin, chuyên viên sẽ gửi list văn phòng phù hợp trong 5 phút.</p>
 
-                        {/* INPUT EMAIL MỚI */}
+                        {/* INPUT EMAIL */}
                         <div className="input-wrap">
                             <FaEnvelope className="input-icon" />
                             <input
@@ -287,7 +323,7 @@ const HomePage = () => {
                             />
                         </div>
 
-                        {/* INPUT PHONE CŨ */}
+                        {/* INPUT PHONE */}
                         <div className="input-wrap">
                             <FaPhoneAlt className="input-icon" />
                             <input
