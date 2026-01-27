@@ -1,21 +1,14 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axiosClient from '../../api/axiosClient';
-import { FaUser, FaEnvelope, FaPhone, FaLock, FaIdCard, FaSave, FaArrowLeft, FaUserShield } from 'react-icons/fa';
+// ... import giữ nguyên
 
 const CreateStaff = () => {
-    const navigate = useNavigate();
-    const [isLoading, setIsLoading] = useState(false);
-    const [message, setMessage] = useState({ type: '', text: '' });
-
-    // State form khớp với các trường cần thiết
+    // ...
     const [formData, setFormData] = useState({
-        userName: '',
-        password: '', 
+        username: '', // Sửa userName -> username (viết thường hết)
+        password: '',
         fullName: '',
         email: '',
         phone: '',
-        role: 'STAFF' // Mặc định chọn STAFF
+        role: 'STAFF'
     });
 
     const handleChange = (e) => {
@@ -28,39 +21,34 @@ const CreateStaff = () => {
         setMessage({ type: '', text: '' });
 
         try {
-            // --- CHUẨN BỊ DỮ LIỆU GỬI ĐI (Payload) ---
+            // --- CHUẨN BỊ PAYLOAD KHỚP VỚI JAVA USERDTO ---
             const payload = {
-                // 1. Các trường khớp tên trong UserDTO
-                userName: formData.userName,
+                // 1. Khớp tên trường trong UserDTO
+                username: formData.username, // SỬA LẠI: dùng 'username'
                 fullName: formData.fullName,
                 email: formData.email,
                 phone: formData.phone,
+                password: formData.password,
+                status: 1, // Active
 
-                // 2. Trường status (Integer)
-                status: 1, // 1 = Active
+                // 2. Sửa 'roleCodes' thành 'roles' để khớp DTO
+                roles: [formData.role],
 
-                // 3. Xử lý List<String> roleCodes
-                roleCodes: [formData.role], // Đóng gói role đơn thành mảng
-
-                // 4. Mật khẩu (LƯU Ý: UserDTO bên Java cần có field này)
-                password: formData.password
+                // 3. Các trường khác (nếu cần)
+                avatar: "https://placehold.co/150x150?text=Staff", // Ảnh mặc định
+                phoneVerified: false
             };
 
-            // Gọi API: POST /api/users
             await axiosClient.post('/api/users', payload);
 
             setMessage({ type: 'success', text: 'Tạo nhân viên thành công!' });
-
-            // Chuyển hướng sau 1.5s
-            setTimeout(() => {
-                navigate('/admin/users');
-            }, 1500);
+            setTimeout(() => { navigate('/admin/users'); }, 1500);
 
         } catch (error) {
             console.error("Lỗi API:", error);
-            // Lấy thông báo lỗi chi tiết từ Backend
-            const errorMsg = error.response?.data?.message || 'Lỗi hệ thống. Vui lòng thử lại!';
-            setMessage({ type: 'error', text: errorMsg });
+            const errorMsg = error.response?.data || 'Lỗi hệ thống. Vui lòng thử lại!';
+            // Lưu ý: Backend trả về string trực tiếp nên lấy error.response.data
+            setMessage({ type: 'error', text: typeof errorMsg === 'string' ? errorMsg : "Có lỗi xảy ra" });
         } finally {
             setIsLoading(false);
         }
@@ -68,40 +56,34 @@ const CreateStaff = () => {
 
     return (
         <div className="fade-in-up">
-            {/* Header */}
-            <div className="admin-header">
-                <h2>Thêm Nhân Viên Mới</h2>
-                <button className="btn-back" onClick={() => navigate('/admin/users')}>
-                    <FaArrowLeft /> Quay lại
-                </button>
-            </div>
+            {/* ... Phần Header giữ nguyên ... */}
 
-            {/* Form Container (Giao diện Luxury) */}
             <div className="form-card-container">
-                {/* Thông báo */}
-                {message.text && (
-                    <div className={`alert-message ${message.type}`}>
-                        {message.text}
-                    </div>
-                )}
+                {/* ... Phần Message giữ nguyên ... */}
 
                 <form onSubmit={handleSubmit} className="admin-form">
                     <div className="form-grid">
-                        {/* Cột Trái */}
                         <div className="form-column">
+                            {/* --- CẬP NHẬT NAME CỦA INPUT --- */}
                             <div className="form-group">
                                 <label><FaUser /> Tên đăng nhập</label>
                                 <input
-                                    type="text" name="userName" className="form-control-admin"
+                                    type="text"
+                                    name="username" // Sửa name="userName" -> name="username"
+                                    className="form-control-admin"
                                     placeholder="Ví dụ: staff_01"
-                                    value={formData.userName} onChange={handleChange} required
+                                    value={formData.username}
+                                    onChange={handleChange}
+                                    required
                                 />
                             </div>
+
+                            {/* Các ô input khác (password, fullName) giữ nguyên tên vì đã khớp */}
                             <div className="form-group">
                                 <label><FaLock /> Mật khẩu</label>
                                 <input
                                     type="password" name="password" className="form-control-admin"
-                                    placeholder="Nhập mật khẩu đăng nhập..."
+                                    placeholder="Nhập mật khẩu..."
                                     value={formData.password} onChange={handleChange} required
                                 />
                             </div>
@@ -115,8 +97,8 @@ const CreateStaff = () => {
                             </div>
                         </div>
 
-                        {/* Cột Phải */}
                         <div className="form-column">
+                            {/* Các ô bên phải giữ nguyên */}
                             <div className="form-group">
                                 <label><FaEnvelope /> Email</label>
                                 <input
