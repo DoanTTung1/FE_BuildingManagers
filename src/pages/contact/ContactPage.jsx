@@ -168,7 +168,7 @@ const ContactPage = () => {
                         <div className="social-connect">
                             <h3>Kết nối mạng xã hội</h3>
                             <div className="social-icons">
-                                <a href="https://www.facebook.com/groups/2156788427977817" className="sc-icon fb"><FaFacebookF /></a>
+                                <a href="https://www.facebook.com/oanthanhtung.790997/" className="sc-icon fb"><FaFacebookF /></a>
                                 <a href="#" className="sc-icon yt"><FaYoutube /></a>
                                 <a href="#" className="sc-icon in"><FaLinkedinIn /></a>
                             </div>
