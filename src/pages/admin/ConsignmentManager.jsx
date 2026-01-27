@@ -82,11 +82,11 @@ const ConsignmentManager = () => {
     // Helper: Badge màu sắc
     const getStatusBadge = (status) => {
         switch (status) {
-            case 'PENDING': return <span className="badge badge-warning">Chờ xử lý</span>;
-            case 'CONTACTED': return <span className="badge badge-info">Đã liên hệ</span>;
-            case 'APPROVED': return <span className="badge badge-success">Đã duyệt</span>;
-            case 'REJECTED': return <span className="badge badge-danger">Từ chối</span>;
-            default: return <span className="badge badge-default">{status}</span>;
+            case 'PENDING': return <span className="badge badge-warning" style={{ color: 'navy' }}>Chờ xử lý</span>;
+            case 'CONTACTED': return <span className="badge badge-info" style={{ color: 'navy' }}>Đã liên hệ</span>;
+            case 'APPROVED': return <span className="badge badge-success" style={{ color: 'navy' }}>Đã duyệt</span>;
+            case 'REJECTED': return <span className="badge badge-danger" style={{ color: 'navy' }}>Từ chối</span>;
+            default: return <span className="badge badge-default" style={{ color: 'navy' }}>{status}</span>;
         }
     };
 
