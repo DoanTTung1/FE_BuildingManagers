@@ -3,36 +3,32 @@ import { useNavigate } from 'react-router-dom';
 import axiosClient from '../api/axiosClient';
 import {
     FaSearch, FaMapMarkerAlt, FaArrowRight,
-    FaExpandArrowsAlt, FaCar, FaStar, FaCheckCircle, FaPhoneAlt,
-    FaLongArrowAltRight, FaSpinner // Thêm icon loading
+    FaExpandArrowsAlt, FaCar, FaStar, FaCheckCircle, FaPhoneAlt, FaEnvelope,
+    FaLongArrowAltRight, FaSpinner
 } from 'react-icons/fa';
 import '../styles/HomePage.css';
 
 // --- ASSETS & CONFIG ---
 const HERO_IMAGE = "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=2070&q=80";
 
-// --- CẤU HÌNH DANH SÁCH QUẬN CHO TÌM KIẾM ---
-// LƯU Ý QUAN TRỌNG: Hãy kiểm tra Backend của bạn nhận 'value' là SỐ (1, 2) hay CHỮ (QUAN_1).
-// Nếu Backend tìm theo ID -> để value là số. Nếu tìm theo Enum -> để value là chữ.
 const DISTRICT_OPTIONS = [
     { value: '', label: 'Tất cả khu vực' },
-    { value: 1, label: 'Quận 1' },           // value là số 1
-    { value: 2, label: 'Quận 2 (Thủ Thiêm)' },
-    { value: 3, label: 'Quận 3' },
-    { value: 4, label: 'Quận 4' },
-    { value: 5, label: 'Bình Thạnh' },       // Giả sử Bình Thạnh là ID 5
-    { value: 6, label: 'Phú Nhuận' },        // Giả sử Phú Nhuận là ID 6
-    { value: 7, label: 'Quận 7' },
-    { value: 10, label: 'Quận 10' },
+    { value: 'QUAN_1', label: 'Quận 1' },
+    { value: 'QUAN_2', label: 'Quận 2 (Thủ Thiêm)' },
+    { value: 'QUAN_3', label: 'Quận 3' },
+    { value: 'QUAN_4', label: 'Quận 4' },
+    { value: 'QUAN_BINH_THANH', label: 'Bình Thạnh' },
+    { value: 'QUAN_PHU_NHUAN', label: 'Phú Nhuận' },
+    { value: 'QUAN_7', label: 'Quận 7' },
+    { value: 'QUAN_10', label: 'Quận 10' },
 ];
 
-// Dữ liệu hiển thị Accordion (Trang trí)
 const POPULAR_DISTRICTS = [
     {
-        id: 'QUAN_1', // Để trùng với value search để click vào là tìm được ngay
+        id: 'QUAN_1',
         name: 'Quận 1',
         tag: 'Financial Hub',
-        desc: 'Trung tâm tài chính, nơi quy tụ các tập đoàn đa quốc gia và văn phòng hạng A.',
+        desc: 'Trung tâm tài chính, nơi quy tụ các tập đoàn đa quốc gia.',
         img: 'https://images.unsplash.com/photo-1657644096992-62b43ea8ae30?q=80&w=687&auto=format&fit=crop',
         total: '120 Tòa'
     },
@@ -40,7 +36,7 @@ const POPULAR_DISTRICTS = [
         id: 'QUAN_3',
         name: 'Quận 3',
         tag: 'Heritage & Culture',
-        desc: 'Sự giao thoa hoàn hảo giữa kiến trúc Pháp cổ điển và không gian hiện đại.',
+        desc: 'Giao thoa giữa kiến trúc Pháp cổ điển và không gian hiện đại.',
         img: 'https://plus.unsplash.com/premium_photo-1680777484547-de735ff024a4?q=80&w=687&auto=format&fit=crop',
         total: '85 Tòa'
     },
@@ -48,7 +44,7 @@ const POPULAR_DISTRICTS = [
         id: 'QUAN_BINH_THANH',
         name: 'Bình Thạnh',
         tag: 'The Gateway',
-        desc: 'Cửa ngõ phía Đông sầm uất, kết nối nhanh chóng giữa Quận 1 và khu đô thị mới.',
+        desc: 'Cửa ngõ phía Đông sầm uất, kết nối nhanh chóng.',
         img: 'https://plus.unsplash.com/premium_photo-1678903964473-1271ecfb0288?q=80&w=687&auto=format&fit=crop',
         total: '60 Tòa'
     },
@@ -56,7 +52,7 @@ const POPULAR_DISTRICTS = [
         id: 'QUAN_PHU_NHUAN',
         name: 'Phú Nhuận',
         tag: 'Airport Connection',
-        desc: 'Vị trí chiến lược kết nối sân bay, môi trường làm việc nhiều cây xanh và yên tĩnh.',
+        desc: 'Vị trí chiến lược kết nối sân bay, nhiều cây xanh.',
         img: 'https://images.unsplash.com/photo-1725891025293-16981168203d?q=80&w=628&auto=format&fit=crop',
         total: '40 Tòa'
     },
@@ -77,22 +73,20 @@ const HomePage = () => {
     const [searchKeyword, setSearchKeyword] = useState('');
     const [searchDistrict, setSearchDistrict] = useState('');
 
-    // State cho Contact Form
+    // State cho Contact Form (Đã thêm Email)
     const [contactPhone, setContactPhone] = useState('');
+    const [contactEmail, setContactEmail] = useState(''); // <--- MỚI THÊM
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Helper: Xử lý ảnh
     const getImageUrl = (imagePath) => {
         if (!imagePath) return "https://via.placeholder.com/600x400?text=Building";
         if (imagePath.startsWith("http")) return imagePath;
         return `http://localhost:8080/api/buildings/images/${imagePath}`;
     };
 
-    // 1. Fetch Data Tòa nhà nổi bật
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Thêm sort=rentPrice,desc để lấy tòa nhà giá cao (VIP) hoặc tùy logic
                 const res = await axiosClient.get('/api/buildings?page=0&size=6&sort=rentPrice,desc');
                 if (res.content) setFeaturedBuildings(res.content);
                 else if (Array.isArray(res)) setFeaturedBuildings(res.slice(0, 6));
@@ -105,42 +99,44 @@ const HomePage = () => {
         fetchData();
     }, []);
 
-    // 2. Logic Search (ĐÃ SỬA CHUẨN)
     const handleSearch = () => {
         const params = new URLSearchParams();
-
-        // Chỉ thêm tham số nếu có giá trị
-        if (searchKeyword.trim()) {
-            params.append('name', searchKeyword.trim());
-        }
-        if (searchDistrict) {
-            params.append('district', searchDistrict);
-        }
-
-        // Điều hướng: /search?name=abc&district=QUAN_1
+        if (searchKeyword.trim()) params.append('name', searchKeyword.trim());
+        if (searchDistrict) params.append('district', searchDistrict);
         navigate(`/search?${params.toString()}`);
     };
 
-    // UX: Cho phép nhấn Enter để tìm
     const handleKeyDown = (e) => {
-        if (e.key === 'Enter') {
-            handleSearch();
-        }
+        if (e.key === 'Enter') handleSearch();
     };
 
-    // 3. Logic Gửi liên hệ
+    // --- LOGIC GỬI LIÊN HỆ ĐÃ CẬP NHẬT ---
     const handleContact = async () => {
-        if (!contactPhone || contactPhone.length < 9) return alert("Vui lòng nhập số điện thoại hợp lệ");
+        // Validate cơ bản
+        if (!contactEmail || !contactEmail.includes('@')) {
+            alert("Vui lòng nhập Email hợp lệ!");
+            return;
+        }
+        if (!contactPhone || contactPhone.length < 9) {
+            alert("Vui lòng nhập số điện thoại hợp lệ!");
+            return;
+        }
+
         setIsSubmitting(true);
         try {
             await axiosClient.post('/api/customers/contact', {
                 fullName: "Khách từ Trang Chủ",
                 phone: contactPhone,
+                email: contactEmail, // <--- Gửi email thật lên Server
                 demand: "Yêu cầu tư vấn nhanh - CTA HomePage"
             });
-            alert("Đã gửi yêu cầu thành công! Chúng tôi sẽ gọi lại ngay.");
+            alert("Đã gửi yêu cầu thành công! Chúng tôi sẽ phản hồi qua Email/SĐT sớm nhất.");
+
+            // Reset form
             setContactPhone('');
+            setContactEmail('');
         } catch (e) {
+            console.error(e);
             alert("Có lỗi xảy ra, vui lòng thử lại sau.");
         } finally {
             setIsSubmitting(false);
@@ -149,7 +145,6 @@ const HomePage = () => {
 
     return (
         <div className="home-container">
-
             {/* --- 1. HERO SECTION --- */}
             <section className="hero-modern" style={{ backgroundImage: `url(${HERO_IMAGE})` }}>
                 <div className="hero-overlay"></div>
@@ -158,7 +153,6 @@ const HomePage = () => {
                     <h1 className="hero-heading">Nâng Tầm <br /><span className="text-highlight">Vị Thế Doanh Nghiệp</span></h1>
                     <p className="hero-sub">Kết nối doanh nghiệp với 1,500+ tòa nhà văn phòng hạng A, B, C tại TP.HCM.</p>
 
-                    {/* SEARCH BOX ĐÃ SỬA */}
                     <div className="search-glass-panel">
                         <div className="search-field">
                             <FaSearch className="icon" />
@@ -167,7 +161,7 @@ const HomePage = () => {
                                 placeholder="Tên tòa nhà, đường..."
                                 value={searchKeyword}
                                 onChange={(e) => setSearchKeyword(e.target.value)}
-                                onKeyDown={handleKeyDown} /* Thêm sự kiện Enter */
+                                onKeyDown={handleKeyDown}
                             />
                         </div>
                         <div className="divider"></div>
@@ -196,24 +190,19 @@ const HomePage = () => {
                 </div>
             </section>
 
-            {/* --- 2. STRATEGIC LOCATIONS (ACCORDION) --- */}
+            {/* --- 2. LOCATION --- */}
             <section className="section-locations-ultra">
                 <div className="section-header">
                     <h2>Vị Trí Chiến Lược</h2>
                     <p style={{ color: 'var(--text-sub)' }}>Khám phá văn phòng tại các khu vực kinh tế trọng điểm</p>
                 </div>
-
                 <div className="accordion-gallery">
                     {POPULAR_DISTRICTS.map((d, index) => (
                         <div key={index} className="accordion-card" onClick={() => navigate(`/search?district=${d.id}`)}>
                             <div className="acc-img" style={{ backgroundImage: `url(${d.img})` }}></div>
                             <div className="acc-overlay"></div>
                             <div className="acc-index">0{index + 1}</div>
-
-                            <div className="acc-content-collapsed">
-                                <h3>{d.name}</h3>
-                            </div>
-
+                            <div className="acc-content-collapsed"><h3>{d.name}</h3></div>
                             <div className="acc-content-expanded">
                                 <span className="acc-tag">{d.tag}</span>
                                 <h3>{d.name}</h3>
@@ -240,9 +229,7 @@ const HomePage = () => {
 
                 <div className="cards-grid">
                     {isLoading ? (
-                        <div className="loading-state">
-                            <FaSpinner className="spinner-icon" /> Đang tải danh sách...
-                        </div>
+                        <div className="loading-state"><FaSpinner className="spinner-icon" /> Đang tải danh sách...</div>
                     ) : featuredBuildings.map(item => (
                         <div className="premium-card" key={item.id} onClick={() => navigate(`/building/${item.id}`)}>
                             <div className="card-image">
@@ -271,7 +258,7 @@ const HomePage = () => {
                 </div>
             </section>
 
-            {/* --- 4. CTA MESH --- */}
+            {/* --- 4. CTA FORM (ĐÃ SỬA: THÊM INPUT EMAIL) --- */}
             <section className="cta-mesh-section">
                 <div className="cta-grid">
                     <div className="cta-content">
@@ -287,16 +274,30 @@ const HomePage = () => {
                     </div>
                     <div className="cta-form-card">
                         <h3>Nhận báo giá ngay</h3>
-                        <p>Để lại số điện thoại, chuyên viên sẽ gửi list văn phòng phù hợp trong 5 phút.</p>
+                        <p>Để lại thông tin, chuyên viên sẽ gửi list văn phòng phù hợp trong 5 phút.</p>
+
+                        {/* INPUT EMAIL MỚI */}
+                        <div className="input-wrap">
+                            <FaEnvelope className="input-icon" />
+                            <input
+                                type="email"
+                                placeholder="Email của bạn..."
+                                value={contactEmail}
+                                onChange={(e) => setContactEmail(e.target.value)}
+                            />
+                        </div>
+
+                        {/* INPUT PHONE CŨ */}
                         <div className="input-wrap">
                             <FaPhoneAlt className="input-icon" />
                             <input
                                 type="text"
-                                placeholder="Số điện thoại của bạn..."
+                                placeholder="Số điện thoại..."
                                 value={contactPhone}
                                 onChange={(e) => setContactPhone(e.target.value)}
                             />
                         </div>
+
                         <button className="btn-submit-full" onClick={handleContact} disabled={isSubmitting}>
                             {isSubmitting ? (
                                 <span><FaSpinner className="spinner-icon" /> Đang gửi...</span>

@@ -2,19 +2,29 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import axiosClient from '../api/axiosClient';
+
+// Import các Modal
 import EditProfileModal from '../components/EditProfileModal';
+import ChangePasswordModal from '../components/ChangePasswordModal'; // Đã bổ sung
+
 import {
     FaUserCircle, FaPhoneAlt, FaEnvelope, FaCheckCircle,
-    FaExclamationTriangle, FaBuilding, FaMapMarkerAlt, FaEdit, FaTrash, FaPlus, FaClock
+    FaExclamationTriangle, FaBuilding, FaMapMarkerAlt, FaEdit, FaTrash, FaPlus, FaClock,
+    FaLock // Đã bổ sung icon khóa
 } from 'react-icons/fa';
 import '../styles/UserProfile.css';
 
 const UserProfile = () => {
     const { user, setUser } = useAuth();
     const navigate = useNavigate();
+
+    // State dữ liệu
     const [myBuildings, setMyBuildings] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+
+    // State điều khiển Modal
     const [isEditOpen, setIsEditOpen] = useState(false);
+    const [isChangePassOpen, setChangePassOpen] = useState(false); // State cho Modal đổi mật khẩu
 
     useEffect(() => {
         if (user) fetchMyBuildings();
@@ -101,9 +111,33 @@ const UserProfile = () => {
                                     <FaPhoneAlt className="icon" /> {user.phone || "Chưa cập nhật"}
                                 </div>
                             </div>
-                            <div className="info-item action-item">
+
+                            {/* --- KHU VỰC NÚT BẤM HÀNH ĐỘNG --- */}
+                            <div className="info-item action-item" style={{ display: 'flex', gap: '15px', marginTop: '10px' }}>
+                                {/* Nút sửa thông tin */}
                                 <button className="btn-edit-profile" onClick={() => setIsEditOpen(true)}>
                                     Chỉnh sửa thông tin
+                                </button>
+
+                                {/* Nút đổi mật khẩu (Mới thêm) */}
+                                <button
+                                    className="btn-change-pass"
+                                    onClick={() => setChangePassOpen(true)}
+                                    style={{
+                                        backgroundColor: '#fff',
+                                        color: '#e67e22',
+                                        border: '1px solid #e67e22',
+                                        padding: '8px 15px',
+                                        borderRadius: '5px',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        fontWeight: 'bold',
+                                        fontSize: '14px',
+                                        transition: 'all 0.2s'
+                                    }}
+                                >
+                                    <FaLock style={{ marginRight: '6px' }} /> Đổi mật khẩu
                                 </button>
                             </div>
                         </div>
@@ -137,7 +171,7 @@ const UserProfile = () => {
                                     <div className="card-image">
                                         <img src={item.avatar || "https://via.placeholder.com/400x300"} alt={item.name} />
 
-                                        {/* --- BADGE TRẠNG THÁI (BỔ SUNG) --- */}
+                                        {/* Badge Trạng Thái */}
                                         {item.status === 2 && (
                                             <div className="status-overlay pending">
                                                 <FaClock /> Chờ duyệt
@@ -148,7 +182,6 @@ const UserProfile = () => {
                                                 <FaCheckCircle /> Đang hiện
                                             </div>
                                         )}
-                                        {/* ---------------------------------- */}
 
                                         <div className="price-tag">${item.rentPrice}/m²</div>
                                     </div>
@@ -177,11 +210,20 @@ const UserProfile = () => {
                 </div>
             </div>
 
+            {/* --- CÁC MODAL --- */}
+
+            {/* Modal Sửa Thông Tin */}
             <EditProfileModal
                 isOpen={isEditOpen}
                 onClose={() => setIsEditOpen(false)}
                 currentUser={user}
                 onUpdateSuccess={(updatedUser) => setUser(updatedUser)}
+            />
+
+            {/* Modal Đổi Mật Khẩu (Mới thêm) */}
+            <ChangePasswordModal
+                isOpen={isChangePassOpen}
+                onClose={() => setChangePassOpen(false)}
             />
         </div>
     );

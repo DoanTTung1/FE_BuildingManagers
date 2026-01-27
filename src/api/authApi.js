@@ -39,6 +39,11 @@ const authApi = {
     loginWithGoogle: (token) => {
         // Gửi Body JSON: { "token": "..." }
         return axiosClient.post('/api/auth/google', { token });
+    },
+    // 7. Đổi mật khẩu
+    changePassword: (data) => {
+        // data gồm: { currentPassword, newPassword, confirmPassword }
+        return axiosClient.post('/api/auth/change-password', data);
     }
 };
 
