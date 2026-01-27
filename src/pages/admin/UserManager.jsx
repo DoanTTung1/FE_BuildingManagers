@@ -5,7 +5,7 @@ import {
 import {
     SearchOutlined, PlusOutlined, EditOutlined, DeleteOutlined,
     UserOutlined, PhoneOutlined, MailOutlined, CheckCircleTwoTone,
-    UndoOutlined, RestOutlined
+    UndoOutlined, RestOutlined, FilterOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import axiosClient from '../../api/axiosClient';
@@ -22,15 +22,18 @@ const UserManager = () => {
     // State lọc trạng thái: null = Active, 0 = Thùng rác
     const [filterStatus, setFilterStatus] = useState(null);
 
-    // --- 1. CALL API (Tự động chạy khi filter thay đổi) ---
+    // --- 🆕 MỚI: State lọc theo Vai trò (Role) ---
+    const [filterRole, setFilterRole] = useState(null); // null = Tất cả, 'STAFF', 'USER'
+
+    // --- 1. CALL API ---
     useEffect(() => {
         fetchUsers();
-    }, [filterStatus]);
+    }, [filterStatus]); // Chỉ gọi lại API khi đổi trạng thái (Active/Thùng rác)
 
     const fetchUsers = async () => {
         setLoading(true);
         try {
-            // Gọi API kèm status để lọc (Backend cần hỗ trợ nhận param này)
+            // Gọi API kèm status
             const res = await axiosClient.get('/api/users', {
                 params: { status: filterStatus }
             });
@@ -43,9 +46,32 @@ const UserManager = () => {
         }
     };
 
+    // --- 🆕 MỚI: Logic lọc dữ liệu tại Client (Frontend) ---
+    // Điều này đảm bảo tính năng hoạt động ngay lập tức mà không cần sửa Backend
+    const getFilteredData = () => {
+        let data = [...users];
+
+        // 1. Lọc theo Role (Nếu có chọn)
+        if (filterRole) {
+            data = data.filter(u => u.roles && u.roles.includes(filterRole));
+        }
+
+        // 2. Lọc theo Search Text (Tìm tên, email, username)
+        if (searchText) {
+            const lowerSearch = searchText.toLowerCase();
+            data = data.filter(u =>
+                (u.fullName && u.fullName.toLowerCase().includes(lowerSearch)) ||
+                (u.username && u.username.toLowerCase().includes(lowerSearch)) ||
+                (u.email && u.email.toLowerCase().includes(lowerSearch))
+            );
+        }
+
+        return data;
+    };
+
     // --- 2. CÁC HÀM XỬ LÝ HÀNH ĐỘNG ---
 
-    // Xóa mềm (Đưa vào thùng rác)
+    // Xóa mềm
     const handleDelete = (id) => {
         Modal.confirm({
             title: 'Xóa nhân viên',
@@ -59,7 +85,7 @@ const UserManager = () => {
                     message.success('Đã chuyển vào thùng rác!');
                     fetchUsers();
                 } catch (error) {
-                    message.error('Lỗi khi xóa! Có thể tài khoản đang có dữ liệu liên quan.');
+                    message.error('Lỗi khi xóa!');
                 }
             }
         });
@@ -75,7 +101,6 @@ const UserManager = () => {
             cancelText: 'Hủy',
             onOk: async () => {
                 try {
-                    // Giả định backend có API này: DELETE /api/users/hard/{id}
                     await axiosClient.delete(`/api/users/hard/${id}`);
                     message.success('Đã xóa vĩnh viễn!');
                     fetchUsers();
@@ -86,10 +111,9 @@ const UserManager = () => {
         });
     };
 
-    // Khôi phục (Restore)
+    // Khôi phục
     const handleRestore = async (id) => {
         try {
-            // Giả định backend có API này: PUT /api/users/{id}/restore
             await axiosClient.put(`/api/users/${id}/restore`);
             message.success("Khôi phục tài khoản thành công!");
             fetchUsers();
@@ -98,12 +122,11 @@ const UserManager = () => {
         }
     };
 
-    // Chuyển hướng sang trang sửa
     const handleEdit = (id) => {
         navigate(`/admin/users/edit/${id}`);
     };
 
-    // --- 3. CẤU HÌNH CỘT CHO BẢNG ---
+    // --- 3. CẤU HÌNH CỘT ---
     const columns = [
         {
             title: 'Thông tin tài khoản',
@@ -127,16 +150,6 @@ const UserManager = () => {
                     </div>
                 </Space>
             ),
-            filteredValue: [searchText],
-            onFilter: (value, record) => {
-                if (!value) return true;
-                const searchStr = value.toLowerCase();
-                return (
-                    String(record.fullName || '').toLowerCase().includes(searchStr) ||
-                    String(record.username || '').toLowerCase().includes(searchStr) ||
-                    String(record.email || '').toLowerCase().includes(searchStr)
-                );
-            },
         },
         {
             title: 'Liên hệ',
@@ -195,7 +208,6 @@ const UserManager = () => {
             render: (_, record) => (
                 <Space size="middle">
                     {filterStatus === 0 ? (
-                        // --- VIEW THÙNG RÁC ---
                         <>
                             <Tooltip title="Khôi phục tài khoản">
                                 <Button
@@ -214,7 +226,6 @@ const UserManager = () => {
                             </Tooltip>
                         </>
                     ) : (
-                        // --- VIEW BÌNH THƯỜNG ---
                         <>
                             <Tooltip title="Chỉnh sửa">
                                 <Button
@@ -238,12 +249,37 @@ const UserManager = () => {
         },
     ];
 
+    // Lấy dữ liệu đã lọc để hiển thị
+    const displayedData = getFilteredData();
+
     return (
         <div style={{ padding: 24, background: '#fff', borderRadius: 8, minHeight: '80vh' }}>
             {/* --- HEADER CÔNG CỤ --- */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24, alignItems: 'center' }}>
-                <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-                    <Title level={3} style={{ margin: 0, fontWeight: 'bold', fontSize: '24px' }}>Quản Lý Nhân Viên</Title>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24, alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+                <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                    <Title level={3} style={{ margin: 0, fontWeight: 'bold', fontSize: '24px' }}>Quản Lý Người Dùng</Title>
+
+                    {/* Badge hiển thị tổng số kết quả đang xem */}
+                    <Badge
+                        count={displayedData.length}
+                        overflowCount={999}
+                        style={{ backgroundColor: filterStatus === 0 ? '#ff4d4f' : '#1890ff' }}
+                    />
+                </div>
+
+                <Space wrap>
+                    {/* 🆕 MỚI: DROPDOWN LỌC VAI TRÒ */}
+                    <Select
+                        placeholder="Chọn vai trò"
+                        style={{ width: 160 }}
+                        allowClear
+                        onChange={(val) => setFilterRole(val)}
+                        suffixIcon={<FilterOutlined />}
+                    >
+                        <Option value="STAFF">👨‍💼 Nhân viên (Staff)</Option>
+                        <Option value="USER">👤 Khách hàng (User)</Option>
+                        <Option value="ADMIN">🛡️ Quản trị (Admin)</Option>
+                    </Select>
 
                     {/* DROPDOWN LỌC TRẠNG THÁI */}
                     <Select
@@ -255,24 +291,22 @@ const UserManager = () => {
                         <Option value={0}>🗑️ Thùng rác</Option>
                     </Select>
 
-                    <Badge count={users.length} overflowCount={999} style={{ backgroundColor: filterStatus === 0 ? '#ff4d4f' : '#52c41a' }} />
-                </div>
-
-                <Space>
                     <Input
-                        placeholder="Tìm theo tên, email..."
+                        placeholder="Tìm tên, email..."
                         prefix={<SearchOutlined />}
                         onChange={e => setSearchText(e.target.value)}
-                        style={{ width: 250 }}
+                        style={{ width: 220 }}
+                        allowClear
                     />
+
                     <Button
                         type="primary"
                         icon={<PlusOutlined />}
                         onClick={() => navigate('/admin/users/create')}
                         style={{ backgroundColor: '#001529' }}
-                        disabled={filterStatus === 0} // Không cho thêm mới khi đang ở thùng rác
+                        disabled={filterStatus === 0}
                     >
-                        Thêm Nhân Viên
+                        Thêm Mới
                     </Button>
                 </Space>
             </div>
@@ -280,7 +314,7 @@ const UserManager = () => {
             {/* --- BẢNG DỮ LIỆU --- */}
             <Table
                 columns={columns}
-                dataSource={users}
+                dataSource={displayedData} // Sử dụng dữ liệu đã lọc
                 rowKey="id"
                 loading={loading}
                 pagination={{
@@ -288,7 +322,7 @@ const UserManager = () => {
                     showSizeChanger: true,
                     showTotal: (total) => `Tổng cộng ${total} tài khoản`
                 }}
-                locale={{ emptyText: filterStatus === 0 ? 'Thùng rác trống' : 'Không có dữ liệu người dùng' }}
+                locale={{ emptyText: filterStatus === 0 ? 'Thùng rác trống' : 'Không tìm thấy dữ liệu' }}
             />
         </div>
     );
