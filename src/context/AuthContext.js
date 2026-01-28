@@ -39,6 +39,19 @@ export const AuthProvider = ({ children }) => {
         return false;
     };
 
+    // Hàm helper để lấy thông báo lỗi an toàn (tránh sập app)
+    const getErrorMessage = (error, defaultMessage) => {
+        // Nếu server trả về object có field message thì lấy nó
+        if (error.response && error.response.data && error.response.data.message) {
+            return error.response.data.message;
+        }
+        // Nếu server trả về string trực tiếp (ít gặp)
+        if (typeof error.response?.data === 'string') {
+            return error.response.data;
+        }
+        return defaultMessage;
+    };
+
     const login = async (formData) => {
         try {
             const res = await authApi.login(formData);
@@ -46,7 +59,8 @@ export const AuthProvider = ({ children }) => {
                 return { success: true, ...res };
             }
         } catch (error) {
-            return { success: false, message: error.response?.data || "Sai tài khoản hoặc mật khẩu!" };
+            // Đã sửa: Dùng hàm getErrorMessage để lấy string
+            return { success: false, message: getErrorMessage(error, "Sai tài khoản hoặc mật khẩu!") };
         }
     };
 
@@ -56,31 +70,35 @@ export const AuthProvider = ({ children }) => {
             saveAuthData(res);
             return { success: true, ...res };
         } catch (error) {
-            return { success: false, message: error.response?.data || "Đăng ký thất bại!" };
+            // Đã sửa
+            return { success: false, message: getErrorMessage(error, "Đăng ký thất bại!") };
         }
     };
 
-    // --- 3. BỔ SUNG: ĐĂNG NHẬP GOOGLE ---
     const loginWithGoogle = async (googleToken) => {
         try {
-            // Gửi token của Google xuống BE
             const res = await authApi.loginWithGoogle(googleToken);
             if (saveAuthData(res)) {
                 return { success: true, ...res };
             }
         } catch (error) {
-            return { success: false, message: error.response?.data || "Đăng nhập Google thất bại!" };
+            // Đã sửa
+            return { success: false, message: getErrorMessage(error, "Đăng nhập Google thất bại!") };
         }
     };
 
-    // --- 4. BỔ SUNG: QUÊN MẬT KHẨU ---
+    // --- SỬA CHÍNH: QUÊN MẬT KHẨU ---
     const forgotPassword = async (email) => {
         try {
-            // Gọi API quên mật khẩu đã viết ở BE
-            await authApi.forgotPassword(email);
-            return { success: true };
+            const res = await authApi.forgotPassword(email);
+            // Nếu API trả về data, return nó để AuthModal hứng (chứa message success)
+            return { success: true, message: res.message || "Đã gửi mail thành công!" };
         } catch (error) {
-            return { success: false, message: error.response?.data || "Gửi yêu cầu thất bại!" };
+            // Đã sửa: Lấy message từ object data thay vì lấy cả object
+            return {
+                success: false,
+                message: getErrorMessage(error, "Gửi yêu cầu thất bại!")
+            };
         }
     };
 
@@ -96,8 +114,8 @@ export const AuthProvider = ({ children }) => {
             setUser,
             login,
             register,
-            loginWithGoogle, // Bổ sung để AuthModal gọi được
-            forgotPassword,  // Bổ sung để AuthModal gọi được
+            loginWithGoogle,
+            forgotPassword,
             logout,
             isModalOpen,
             openModal: () => setIsModalOpen(true),

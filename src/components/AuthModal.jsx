@@ -26,35 +26,106 @@ const AuthModal = () => {
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
-        setErrorMsg('');
+        // Xóa thông báo lỗi ngay khi người dùng nhập lại
+        if (errorMsg) setErrorMsg('');
     };
 
     const handleClose = () => {
         setErrorMsg('');
         setSuccessMsg('');
         setIsForgotPassView(false);
+        // Reset form khi đóng để đảm bảo sạch sẽ cho lần sau
+        setFormData({ userName: '', password: '', fullName: '', email: '', phone: '' });
         closeModal();
+    };
+
+    // --- 1. HÀM KIỂM TRA DỮ LIỆU (VALIDATION) ---
+    const validateForm = () => {
+        // Kiểm tra Tên đăng nhập
+        if (!formData.userName.trim()) {
+            toast.error("Vui lòng nhập tên đăng nhập!");
+            return false;
+        }
+
+        // Kiểm tra Mật khẩu
+        if (!formData.password) {
+            toast.error("Vui lòng nhập mật khẩu!");
+            return false;
+        }
+
+        // Nếu là màn hình Đăng Ký thì kiểm tra thêm các trường khác
+        if (!isLoginView) {
+            if (formData.password.length < 6) {
+                toast.error("Mật khẩu phải có ít nhất 6 ký tự!");
+                return false;
+            }
+
+            if (!formData.fullName.trim()) {
+                toast.error("Vui lòng nhập họ và tên!");
+                return false;
+            }
+
+            if (!formData.email.trim()) {
+                toast.error("Vui lòng nhập Email!");
+                return false;
+            }
+            // Validate định dạng Email cơ bản
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(formData.email)) {
+                toast.error("Email không hợp lệ!");
+                return false;
+            }
+
+            if (!formData.phone.trim()) {
+                toast.error("Vui lòng nhập số điện thoại!");
+                return false;
+            }
+            // Validate số điện thoại (chỉ số, độ dài 10-11)
+            const phoneRegex = /^[0-9]{10,11}$/;
+            if (!phoneRegex.test(formData.phone)) {
+                toast.error("Số điện thoại không hợp lệ (10-11 số)!");
+                return false;
+            }
+        }
+
+        return true; // Dữ liệu hợp lệ
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // --- 2. GỌI HÀM VALIDATE TRƯỚC KHI XỬ LÝ ---
+        if (!validateForm()) {
+            return; // Dừng lại nếu dữ liệu chưa đủ
+        }
+
         setIsLoading(true);
         setErrorMsg('');
         setSuccessMsg('');
 
         try {
             if (isLoginView) {
+                // --- LOGIN ---
                 const res = await login({
                     username: formData.userName,
                     password: formData.password
                 });
+
                 if (res && res.success) {
-                    toast.success("Chào mừng bạn trở lại!");
+                    toast.success("Đăng nhập thành công!");
                     handleClose();
                 } else {
-                    toast.error(res?.message || "Sai tài khoản hoặc mật khẩu");
+                    // Xử lý thông báo "Bad credentials" thành tiếng Việt thân thiện hơn
+                    let msg = res?.message;
+                    if (msg === "Bad credentials") {
+                        msg = "Sai tên đăng nhập hoặc mật khẩu!";
+                    }
+                    // Hiển thị vừa toast vừa text đỏ
+                    toast.error(msg || "Đăng nhập thất bại");
+                    setErrorMsg(msg || "Sai tên đăng nhập hoặc mật khẩu");
                 }
             } else {
+                // --- REGISTER ---
                 const res = await register({
                     username: formData.userName,
                     password: formData.password,
@@ -73,6 +144,7 @@ const AuthModal = () => {
                     }, 1500);
                 } else {
                     toast.error(res?.message || "Đăng ký thất bại");
+                    setErrorMsg(res?.message || "Tên đăng nhập hoặc Email đã tồn tại");
                 }
             }
         } catch (error) {
@@ -84,23 +156,26 @@ const AuthModal = () => {
 
     const handleForgotSubmit = async (e) => {
         e.preventDefault();
-        if (!formData.email) {
-            toast.error("Vui lòng nhập Email để hệ thống nhận diện!");
+        // Validate riêng cho form quên mật khẩu
+        if (!formData.email.trim()) {
+            toast.error("Vui lòng nhập Email để lấy lại mật khẩu!");
+            return;
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            toast.error("Email không đúng định dạng!");
             return;
         }
 
         setIsLoading(true);
         try {
-            // Gọi hàm forgotPassword từ AuthContext
             const res = await forgotPassword(formData.email);
-
-            // SỬA: Kiểm tra res.success vì Backend đã trả về field này
             if (res && res.success) {
                 toast.success(res.message || "Mật khẩu mới đã được gửi vào Email!");
-                setIsForgotPassView(false); // Quay lại màn hình đăng nhập
+                setIsForgotPassView(false);
             } else {
-                // Hiển thị lỗi cụ thể từ Backend (ví dụ: Email không tồn tại)
-                toast.error(res.message || "Gửi yêu cầu thất bại!");
+                toast.error(res.message || "Email không tồn tại trong hệ thống!");
             }
         } catch (error) {
             toast.error("Lỗi kết nối đến máy chủ!");
@@ -116,6 +191,8 @@ const AuthModal = () => {
             if (res?.success) {
                 toast.success("Đăng nhập Google thành công!");
                 handleClose();
+            } else {
+                toast.error(res?.message || "Đăng nhập Google thất bại");
             }
         } catch (err) {
             toast.error("Lỗi xác thực Google!");
@@ -150,28 +227,28 @@ const AuthModal = () => {
                             {errorMsg && <div className="alert-box error fade-in">{errorMsg}</div>}
                             {successMsg && <div className="alert-box success fade-in">{successMsg}</div>}
 
-                            <form onSubmit={handleSubmit} className={isLoginView ? 'form-login' : 'form-register'}>
+                            <form onSubmit={handleSubmit} className={isLoginView ? 'form-login' : 'form-register'} noValidate>
                                 <div className="input-group-auth">
                                     <FaUser className="icon" />
-                                    <input type="text" name="userName" placeholder="Tên đăng nhập" required value={formData.userName} onChange={handleChange} />
+                                    <input type="text" name="userName" placeholder="Tên đăng nhập" value={formData.userName} onChange={handleChange} />
                                 </div>
                                 <div className="input-group-auth">
                                     <FaLock className="icon" />
-                                    <input type="password" name="password" placeholder="Mật khẩu" required value={formData.password} onChange={handleChange} />
+                                    <input type="password" name="password" placeholder="Mật khẩu" value={formData.password} onChange={handleChange} />
                                 </div>
 
                                 <div className={`register-expand ${!isLoginView ? 'open' : ''}`}>
                                     <div className="input-group-auth">
                                         <FaIdCard className="icon" />
-                                        <input type="text" name="fullName" placeholder="Họ và tên đầy đủ" value={formData.fullName} onChange={handleChange} required={!isLoginView} />
+                                        <input type="text" name="fullName" placeholder="Họ và tên đầy đủ" value={formData.fullName} onChange={handleChange} />
                                     </div>
                                     <div className="input-group-auth">
                                         <FaEnvelope className="icon" />
-                                        <input type="email" name="email" placeholder="Email liên hệ" value={formData.email} onChange={handleChange} required={!isLoginView} />
+                                        <input type="email" name="email" placeholder="Email liên hệ" value={formData.email} onChange={handleChange} />
                                     </div>
                                     <div className="input-group-auth">
                                         <FaPhone className="icon" />
-                                        <input type="tel" name="phone" placeholder="Số điện thoại" value={formData.phone} onChange={handleChange} required={!isLoginView} />
+                                        <input type="tel" name="phone" placeholder="Số điện thoại" value={formData.phone} onChange={handleChange} />
                                     </div>
                                 </div>
 
@@ -186,14 +263,13 @@ const AuthModal = () => {
                                         <GoogleLogin
                                             onSuccess={handleGoogleSuccess}
                                             onError={() => toast.error("Đăng nhập Google thất bại")}
-                                            theme="outline"      // Hoặc "filled_blue" để nổi bật hơn
-                                            shape="pill"         // Bo tròn để giống các ô Input bạn đang dùng
-                                            size="large"         // Cho nút to, dễ bấm
-                                            text="signin_with"   // Hiển thị chữ "Đăng nhập với Google"
-                                            width="380"          // Độ rộng (px) để nó lấp đầy modal, cân đối với nút Submit
+                                            theme="outline"
+                                            shape="pill"
+                                            size="large"
+                                            text="signin_with"
+                                            width="380"
                                         />
                                     </div>
-                                    {/* --- ĐƯA QUÊN MẬT KHẨU XUỐNG DƯỚI CÙNG --- */}
                                     <p className="forgot-pass" onClick={() => setIsForgotPassView(true)}>
                                         Quên mật khẩu?
                                     </p>
@@ -208,14 +284,13 @@ const AuthModal = () => {
                             <p className="forgot-desc">Chúng tôi sẽ gửi mật khẩu mới vào email của bạn.</p>
                         </div>
 
-                        <form onSubmit={handleForgotSubmit}>
+                        <form onSubmit={handleForgotSubmit} noValidate>
                             <div className="input-group-auth">
                                 <FaEnvelope className="icon" />
                                 <input
                                     type="email"
                                     name="email"
                                     placeholder="Nhập Email của bạn"
-                                    required
                                     value={formData.email}
                                     onChange={handleChange}
                                 />
